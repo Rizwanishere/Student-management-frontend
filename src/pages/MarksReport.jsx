@@ -10,6 +10,7 @@ const MarksReport = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [marksData, setMarksData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showTable, setShowTable] = useState(false); // State to control table rendering
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -31,38 +32,30 @@ const MarksReport = () => {
   }, [selectedYear, selectedSemester, selectedBranch]);
 
   // Fetch marks for the selected branch, year, section, and examType
-  useEffect(() => {
-    const fetchMarks = async () => {
-      if (selectedYear && selectedSemester && selectedSection && examType) {
-        try {
-          setLoading(true);
-          const marksResponse = await axios.get(
-            `http://localhost:3000/api/marks/${selectedYear}/${selectedSemester}/${selectedSection}/${examType}`
-          );
-          setMarksData(marksResponse.data);
-        } catch (error) {
-          console.error("Error fetching marks:", error);
-        } finally {
-          setLoading(false);
-        }
+  const fetchMarks = async () => {
+    if (selectedYear && selectedSemester && selectedSection && examType) {
+      try {
+        setLoading(true);
+        const marksResponse = await axios.get(
+          `http://localhost:3000/api/marks/${selectedYear}/${selectedSemester}/${selectedSection}/${examType}`
+        );
+        setMarksData(marksResponse.data);
+        setShowTable(true); // Show table after fetching marks
+      } catch (error) {
+        console.error("Error fetching marks:", error);
+      } finally {
+        setLoading(false);
       }
-    };
-    fetchMarks();
-  }, [
-    selectedYear,
-    selectedSemester,
-    selectedSection,
-    examType,
-    selectedBranch,
-  ]);
+    }
+  };
 
   // Handle form submission to fetch marks
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Marks will be fetched in useEffect when all conditions are met
+    fetchMarks();
   };
 
-  // First, we need to group the marks data by student
+  // Group marks data by student
   const groupedMarksData = marksData.reduce((acc, record) => {
     const studentId = record.student._id;
     const subjectId = record.subject._id;
@@ -156,7 +149,7 @@ const MarksReport = () => {
         </button>
       </form>
       {/* Conditionally render the table after marks data is fetched */}
-      {uniqueMarksData.length > 0 && !loading && (
+      {showTable && uniqueMarksData.length > 0 && !loading && (
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl">
           <h2 className="text-2xl font-semibold mb-4">Marks Table</h2>
           <table className="min-w-full bg-white">
