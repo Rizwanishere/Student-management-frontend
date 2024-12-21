@@ -194,7 +194,7 @@ const ProgressReport = () => {
 
     const options = {
       margin: 1,
-      filename: "output.pdf",
+      filename: `Progress report - ${reportData.studentName}`,
       image: { type: "jpeg", quality: 1 }, // Maximum quality for images
       html2canvas: {
         scale: 4, // Increase the scale to improve clarity (try different values)

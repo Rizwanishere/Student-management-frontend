@@ -300,7 +300,7 @@ const Marks = () => {
                   <td className="py-2 border text-center">
                     <input
                       type="number"
-                      className="border p-2 rounded w-full"
+                      className="border p-2 rounded w-full text-center"
                       value={student.marks}
                       onChange={(e) => handleMarksChange(index, e.target.value)}
                       max={maxMarks}

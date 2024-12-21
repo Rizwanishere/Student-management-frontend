@@ -336,7 +336,7 @@ const Attendance = () => {
                     <td className="border px-4 py-2">
                       <input
                         type="number"
-                        className="border p-2 rounded w-full"
+                        className="border p-2 rounded w-full text-center"
                         placeholder="Enter classes attended"
                         value={
                           attendanceRecord?.classesAttended || "" // Show existing value if available, else empty

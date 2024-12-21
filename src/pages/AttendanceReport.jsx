@@ -13,10 +13,35 @@ const AttendanceEntry = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showTable, setShowTable] = useState(false);
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
-  // Fetch students based on selected year, semester, and section
+  // Fetch attendance data
+  const fetchAttendance = async () => {
+    if (
+      selectedMonth &&
+      selectedYearAttendance &&
+      selectedYear &&
+      selectedSemester &&
+      selectedSection
+    ) {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `http://localhost:3000/api/students/attendance/month/${selectedMonth}/year/${selectedYearAttendance}/period/${selectedPeriod}`
+        );
+        setAttendanceData(response.data);
+        setShowTable(true);
+      } catch (error) {
+        console.error("Error fetching attendance:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Fetch students
   useEffect(() => {
     const fetchStudents = async () => {
       if (selectedYear && selectedSemester && selectedSection) {
@@ -33,7 +58,7 @@ const AttendanceEntry = () => {
     fetchStudents();
   }, [selectedYear, selectedSemester, selectedSection]);
 
-  // Fetch subjects based on selected branch, year, and semester
+  // Fetch subjects
   useEffect(() => {
     const fetchSubjects = async () => {
       if (selectedYear && selectedSemester) {
@@ -49,39 +74,6 @@ const AttendanceEntry = () => {
     };
     fetchSubjects();
   }, [selectedYear, selectedSemester, selectedBranch]);
-
-  // Fetch attendance based on selected year, month, and period
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      if (
-        selectedMonth &&
-        selectedYearAttendance &&
-        selectedYear &&
-        selectedSemester &&
-        selectedSection
-      ) {
-        try {
-          setLoading(true);
-          const response = await axios.get(
-            `http://localhost:3000/api/students/attendance/month/${selectedMonth}/year/${selectedYearAttendance}/period/${selectedPeriod}`
-          );
-          setAttendanceData(response.data);
-        } catch (error) {
-          console.error("Error fetching attendance:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    fetchAttendance();
-  }, [
-    selectedMonth,
-    selectedYearAttendance,
-    selectedYear,
-    selectedSemester,
-    selectedSection,
-    selectedPeriod
-  ]);
 
   // Group attendance data by student ID
   const groupedAttendanceData = students.map((student) => {
@@ -207,10 +199,18 @@ const AttendanceEntry = () => {
             <option value="2023">2023</option>
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={fetchAttendance}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Generate Report
+        </button>
       </form>
 
       {/* Conditionally render the table after attendance data is fetched */}
-      {groupedAttendanceData.length > 0 && !loading && (
+      {showTable && groupedAttendanceData.length > 0 && !loading && (
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl">
           <h2 className="text-2xl font-semibold mb-4">Attendance Table</h2>
           <table className="min-w-full bg-white">
