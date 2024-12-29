@@ -321,7 +321,7 @@ const Attendance = () => {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => {
+              {students.map((student, index) => {
                 // Get the matching attendance record for the student and subject
                 const attendanceRecord = attendanceData.find(
                   (record) =>
@@ -330,7 +330,7 @@ const Attendance = () => {
                 );
                 return (
                   <tr key={student._id}>
-                    <td className="border px-4 py-2">{1}</td>
+                    <td className="border px-4 py-2">{index + 1}</td>
                     <td className="border px-4 py-2">{student.rollNo}</td>
                     <td className="border px-4 py-2">{student.name}</td>
                     <td className="border px-4 py-2">

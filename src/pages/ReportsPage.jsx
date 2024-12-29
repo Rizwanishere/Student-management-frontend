@@ -29,7 +29,7 @@ function ReportsPage() {
                 Marks Report
               </h2>
               <p className="text-gray-500 mt-2">
-                Access comprehensive marks data.
+                Access comprehensive marks data for types of tests.
               </p>
             </div>
           </Link>
