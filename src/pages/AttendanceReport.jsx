@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import Loader from "../utils/Loader";
 
 const AttendanceEntry = () => {
@@ -14,6 +16,7 @@ const AttendanceEntry = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
+  const tableRef = useRef(); // Reference for the table
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -114,6 +117,23 @@ const AttendanceEntry = () => {
     };
   });
 
+  // Function to download the table as a PDF
+  const downloadPDF = () => {
+    const input = tableRef.current;
+  
+    // Lower the scale and adjust quality for compression
+    html2canvas(input, { scale: 1.5 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/jpeg", 0.8); // Use JPEG with quality 0.8
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+      pdf.save("AttendanceReport.pdf");
+    });
+  };
+  
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
       <form className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl">
@@ -213,12 +233,13 @@ const AttendanceEntry = () => {
       {showTable && groupedAttendanceData.length > 0 && !loading && (
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl">
           <h2 className="text-2xl font-semibold mb-4">Attendance Table</h2>
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 border">S.No</th>
-                <th className="py-2 border">Roll No</th>
-                <th className="py-2 border">Name</th>
+          <div ref={tableRef}>
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 border">S.No</th>
+                  <th className="py-2 border">Roll No</th>
+                  <th className="py-2 border">Name</th>
                 {subjectOptions.map((subject) => {
                   // Find the totalClasses for this subject from the attendance data
                   const totalClassesForSubject =
@@ -244,19 +265,19 @@ const AttendanceEntry = () => {
                 </th>
 
                 <th className="py-2 border">Percentage</th>
-              </tr>
-            </thead>
+                </tr>
+              </thead>
 
-            <tbody>
-              {groupedAttendanceData.map((record, index) => (
-                <tr key={record.student._id}>
-                  <td className="p-3 border text-center">{index + 1}</td>
-                  <td className="p-3 border text-center">
-                    {record.student.rollNo}
-                  </td>
-                  <td className="p-3 border text-center">
-                    {record.student.name}
-                  </td>
+              <tbody>
+                {groupedAttendanceData.map((record, index) => (
+                  <tr key={record.student._id}>
+                    <td className="p-3 border text-center">{index + 1}</td>
+                    <td className="p-3 border text-center">
+                      {record.student.rollNo}
+                    </td>
+                    <td className="p-3 border text-center">
+                      {record.student.name}
+                    </td>
                   {record.attendance.map((attended, subIndex) => (
                     <td key={subIndex} className="p-3 border text-center">
                       {attended.classesAttended}
@@ -268,10 +289,17 @@ const AttendanceEntry = () => {
                   <td className="p-3 border text-center">
                     {record.percentage}%
                   </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <button
+            onClick={downloadPDF}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-primary"
+          >
+            Download PDF
+          </button>
         </div>
       )}
       {loading && <Loader loading={loading} />}

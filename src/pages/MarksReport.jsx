@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Loader from "../utils/Loader";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 const MarksReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -11,6 +13,7 @@ const MarksReport = () => {
   const [marksData, setMarksData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false); // State to control table rendering
+  const tableRef = useRef(); // Reference to the table for generating PDF
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -75,6 +78,21 @@ const MarksReport = () => {
 
   // Convert the grouped data back into an array
   const uniqueMarksData = Object.values(groupedMarksData);
+
+  const downloadPDF = () => {
+    const input = tableRef.current;
+  
+    // Lower the scale and adjust quality for compression
+    html2canvas(input, { scale: 1.5 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/jpeg", 0.8); // Use JPEG with quality 0.8
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+      pdf.save("MarksReport.pdf");
+    });
+  };  
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
@@ -152,66 +170,74 @@ const MarksReport = () => {
       {showTable && uniqueMarksData.length > 0 && !loading && (
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl">
           <h2 className="text-2xl font-semibold mb-4">Marks Table</h2>
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 border">S.No</th>
-                <th className="py-2 border">Roll No</th>
-                <th className="py-2 border">Name</th>
-                {subjectOptions.map((subject) => (
-                  <th key={subject._id} className="py-2 border">
-                    {subject.name}
-                  </th>
-                ))}
-                <th className="py-2 border">Total Marks</th>
-                <th className="py-2 border">Percentage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {uniqueMarksData.map((record, index) => {
-                let totalMarks = 0;
-                let totalMaxMarks = 0;
+          <div ref={tableRef}>
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 border">S.No</th>
+                  <th className="py-2 border">Roll No</th>
+                  <th className="py-2 border">Name</th>
+                  {subjectOptions.map((subject) => (
+                    <th key={subject._id} className="py-2 border">
+                      {subject.name}
+                    </th>
+                  ))}
+                  <th className="py-2 border">Total Marks</th>
+                  <th className="py-2 border">Percentage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {uniqueMarksData.map((record, index) => {
+                  let totalMarks = 0;
+                  let totalMaxMarks = 0;
 
-                // Calculate total marks and accumulate maxMarks for each subject
-                marksData.forEach((markRecord) => {
-                  if (markRecord.student._id === record.student._id) {
-                    const subjectMarks = markRecord.marks || 0; // Get the marks for this subject
-                    const maxMarksForSubject = markRecord.maxMarks || 100; // Get maxMarks from the API response, default to 100 if missing
+                  // Calculate total marks and accumulate maxMarks for each subject
+                  marksData.forEach((markRecord) => {
+                    if (markRecord.student._id === record.student._id) {
+                      const subjectMarks = markRecord.marks || 0; // Get the marks for this subject
+                      const maxMarksForSubject = markRecord.maxMarks || 100; // Get maxMarks from the API response, default to 100 if missing
 
-                    totalMarks += subjectMarks;
-                    totalMaxMarks += maxMarksForSubject; // Accumulate the max marks from each subject
-                  }
-                });
+                      totalMarks += subjectMarks;
+                      totalMaxMarks += maxMarksForSubject; // Accumulate the max marks from each subject
+                    }
+                  });
 
-                // Calculate percentage based on total max marks
-                const percentage =
-                  totalMaxMarks > 0
-                    ? ((totalMarks / totalMaxMarks) * 100).toFixed(2)
-                    : "-"; // Calculate percentage and format it to 2 decimal places
+                  // Calculate percentage based on total max marks
+                  const percentage =
+                    totalMaxMarks > 0
+                      ? ((totalMarks / totalMaxMarks) * 100).toFixed(2)
+                      : "-"; // Calculate percentage and format it to 2 decimal places
 
-                return (
-                  <tr key={record.student._id}>
-                    <td className="p-2 border text-center">{index + 1}</td>
-                    <td className="p-2 border text-center">
-                      {record.student.rollNo}
-                    </td>
-                    <td className="p-2 border text-center">
-                      {record.student.name}
-                    </td>
-                    {subjectOptions.map((subject) => (
-                      <td key={subject._id} className="p-2 border text-center">
-                        {record.marks[subject._id] !== undefined
-                          ? record.marks[subject._id]
-                          : "0"}
+                  return (
+                    <tr key={record.student._id}>
+                      <td className="p-2 border text-center">{index + 1}</td>
+                      <td className="p-2 border text-center">
+                        {record.student.rollNo}
                       </td>
-                    ))}
-                    <td className="p-2 border text-center">{totalMarks}</td>
-                    <td className="p-2 border text-center">{percentage} %</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td className="p-2 border text-center">
+                        {record.student.name}
+                      </td>
+                      {subjectOptions.map((subject) => (
+                      <td key={subject._id} className="p-2 border text-center">
+                          {record.marks[subject._id] !== undefined
+                            ? record.marks[subject._id]
+                            : "0"}
+                        </td>
+                      ))}
+                      <td className="p-2 border text-center">{totalMarks}</td>
+                      <td className="p-2 border text-center">{percentage} %</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <button
+            onClick={downloadPDF}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-primary"
+          >
+            Download PDF
+          </button>
         </div>
       )}
       {/* Loading state */}
