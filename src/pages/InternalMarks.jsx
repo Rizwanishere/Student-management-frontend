@@ -21,10 +21,22 @@ const InternalMarks = () => {
           const response = await axios.get(
             `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
-          setSubjectOptions(response.data);
+          // Check if API response contains subjects or a message
+          if (
+            response.data &&
+            Array.isArray(response.data) &&
+            response.data.length > 0
+          ) {
+            setSubjectOptions(response.data);
+          } else {
+            setSubjectOptions([]); // Clear the dropdown if no subjects are found
+          }
         } catch (error) {
           console.error("Error fetching subjects:", error);
+          setSubjectOptions([]); // Ensure dropdown is cleared on error
         }
+      } else {
+        setSubjectOptions([]); // Reset when year/semester is deselected
       }
     };
     fetchSubjects();
@@ -190,11 +202,17 @@ const InternalMarks = () => {
               disabled={!selectedYear || !selectedSemester}
             >
               <option value="">Select Subject</option>
-              {subjectOptions.map((subject) => (
-                <option key={subject._id} value={subject._id}>
-                  {subject.name}
+              {subjectOptions.length > 0 ? (
+                subjectOptions.map((subject) => (
+                  <option key={subject._id} value={subject._id}>
+                    {subject.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  No subjects available
                 </option>
-              ))}
+              )}
             </select>
 
             {/* Exam Type Dropdown */}
