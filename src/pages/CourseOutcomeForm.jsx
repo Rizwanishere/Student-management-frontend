@@ -44,7 +44,7 @@ const CourseOutcome = () => {
           axios.get(`http://localhost:3000/api/co/getCourseOutcomes/${selectedCourseName}`),
           axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`) // Changed to use selectedCourseName
         ]);
-        
+
         setCourseOutcomes(coResponse.data && coResponse.data.length > 0 ? coResponse.data : []);
         setCoPOMatrix(coPoResponse.data || []);
       } catch (error) {
@@ -57,6 +57,7 @@ const CourseOutcome = () => {
       }
     }
   };
+
 
   useEffect(() => {
     fetchCourseData();
@@ -95,21 +96,21 @@ const CourseOutcome = () => {
       ? parseInt(courseOutcomes[courseOutcomes.length - 1].coNo.replace('CO', '')) || 0
       : 0;
     const newCoNo = `CO${lastCoNo + 1}`;
-    
+
     const newCourseOutcome = {
       course: selectedCourseName,
       coNo: newCoNo,
       courseOutcome: '',
       knowledgeLevel: '',
     };
-    
+
     setCourseOutcomes([...courseOutcomes, newCourseOutcome]);
   };
 
   const handleSubmit = async () => {
     try {
       const newOutcomes = courseOutcomes.filter(outcome => !outcome._id);
-      
+
       // Create course outcomes and their corresponding COPO matrices
       for (const outcome of newOutcomes) {
         const coResponse = await axios.post('http://localhost:3000/api/co/createCourseOutcome', {
@@ -124,7 +125,7 @@ const CourseOutcome = () => {
       }
 
       alert('New course outcomes submitted successfully!');
-      
+
       // Refresh both CO and COPO data
       await fetchCourseData();
       setModifiedOutcomes(new Set());
@@ -160,7 +161,7 @@ const CourseOutcome = () => {
       }
 
       alert('Updates saved successfully!');
-      
+
       // Refresh data after updates
       await fetchCourseData();
       setModifiedOutcomes(new Set());
@@ -171,28 +172,31 @@ const CourseOutcome = () => {
       alert('Error updating. Please try again.');
     }
   };
-  
 
-  // Submit new CO-PO Matrix
-  const handleSubmitCOPOMatrix = async () => {
+  const handleResetTables = async () => {
+    if (!selectedCourseName) return;
+
+    // Show confirmation dialog
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete all entries for ${selectedCourseName}? This action cannot be undone.`
+    );
+
+    if (!isConfirmed) return;
+
     try {
-      const newMatrices = coPOMatrix.filter(matrix => !matrix._id);
+      // Call the delete API with the selected course name
+      await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomesBySubject/${selectedCourseName}`);
 
-      for (const matrix of newMatrices) {
-        const response = await axios.post('http://localhost:3000/api/co/createCOPOMatrix', {
-          ...matrix,
-          course: selectedCourseName,
-        });
-        setCoPOMatrix(prev => prev.map(m => (m === matrix ? { ...m, _id: response.data._id } : m)));
-      }
-
-      alert('New CO-PO Matrix submitted successfully!');
-      const coPoResponse = await axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourse}`);
-      setCoPOMatrix(coPoResponse.data || []);
+      // Reset the states
+      setCourseOutcomes([]);
+      setCoPOMatrix([]);
+      setModifiedOutcomes(new Set());
       setModifiedMatrices(new Set());
+
+      alert('All entries have been deleted successfully!');
     } catch (error) {
-      console.error('Error submitting CO-PO Matrix:', error);
-      alert('Error submitting CO-PO Matrix. Please try again.');
+      console.error('Error deleting entries:', error);
+      alert('Error deleting entries. Please try again.');
     }
   };
 
@@ -205,28 +209,54 @@ const CourseOutcome = () => {
         if (matrix) {
           // Remove __v and _id from the request body to avoid MongoDB conflicts
           const { __v, _id, ...matrixToUpdate } = matrix;
-          
+
           await axios.patch(`http://localhost:3000/api/co/updateCOPOMatrix/${matrixId}`, {
             ...matrixToUpdate,
             course: selectedCourseName,
           });
         }
       }
-  
+
       // Fetch updated data using selectedCourseName
       const coPoResponse = await axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`);
-      
+
       // Update state with new data
       if (coPoResponse.data) {
         setCoPOMatrix(coPoResponse.data);
       }
-      
+
       setModifiedMatrices(new Set());
       alert('CO-PO Matrix updated successfully!');
-      
+
     } catch (error) {
       console.error('Error updating CO-PO Matrix:', error);
       alert('Error updating CO-PO Matrix. Please try again.');
+    }
+  };
+
+  const handleDeleteCourseOutcome = async (id, courseOutcome) => {
+    const isConfirmed = window.confirm('Are you sure you want to delete this course outcome?');
+
+    if (!isConfirmed) return;
+
+    if (!id) {
+      // For new entries without an ID
+      setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome.courseOutcome !== courseOutcome));
+      setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomeById/${id}`);
+
+      // Update both tables simultaneously
+      setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome._id !== id));
+      setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
+
+      alert('Course outcome deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting course outcome:', error);
+      alert('Error deleting course outcome. Please try again.');
     }
   };
 
@@ -295,81 +325,100 @@ const CourseOutcome = () => {
 
         {showTables && selectedCourse && (
           <div>
-            <h2 className="text-xl font-bold mb-4 text-gray-700">Course Outcome Table</h2>
-            <table className="min-w-full table-auto border-collapse mb-6">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">Course</th>
-                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">CO No.</th>
-                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">Course Outcomes (CO)</th>
-                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">Knowledge Level</th>
-                </tr>
-              </thead>
-              <tbody>
-                {courseOutcomes.map((outcome, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="border px-4 py-2 text-sm text-gray-600">{selectedCourseName}</td>
-                    <td className="border px-4 py-2 text-sm text-gray-600">
-                      <input
-                        type="text"
-                        value={outcome.coNo}
-                        onChange={(e) => handleCourseOutcomeChange(idx, 'coNo', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="CO1"
-                      />
-                    </td>
-                    <td className="border px-4 py-2 text-sm text-gray-600">
-                      <input
-                        type="text"
-                        value={outcome.courseOutcome}
-                        onChange={(e) => handleCourseOutcomeChange(idx, 'courseOutcome', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Enter course outcome"
-                      />
-                    </td>
-                    <td className="border px-4 py-2 text-sm text-gray-600">
-                      <select
-                        value={outcome.knowledgeLevel}
-                        onChange={(e) => handleCourseOutcomeChange(idx, 'knowledgeLevel', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                      >
-                        <option value="">Select Level</option>
-                        {[1, 2, 3, 4, 5, 6].map((level) => (
-                          <option key={level} value={`BTL-${level}`}>
-                            BTL-{level}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-700">Course Outcome Table</h2>
+                <button
+                  onClick={addNewCourseOutcome}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center space-x-2 shadow-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Add New Outcome</span>
+                </button>
+              </div>
 
-            <div className="mt-4 text-center space-x-4">
-              <button
-                onClick={addNewCourseOutcome}
-                className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
-              >
-                Add New Course Outcome
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Submit New
-              </button>
-              <button
-                onClick={handleUpdate}
-                disabled={modifiedOutcomes.size === 0}
-                className={`px-6 py-2 text-white rounded ${
-                  modifiedOutcomes.size > 0
-                    ? 'bg-yellow-500 hover:bg-yellow-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
-              >
-                Update Modified
-              </button>
+              <div className="overflow-x-auto rounded-lg shadow">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CO No.</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Outcomes (CO)</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Knowledge Level</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {courseOutcomes.map((outcome, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50 transition-colors duration-150">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{selectedCourseName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="text"
+                            value={outcome.coNo}
+                            onChange={(e) => handleCourseOutcomeChange(idx, 'coNo', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                            placeholder="CO1"
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <input
+                            type="text"
+                            value={outcome.courseOutcome}
+                            onChange={(e) => handleCourseOutcomeChange(idx, 'courseOutcome', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                            placeholder="Enter course outcome"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={outcome.knowledgeLevel}
+                            onChange={(e) => handleCourseOutcomeChange(idx, 'knowledgeLevel', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                          >
+                            <option value="">Select Level</option>
+                            {[1, 2, 3, 4, 5, 6].map((level) => (
+                              <option key={level} value={`BTL-${level}`}>BTL-{level}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <button
+                            onClick={() => handleDeleteCourseOutcome(outcome._id, outcome.courseOutcome)}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+                            title="Delete course outcome"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-6 flex justify-end space-x-4">
+                <button
+                  onClick={handleSubmit}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
+                >
+                  Submit New
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  disabled={modifiedOutcomes.size === 0}
+                  className={`px-6 py-2 text-white rounded-lg shadow-sm transition-colors duration-200 ${modifiedOutcomes.size > 0
+                      ? 'bg-yellow-500 hover:bg-yellow-600'
+                      : 'bg-gray-300 cursor-not-allowed'
+                    }`}
+                >
+                  Update Modified
+                </button>
+              </div>
             </div>
 
             <h2 className="text-xl font-bold mt-8 mb-4 text-gray-700">CO-PO Matrix</h2>
@@ -403,24 +452,27 @@ const CourseOutcome = () => {
             </table>
 
             <div className="mt-4 text-center space-x-4">
-              <button
-                onClick={handleSubmitCOPOMatrix}
-                className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Submit New CO-PO Matrix
-              </button>
+              {/* Button to save updates made in COPO Matrix */}
               <button
                 onClick={handleUpdateCOPOMatrix}
                 disabled={modifiedMatrices.size === 0}
-                className={`px-6 py-2 text-white rounded ${
-                  modifiedMatrices.size > 0
-                    ? 'bg-yellow-500 hover:bg-yellow-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
+                className={`px-6 py-2 text-white rounded ${modifiedMatrices.size > 0
+                  ? 'bg-yellow-500 hover:bg-yellow-700'
+                  : 'bg-gray-400 cursor-not-allowed'
+                  }`}
               >
                 Update Modified CO-PO Matrix
               </button>
+
+              {/* New Reset Table button */}
+              <button
+                onClick={handleResetTables}
+                className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+              >
+                Reset Table
+              </button>
             </div>
+
           </div>
         )}
       </div>
