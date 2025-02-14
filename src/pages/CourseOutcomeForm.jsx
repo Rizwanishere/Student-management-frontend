@@ -266,6 +266,47 @@ const CourseOutcome = () => {
     }
   };
 
+  const calculateAverages = () => {
+    if (coPOMatrix.length === 0) return Array(12).fill(0);
+
+    const sums = Array(12).fill(0);
+    const validCounts = Array(12).fill(0);
+
+    coPOMatrix.forEach(matrix => {
+      for (let i = 1; i <= 12; i++) {
+        const value = parseFloat(matrix[`po${i}`]);
+        if (!isNaN(value)) {
+          sums[i - 1] += value;
+          validCounts[i - 1]++;
+        }
+      }
+    });
+
+    return sums.map((sum, index) =>
+      validCounts[index] ? (sum / validCounts[index]).toFixed(1) : '-'
+    );
+  };
+
+  // Handle saving CO-PO averages
+  const handleSaveAverages = async () => {
+    const averages = calculateAverages();
+
+    if (selectedCourseName && averages.length > 0) {
+      try {
+        const response = await axios.post('http://localhost:3000/api/co/saveCOPOAverage', {
+          course: selectedCourseName,
+          averages: averages
+        });
+
+        alert('Averages saved successfully!');
+
+        console.log('Averages saved successfully:', response.data);
+      } catch (error) {
+        console.error('Error saving averages:', error);
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md">
@@ -440,12 +481,17 @@ const CourseOutcome = () => {
             </div>
 
             <h2 className="text-xl font-bold mt-8 mb-4 text-gray-700">CO-PO Matrix</h2>
+
             <table className="min-w-full table-auto border-collapse mb-6">
               <thead>
                 <tr>
-                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">Course Outcomes (COs)</th>
+                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">
+                    Course Outcomes (COs)
+                  </th>
                   {[...Array(12)].map((_, i) => (
-                    <th key={i} className="border px-4 py-2 text-center text-sm font-medium text-gray-700 bg-gray-50">PO{i + 1}</th>
+                    <th key={i} className="border px-4 py-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
+                      PO{i + 1}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -466,10 +512,24 @@ const CourseOutcome = () => {
                     ))}
                   </tr>
                 ))}
+                {/* Average Row */}
+                <tr className="bg-gray-100 font-medium">
+                  <td className="border px-4 py-2 text-sm text-gray-800 font-bold">AVERAGE</td>
+                  {calculateAverages().map((avg, idx) => (
+                    <td key={idx} className="border px-4 py-2 text-sm text-gray-800 text-center">
+                      {avg}
+                    </td>
+                  ))}
+                </tr>
               </tbody>
             </table>
 
             <div className="mt-4 text-center space-x-4">
+              {/* Save Button */}
+              <button onClick={handleSaveAverages} className="bg-blue-500 text-white p-2 rounded">
+                Save Averages
+              </button>
+
               {/* Button to save updates made in COPO Matrix */}
               <button
                 onClick={handleUpdateCOPOMatrix}
