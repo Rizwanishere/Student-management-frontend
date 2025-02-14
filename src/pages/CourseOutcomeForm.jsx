@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import html2canvas from 'html2canvas';
 
 const CourseOutcome = () => {
   const [selectedYear, setSelectedYear] = useState('');
@@ -307,6 +308,47 @@ const CourseOutcome = () => {
     }
   };
 
+  const handleExportToImage = () => {
+    // Get the element containing your tables
+    const tablesContainer = document.getElementById('tables-container');
+    
+    if (!tablesContainer) {
+      console.error('Could not find tables container');
+      return;
+    }
+  
+    // Configure html2canvas options
+    const options = {
+      scale: 2, // Higher scale for better quality
+      backgroundColor: '#ffffff', // White background
+      logging: true, // Enable logging for debugging
+      useCORS: true // Handle cross-origin images if any
+    };
+  
+    // Convert to canvas and download
+    html2canvas(tablesContainer, options)
+      .then(canvas => {
+        // Create temporary link
+        const link = document.createElement('a');
+        link.download = 'course-outcome-tables.png';
+        
+        // Convert canvas to blob
+        canvas.toBlob(blob => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.click();
+            // Clean up
+            URL.revokeObjectURL(url);
+          }
+        }, 'image/png', 1.0);
+      })
+      .catch(error => {
+        console.error('Error generating image:', error);
+      });
+  };
+
+
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md">
@@ -550,7 +592,16 @@ const CourseOutcome = () => {
                 Reset Table
               </button>
             </div>
-
+            
+            {/* Export to Image Button */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={handleExportToImage}
+                className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+              >
+                Export to Image
+              </button>
+            </div>
           </div>
         )}
       </div>
