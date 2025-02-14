@@ -107,6 +107,12 @@ const CourseOutcome = () => {
     setCourseOutcomes([...courseOutcomes, newCourseOutcome]);
   };
 
+  const removeLastCourseOutcome = () => {
+    if (courseOutcomes.length > 0) {
+      setCourseOutcomes(courseOutcomes.slice(0, -1));
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const newOutcomes = courseOutcomes.filter(outcome => !outcome._id);
@@ -328,15 +334,27 @@ const CourseOutcome = () => {
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-700">Course Outcome Table</h2>
-                <button
-                  onClick={addNewCourseOutcome}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center space-x-2 shadow-sm"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span>Add New Outcome</span>
-                </button>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={addNewCourseOutcome}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center space-x-2 shadow-sm"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add New Outcome</span>
+                  </button>
+
+                  <button
+                    onClick={removeLastCourseOutcome}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center space-x-2 shadow-sm"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+                    </svg>
+                    <span>Remove Last Outcome</span>
+                  </button>
+                </div>
               </div>
 
               <div className="overflow-x-auto rounded-lg shadow">
@@ -412,8 +430,8 @@ const CourseOutcome = () => {
                   onClick={handleUpdate}
                   disabled={modifiedOutcomes.size === 0}
                   className={`px-6 py-2 text-white rounded-lg shadow-sm transition-colors duration-200 ${modifiedOutcomes.size > 0
-                      ? 'bg-yellow-500 hover:bg-yellow-600'
-                      : 'bg-gray-300 cursor-not-allowed'
+                    ? 'bg-yellow-500 hover:bg-yellow-600'
+                    : 'bg-gray-300 cursor-not-allowed'
                     }`}
                 >
                   Update Modified
