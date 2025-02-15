@@ -11,7 +11,7 @@ const Attendance = () => {
     semester: "",
     section: "",
     subject: "",
-    month: "", 
+    month: "",
     period: "",
   });
   const selectedBranch = localStorage.getItem("selectedBranch");
@@ -41,10 +41,17 @@ const Attendance = () => {
         const response = await axios.get(
           `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${filters.year}/semester/${filters.semester}`
         );
-        setSubjects(response.data);
+        if (response.data.length > 0) {
+          setSubjects(response.data); // Update with fetched subjects
+        } else {
+          setSubjects([]); // Reset subjects list if no data found
+        }
       } catch (error) {
         console.error("Error fetching subjects:", error);
+        setSubjects([]); // Ensure dropdown updates even on API failure
       }
+    } else {
+      setSubjects([]); // Reset subjects if year/semester is not selected
     }
   };
 
@@ -65,6 +72,9 @@ const Attendance = () => {
 
   useEffect(() => {
     // Fetch subjects when year and semester change
+    if (filters.year && filters.semester) {
+      fetchSubjects();
+    }
     fetchSubjects();
     fetchAttendance();
   }, [filters.year, filters.semester, filters.month, filters.period]); // Triggers when either year, semester, or period is updated
@@ -247,16 +257,23 @@ const Attendance = () => {
             }
           >
             <option value="">Select Subject</option>
-            {/* Dynamically render subjects */}
-            {subjects.map((subject) => (
-              <option key={subject._id} value={subject._id}>
-                {subject.name}
+
+            {/* Render subjects or show 'No subjects available' */}
+            {subjects.length > 0 ? (
+              subjects.map((subject) => (
+                <option key={subject._id} value={subject._id}>
+                  {subject.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No subjects available
               </option>
-            ))}
+            )}
           </select>
 
-           {/* New Month Dropdown */}
-           <select
+          {/* New Month Dropdown */}
+          <select
             className="border p-2 rounded"
             value={filters.month}
             onChange={(e) => setFilters({ ...filters, month: e.target.value })}

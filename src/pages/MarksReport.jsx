@@ -25,10 +25,22 @@ const MarksReport = () => {
           const response = await axios.get(
             `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
-          setSubjectOptions(response.data.slice(0, 5)); // Limit to 5 subjects
+          // Check if API response contains subjects or a message
+          if (
+            response.data &&
+            Array.isArray(response.data) &&
+            response.data.length > 0
+          ) {
+            setSubjectOptions(response.data);
+          } else {
+            setSubjectOptions([]); // Clear the dropdown if no subjects are found
+          }
         } catch (error) {
           console.error("Error fetching subjects:", error);
+          setSubjectOptions([]); // Ensure dropdown is cleared on error
         }
+      } else {
+        setSubjectOptions([]); // Reset when year/semester is deselected
       }
     };
     fetchSubjects();
