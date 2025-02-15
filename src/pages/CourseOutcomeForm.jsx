@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import html2canvas from 'html2canvas';
 
 const CourseOutcome = () => {
   const [selectedYear, setSelectedYear] = useState('');
@@ -43,7 +42,7 @@ const CourseOutcome = () => {
       try {
         const [coResponse, coPoResponse] = await Promise.all([
           axios.get(`http://localhost:3000/api/co/getCourseOutcomes/${selectedCourseName}`),
-          axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`) // Changed to use selectedCourseName
+          axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`)
         ]);
 
         setCourseOutcomes(coResponse.data && coResponse.data.length > 0 ? coResponse.data : []);
@@ -58,7 +57,6 @@ const CourseOutcome = () => {
       }
     }
   };
-
 
   useEffect(() => {
     fetchCourseData();
@@ -114,39 +112,18 @@ const CourseOutcome = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     try {
+      // Save new course outcomes
       const newOutcomes = courseOutcomes.filter(outcome => !outcome._id);
-
-      // Create course outcomes and their corresponding COPO matrices
       for (const outcome of newOutcomes) {
-        const coResponse = await axios.post('http://localhost:3000/api/co/createCourseOutcome', {
+        await axios.post('http://localhost:3000/api/co/createCourseOutcome', {
           ...outcome,
           course: selectedCourseName,
         });
-
-        // The API response includes both the course outcome and its COPO matrix
-        if (coResponse.data.coPoMatrix) {
-          setCoPOMatrix(prev => [...prev, coResponse.data.coPoMatrix]);
-        }
       }
 
-      alert('New course outcomes submitted successfully!');
-
-      // Refresh both CO and COPO data
-      await fetchCourseData();
-      setModifiedOutcomes(new Set());
-      setModifiedMatrices(new Set());
-
-    } catch (error) {
-      console.error('Error submitting course outcomes:', error);
-      alert('Error submitting course outcomes. Please try again.');
-    }
-  };
-
-  const handleUpdate = async () => {
-    try {
-      // Update course outcomes
+      // Update modified course outcomes
       for (const outcomeId of modifiedOutcomes) {
         const outcome = courseOutcomes.find(co => co._id === outcomeId);
         if (outcome) {
@@ -159,7 +136,7 @@ const CourseOutcome = () => {
         }
       }
 
-      // Update COPO matrices
+      // Update modified CO-PO matrices
       for (const matrixId of modifiedMatrices) {
         const matrix = coPOMatrix.find(m => m._id === matrixId);
         if (matrix) {
@@ -167,23 +144,19 @@ const CourseOutcome = () => {
         }
       }
 
-      alert('Updates saved successfully!');
-
-      // Refresh data after updates
+      alert('Data saved successfully!');
       await fetchCourseData();
       setModifiedOutcomes(new Set());
       setModifiedMatrices(new Set());
-
     } catch (error) {
-      console.error('Error updating:', error);
-      alert('Error updating. Please try again.');
+      console.error('Error saving data:', error);
+      alert('Error saving data. Please try again.');
     }
   };
 
   const handleResetTables = async () => {
     if (!selectedCourseName) return;
 
-    // Show confirmation dialog
     const isConfirmed = window.confirm(
       `Are you sure you want to delete all entries for ${selectedCourseName}? This action cannot be undone.`
     );
@@ -191,79 +164,15 @@ const CourseOutcome = () => {
     if (!isConfirmed) return;
 
     try {
-      // Call the delete API with the selected course name
       await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomesBySubject/${selectedCourseName}`);
-
-      // Reset the states
       setCourseOutcomes([]);
       setCoPOMatrix([]);
       setModifiedOutcomes(new Set());
       setModifiedMatrices(new Set());
-
       alert('All entries have been deleted successfully!');
     } catch (error) {
       console.error('Error deleting entries:', error);
       alert('Error deleting entries. Please try again.');
-    }
-  };
-
-  // Update modified CO-PO Matrix
-  const handleUpdateCOPOMatrix = async () => {
-    try {
-      // Update each modified matrix
-      for (const matrixId of modifiedMatrices) {
-        const matrix = coPOMatrix.find(m => m._id === matrixId);
-        if (matrix) {
-          // Remove __v and _id from the request body to avoid MongoDB conflicts
-          const { __v, _id, ...matrixToUpdate } = matrix;
-
-          await axios.patch(`http://localhost:3000/api/co/updateCOPOMatrix/${matrixId}`, {
-            ...matrixToUpdate,
-            course: selectedCourseName,
-          });
-        }
-      }
-
-      // Fetch updated data using selectedCourseName
-      const coPoResponse = await axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`);
-
-      // Update state with new data
-      if (coPoResponse.data) {
-        setCoPOMatrix(coPoResponse.data);
-      }
-
-      setModifiedMatrices(new Set());
-      alert('CO-PO Matrix updated successfully!');
-
-    } catch (error) {
-      console.error('Error updating CO-PO Matrix:', error);
-      alert('Error updating CO-PO Matrix. Please try again.');
-    }
-  };
-
-  const handleDeleteCourseOutcome = async (id, courseOutcome) => {
-    const isConfirmed = window.confirm('Are you sure you want to delete this course outcome?');
-
-    if (!isConfirmed) return;
-
-    if (!id) {
-      // For new entries without an ID
-      setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome.courseOutcome !== courseOutcome));
-      setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
-      return;
-    }
-
-    try {
-      await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomeById/${id}`);
-
-      // Update both tables simultaneously
-      setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome._id !== id));
-      setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
-
-      alert('Course outcome deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting course outcome:', error);
-      alert('Error deleting course outcome. Please try again.');
     }
   };
 
@@ -288,70 +197,31 @@ const CourseOutcome = () => {
     );
   };
 
-  // Handle saving CO-PO averages
-  const handleSaveAverages = async () => {
-    const averages = calculateAverages();
+  const handleDeleteCourseOutcome = async (id, courseOutcome) => {
+    const isConfirmed = window.confirm('Are you sure you want to delete this course outcome?');
 
-    if (selectedCourseName && averages.length > 0) {
-      try {
-        const response = await axios.post('http://localhost:3000/api/co/saveCOPOAverage', {
-          course: selectedCourseName,
-          averages: averages
-        });
+    if (!isConfirmed) return;
 
-        alert('Averages saved successfully!');
-
-        console.log('Averages saved successfully:', response.data);
-      } catch (error) {
-        console.error('Error saving averages:', error);
-      }
-    }
-  };
-
-  const handleExportToImage = () => {
-    // Get the element containing your tables
-    const tablesContainer = document.getElementById('tables-container');
-    
-    if (!tablesContainer) {
-      console.error('Could not find tables container');
+    if (!id) {
+      setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome.courseOutcome !== courseOutcome));
+      setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
       return;
     }
-  
-    // Configure html2canvas options
-    const options = {
-      scale: 2, // Higher scale for better quality
-      backgroundColor: '#ffffff', // White background
-      logging: true, // Enable logging for debugging
-      useCORS: true // Handle cross-origin images if any
-    };
-  
-    // Convert to canvas and download
-    html2canvas(tablesContainer, options)
-      .then(canvas => {
-        // Create temporary link
-        const link = document.createElement('a');
-        link.download = 'course-outcome-tables.png';
-        
-        // Convert canvas to blob
-        canvas.toBlob(blob => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            link.href = url;
-            link.click();
-            // Clean up
-            URL.revokeObjectURL(url);
-          }
-        }, 'image/png', 1.0);
-      })
-      .catch(error => {
-        console.error('Error generating image:', error);
-      });
-  };
 
+    try {
+      await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomeById/${id}`);
+      setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome._id !== id));
+      setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
+      alert('Course outcome deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting course outcome:', error);
+      alert('Error deleting course outcome. Please try again.');
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
-      <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md">
+      <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
         <h1 className="text-2xl font-bold mb-6 text-gray-700">Course Outcome and CO-PO Matrix</h1>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
@@ -504,20 +374,10 @@ const CourseOutcome = () => {
 
               <div className="mt-6 flex justify-end space-x-4">
                 <button
-                  onClick={handleSubmit}
+                  onClick={handleSave}
                   className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
                 >
-                  Submit New
-                </button>
-                <button
-                  onClick={handleUpdate}
-                  disabled={modifiedOutcomes.size === 0}
-                  className={`px-6 py-2 text-white rounded-lg shadow-sm transition-colors duration-200 ${modifiedOutcomes.size > 0
-                    ? 'bg-yellow-500 hover:bg-yellow-600'
-                    : 'bg-gray-300 cursor-not-allowed'
-                    }`}
-                >
-                  Update Modified
+                  Save
                 </button>
               </div>
             </div>
@@ -567,39 +427,11 @@ const CourseOutcome = () => {
             </table>
 
             <div className="mt-4 text-center space-x-4">
-              {/* Save Button */}
-              <button onClick={handleSaveAverages} className="bg-blue-500 text-white p-2 rounded">
-                Save Averages
-              </button>
-
-              {/* Button to save updates made in COPO Matrix */}
-              <button
-                onClick={handleUpdateCOPOMatrix}
-                disabled={modifiedMatrices.size === 0}
-                className={`px-6 py-2 text-white rounded ${modifiedMatrices.size > 0
-                  ? 'bg-yellow-500 hover:bg-yellow-700'
-                  : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-              >
-                Update Modified CO-PO Matrix
-              </button>
-
-              {/* New Reset Table button */}
               <button
                 onClick={handleResetTables}
                 className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-700"
               >
                 Reset Table
-              </button>
-            </div>
-            
-            {/* Export to Image Button */}
-            <div className="mt-4 text-center">
-              <button
-                onClick={handleExportToImage}
-                className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
-              >
-                Export to Image
               </button>
             </div>
           </div>
