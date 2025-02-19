@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+import html2canvas from "html2canvas";
+// import * as XLSX from 'xlsx';
+import { jsPDF } from "jspdf";
 
 const CourseOutcome = () => {
   const [selectedYear, setSelectedYear] = useState('');
@@ -220,121 +222,181 @@ const CourseOutcome = () => {
     }
   };
 
-  // Export to Excel
   const exportToExcel = async () => {
     try {
-      // Fetch the latest data from APIs
-      const [coResponse, coPoResponse] = await Promise.all([
-        axios.get(`http://localhost:3000/api/co/getCourseOutcomes/${selectedCourseName}`),
-        axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`)
-      ]);
+        // Fetch CO-PO Matrix Data from the API
+        const response = await fetch(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`);
+        if (!response.ok) throw new Error("Failed to fetch CO-PO Matrix data");
+        const fetchedCoPOMatrix = await response.json();
 
-      const courseOutcomes = coResponse.data;
-      const coPOMatrix = coPoResponse.data;
+        // Create a container for both tables
+        const container = document.createElement("div");
+        container.style.position = "absolute";
+        container.style.left = "-9999px";
+        container.style.padding = "20px";
+        document.body.appendChild(container);
 
-      // Create workbook
-      const wb = XLSX.utils.book_new();
+        // Create CO Table
+        const coTable = document.createElement("table");
+        coTable.style.borderCollapse = "collapse";
+        coTable.style.width = "1200px";
+        coTable.style.marginBottom = "30px";
+        coTable.style.border = "1.5px solid black";
+        coTable.style.fontSize = "12px";
 
-      // Create the Course Outcomes table
-      const coHeaders = [
-        "Course",
-        "CO No.",
-        "Course Outcomes (CO)",
-        "Knowledge Level (Blooms Taxonomy Level)"
-      ];
+        // CO Table Header
+        const coHeaderRow = document.createElement("tr");
+        const headerConfig = [
+            { text: "Course", width: "100px" },
+            { text: "CO No.", width: "80px" },
+            { text: "Course Outcomes (CO)", width: "800px" },
+            { text: "Knowledge Level\n(Blooms Taxonomy Level)", width: "220px" }
+        ];
 
-      const coData = courseOutcomes.map(outcome => [
-        selectedCourseName,
-        outcome.coNo,
-        outcome.courseOutcome,
-        outcome.knowledgeLevel
-      ]);
+        headerConfig.forEach(config => {
+            const th = document.createElement("th");
+            th.style.border = "1px solid black";
+            th.style.padding = "8px";
+            th.style.backgroundColor = "#ffffff";
+            th.style.fontWeight = "bold";
+            th.style.width = config.width;
+            th.style.textAlign = "center";
+            th.textContent = config.text;
+            coHeaderRow.appendChild(th);
+        });
+        coTable.appendChild(coHeaderRow);
 
-      const coTable = [coHeaders, ...coData];
-      const ws1 = XLSX.utils.aoa_to_sheet(coTable);
+        // CO Table Data
+        courseOutcomes.forEach(outcome => {
+            const row = document.createElement("tr");
+            [selectedCourseName, outcome.coNo, outcome.courseOutcome, outcome.knowledgeLevel].forEach((text, index) => {
+                const td = document.createElement("td");
+                td.style.border = "1px solid black";
+                td.style.padding = "8px";
+                td.style.textAlign = index === 2 ? "left" : "center";
+                td.textContent = text;
+                td.style.width = headerConfig[index].width;
+                row.appendChild(td);
+            });
+            coTable.appendChild(row);
+        });
 
-      // Set column widths for Course Outcomes
-      const coColumnWidths = [
-        { wch: 20 },  // Course
-        { wch: 10 },  // CO No.
-        { wch: 60 },  // Course Outcomes
-        { wch: 20 }   // Knowledge Level
-      ];
-      ws1['!cols'] = coColumnWidths;
+        // Create CO-PO Matrix Table
+        const copoTable = document.createElement("table");
+        copoTable.style.borderCollapse = "collapse";
+        copoTable.style.width = "1200px";
+        copoTable.style.border = "1.5px solid black";
+        copoTable.style.fontSize = "12px";
 
-      // Create the CO-PO Matrix
-      const matrixHeaders = [
-        "Course Outcomes (COs)",
-        ...Array(12).fill().map((_, i) => `PO${i + 1}`)
-      ];
+        // CO-PO Matrix Header
+        const copoHeaderRow = document.createElement("tr");
+        const copoHeader = document.createElement("th");
+        copoHeader.style.border = "1px solid black";
+        copoHeader.style.padding = "8px";
+        copoHeader.style.backgroundColor = "#ffffff";
+        copoHeader.style.width = "800px";
+        copoHeader.style.textAlign = "center";
+        copoHeader.style.fontWeight = "bold";
+        copoHeader.textContent = "Course Outcomes (COs)";
+        copoHeaderRow.appendChild(copoHeader);
 
-      const matrixData = coPOMatrix.map(matrix => [
-        matrix.courseOutcome,
-        matrix.po1 || '-',
-        matrix.po2 || '-',
-        matrix.po3 || '-',
-        matrix.po4 || '-',
-        matrix.po5 || '-',
-        matrix.po6 || '-',
-        matrix.po7 || '-',
-        matrix.po8 || '-',
-        matrix.po9 || '-',
-        matrix.po10 || '-',
-        matrix.po11 || '-',
-        matrix.po12 || '-'
-      ]);
+        // Add Program Outcomes headers
+        Array(12).fill().forEach((_, i) => {
+            const th = document.createElement("th");
+            th.style.border = "1px solid black";
+            th.style.padding = "8px";
+            th.style.backgroundColor = "#ffffff";
+            th.style.width = "33px";
+            th.style.textAlign = "center";
+            th.style.fontWeight = "bold";
+            th.textContent = `PO${i + 1}`;
+            copoHeaderRow.appendChild(th);
+        });
+        copoTable.appendChild(copoHeaderRow);
 
-      // Add the AVERAGE row
-      const averages = calculateAverages().map(avg => avg || '-');
-      matrixData.push(["AVERAGE", ...averages]);
+        // CO-PO Matrix Data
+        fetchedCoPOMatrix.forEach(matrix => {
+            const row = document.createElement("tr");
+            const coCell = document.createElement("td");
+            coCell.style.border = "1px solid black";
+            coCell.style.padding = "8px";
+            coCell.style.textAlign = "left";
+            coCell.textContent = matrix.courseOutcome;
+            row.appendChild(coCell);
 
-      const matrixTable = [
-        ["CO-PO Matrix"],  // Title row
-        matrixHeaders,     // Headers
-        ...matrixData      // Data + Average row
-      ];
+            Array(12).fill().forEach((_, i) => {
+                const td = document.createElement("td");
+                td.style.border = "1px solid black";
+                td.style.padding = "8px";
+                td.style.textAlign = "center";
+                td.textContent = matrix[`po${i + 1}`] || "-";
+                row.appendChild(td);
+            });
+            copoTable.appendChild(row);
+        });
 
-      const ws2 = XLSX.utils.aoa_to_sheet(matrixTable);
+        // Add Average Row
+        const averageRow = document.createElement("tr");
+        const averageLabel = document.createElement("td");
+        averageLabel.style.border = "1px solid black";
+        averageLabel.style.padding = "8px";
+        averageLabel.style.textAlign = "center";
+        averageLabel.style.fontWeight = "bold";
+        averageLabel.textContent = "AVERAGE";
+        averageRow.appendChild(averageLabel);
 
-      // Set column widths for CO-PO Matrix
-      const matrixColumnWidths = [
-        { wch: 60 },  // Course Outcomes column
-        ...Array(12).fill({ wch: 8 })  // PO columns
-      ];
-      ws2['!cols'] = matrixColumnWidths;
+        // Calculate and add averages for each PO
+        Array(12).fill().forEach((_, i) => {
+            const td = document.createElement("td");
+            td.style.border = "1px solid black";
+            td.style.padding = "8px";
+            td.style.textAlign = "center";
+            td.style.fontWeight = "bold";
 
-      // Style configurations
-      const headerStyle = {
-        font: { bold: true },
-        alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
-      };
+            // Calculate average for current PO
+            const values = fetchedCoPOMatrix
+                .map(matrix => parseFloat(matrix[`po${i + 1}`]))
+                .filter(val => !isNaN(val));
+            
+            const average = values.length > 0 
+                ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)
+                : "-";
+            
+            td.textContent = average;
+            averageRow.appendChild(td);
+        });
+        copoTable.appendChild(averageRow);
 
-      // Apply styles to both worksheets
-      ['!ref'].forEach(ref => {
-        if (ws1[ref]) {
-          const range = XLSX.utils.decode_range(ws1[ref]);
-          for (let R = range.s.r; R <= range.e.r; R++) {
-            for (let C = range.s.c; C <= range.e.c; C++) {
-              const cell_address = { c: C, r: R };
-              const cell_ref = XLSX.utils.encode_cell(cell_address);
-              if (!ws1[cell_ref]) continue;
-              ws1[cell_ref].s = headerStyle;
-            }
-          }
-        }
-      });
+        // Append tables to container
+        container.appendChild(coTable);
+        container.appendChild(copoTable);
 
-      // Add the sheets to workbook
-      XLSX.utils.book_append_sheet(wb, ws1, 'Course Outcomes');
-      XLSX.utils.book_append_sheet(wb, ws2, 'CO-PO Matrix');
+        // Capture the tables as an image using html2canvas
+        const canvas = await html2canvas(container);
+        document.body.removeChild(container);
 
-      // Write to file
-      XLSX.writeFile(wb, `${selectedCourseName}_Course_Outcomes.xlsx`);
+        // Convert canvas to image
+        const imgData = canvas.toDataURL("image/png");
+
+        // Create a PDF using jsPDF
+        const pdf = new jsPDF("l", "mm", "a4"); // Landscape mode for better fit
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        const imgWidth = pageWidth - 20; // 10mm margin on each side
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Add the image to the PDF
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+
+        // Save the PDF file
+        pdf.save(`${selectedCourseName}_Course_Outcomes.pdf`);
+
     } catch (error) {
-      console.error('Error exporting to Excel:', error);
-      alert('Error exporting to Excel. Please try again.');
+        console.error("Error exporting to PDF:", error);
+        alert("Error exporting to PDF. Please try again.");
     }
-  };
+};
 
   return (
     <div className="container mx-auto p-6">
@@ -540,7 +602,7 @@ const CourseOutcome = () => {
                   onClick={exportToExcel}
                   className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
                 >
-                  Export to Excel
+                  Export Table
                 </button>
                 <button
                   onClick={handleResetTables}
