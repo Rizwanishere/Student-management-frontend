@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 
 const CourseOutcome = () => {
   const [selectedYear, setSelectedYear] = useState('');
@@ -219,6 +220,122 @@ const CourseOutcome = () => {
     }
   };
 
+  // Export to Excel
+  const exportToExcel = async () => {
+    try {
+      // Fetch the latest data from APIs
+      const [coResponse, coPoResponse] = await Promise.all([
+        axios.get(`http://localhost:3000/api/co/getCourseOutcomes/${selectedCourseName}`),
+        axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`)
+      ]);
+
+      const courseOutcomes = coResponse.data;
+      const coPOMatrix = coPoResponse.data;
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+
+      // Create the Course Outcomes table
+      const coHeaders = [
+        "Course",
+        "CO No.",
+        "Course Outcomes (CO)",
+        "Knowledge Level (Blooms Taxonomy Level)"
+      ];
+
+      const coData = courseOutcomes.map(outcome => [
+        selectedCourseName,
+        outcome.coNo,
+        outcome.courseOutcome,
+        outcome.knowledgeLevel
+      ]);
+
+      const coTable = [coHeaders, ...coData];
+      const ws1 = XLSX.utils.aoa_to_sheet(coTable);
+
+      // Set column widths for Course Outcomes
+      const coColumnWidths = [
+        { wch: 20 },  // Course
+        { wch: 10 },  // CO No.
+        { wch: 60 },  // Course Outcomes
+        { wch: 20 }   // Knowledge Level
+      ];
+      ws1['!cols'] = coColumnWidths;
+
+      // Create the CO-PO Matrix
+      const matrixHeaders = [
+        "Course Outcomes (COs)",
+        ...Array(12).fill().map((_, i) => `PO${i + 1}`)
+      ];
+
+      const matrixData = coPOMatrix.map(matrix => [
+        matrix.courseOutcome,
+        matrix.po1 || '-',
+        matrix.po2 || '-',
+        matrix.po3 || '-',
+        matrix.po4 || '-',
+        matrix.po5 || '-',
+        matrix.po6 || '-',
+        matrix.po7 || '-',
+        matrix.po8 || '-',
+        matrix.po9 || '-',
+        matrix.po10 || '-',
+        matrix.po11 || '-',
+        matrix.po12 || '-'
+      ]);
+
+      // Add the AVERAGE row
+      const averages = calculateAverages().map(avg => avg || '-');
+      matrixData.push(["AVERAGE", ...averages]);
+
+      const matrixTable = [
+        ["CO-PO Matrix"],  // Title row
+        matrixHeaders,     // Headers
+        ...matrixData      // Data + Average row
+      ];
+
+      const ws2 = XLSX.utils.aoa_to_sheet(matrixTable);
+
+      // Set column widths for CO-PO Matrix
+      const matrixColumnWidths = [
+        { wch: 60 },  // Course Outcomes column
+        ...Array(12).fill({ wch: 8 })  // PO columns
+      ];
+      ws2['!cols'] = matrixColumnWidths;
+
+      // Style configurations
+      const headerStyle = {
+        font: { bold: true },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
+      };
+
+      // Apply styles to both worksheets
+      ['!ref'].forEach(ref => {
+        if (ws1[ref]) {
+          const range = XLSX.utils.decode_range(ws1[ref]);
+          for (let R = range.s.r; R <= range.e.r; R++) {
+            for (let C = range.s.c; C <= range.e.c; C++) {
+              const cell_address = { c: C, r: R };
+              const cell_ref = XLSX.utils.encode_cell(cell_address);
+              if (!ws1[cell_ref]) continue;
+              ws1[cell_ref].s = headerStyle;
+            }
+          }
+        }
+      });
+
+      // Add the sheets to workbook
+      XLSX.utils.book_append_sheet(wb, ws1, 'Course Outcomes');
+      XLSX.utils.book_append_sheet(wb, ws2, 'CO-PO Matrix');
+
+      // Write to file
+      XLSX.writeFile(wb, `${selectedCourseName}_Course_Outcomes.xlsx`);
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      alert('Error exporting to Excel. Please try again.');
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
@@ -371,15 +488,6 @@ const CourseOutcome = () => {
                   </tbody>
                 </table>
               </div>
-
-              <div className="mt-6 flex justify-end space-x-4">
-                <button
-                  onClick={handleSave}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
-                >
-                  Save
-                </button>
-              </div>
             </div>
 
             <h2 className="text-xl font-bold mt-8 mb-4 text-gray-700">CO-PO Matrix</h2>
@@ -426,12 +534,26 @@ const CourseOutcome = () => {
               </tbody>
             </table>
 
-            <div className="mt-4 text-center space-x-4">
+            <div className="mt-4 flex justify-between items-center">
+              <div className="space-x-4">
+                <button
+                  onClick={exportToExcel}
+                  className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                >
+                  Export to Excel
+                </button>
+                <button
+                  onClick={handleResetTables}
+                  className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                >
+                  Reset Table
+                </button>
+              </div>
               <button
-                onClick={handleResetTables}
-                className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                onClick={handleSave}
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
               >
-                Reset Table
+                Save
               </button>
             </div>
           </div>
