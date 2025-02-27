@@ -19,7 +19,7 @@ const InternalMarks = () => {
       if (selectedYear && selectedSemester) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
           // Check if API response contains subjects or a message
           if (
@@ -47,11 +47,11 @@ const InternalMarks = () => {
       if (selectedSubject && examType) {
         try {
           const studentsResponse = await axios.get(
-            `http://localhost:3000/api/students/filtered?branch=${selectedBranch}&year=${selectedYear}&semester=${selectedSemester}&section=${selectedSection}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/students/filtered?branch=${selectedBranch}&year=${selectedYear}&semester=${selectedSemester}&section=${selectedSection}`
           );
 
           const marksResponse = await axios.get(
-            `http://localhost:3000/api/internalmarks/${selectedSubject}/${examType}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/internalmarks/${selectedSubject}/${examType}`
           );
 
           // Combine students with their marks
@@ -108,7 +108,7 @@ const InternalMarks = () => {
         const { _id, marks } = student;
         if (marks) {
           const existingMarkEntry = await axios.get(
-            `http://localhost:3000/api/internalmarks/${selectedSubject}/${examType}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/internalmarks/${selectedSubject}/${examType}`
           );
           const markEntryToUpdate = existingMarkEntry.data.find(
             (mark) => mark.student._id === _id
@@ -117,14 +117,14 @@ const InternalMarks = () => {
           if (markEntryToUpdate) {
             // Update existing marks entry (PUT request)
             await axios.put(
-              `http://localhost:3000/api/internalmarks/${selectedSubject}/${examType}/${markEntryToUpdate._id}`,
+              `${process.env.REACT_APP_BACKEND_URI}/api/internalmarks/${selectedSubject}/${examType}/${markEntryToUpdate._id}`,
               {
                 marks, // Now directly includes the updated marks
               }
             );
           } else {
             // Create a new marks entry (POST request)
-            await axios.post(`http://localhost:3000/api/internalmarks`, {
+            await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/internalmarks`, {
               student: _id,
               subject: selectedSubject,
               examType,

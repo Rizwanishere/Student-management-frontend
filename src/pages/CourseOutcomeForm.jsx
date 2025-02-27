@@ -27,7 +27,7 @@ const CourseOutcome = () => {
       if (selectedYear && selectedSemester) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
           setSubjectOptions(response.data.length ? response.data : []);
         } catch (error) {
@@ -44,8 +44,8 @@ const CourseOutcome = () => {
     if (selectedCourseName) {
       try {
         const [coResponse, coPoResponse] = await Promise.all([
-          axios.get(`http://localhost:3000/api/co/getCourseOutcomes/${selectedCourseName}`),
-          axios.get(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`)
+          axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/co/getCourseOutcomes/${selectedCourseName}`),
+          axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/co/getCOPOMatrix/${selectedCourseName}`)
         ]);
 
         setCourseOutcomes(coResponse.data && coResponse.data.length > 0 ? coResponse.data : []);
@@ -120,7 +120,7 @@ const CourseOutcome = () => {
       // Save new course outcomes
       const newOutcomes = courseOutcomes.filter(outcome => !outcome._id);
       for (const outcome of newOutcomes) {
-        await axios.post('http://localhost:3000/api/co/createCourseOutcome', {
+        await axios.post('${process.env.REACT_APP_BACKEND_URI}/api/co/createCourseOutcome', {
           ...outcome,
           course: selectedCourseName,
         });
@@ -130,7 +130,7 @@ const CourseOutcome = () => {
       for (const outcomeId of modifiedOutcomes) {
         const outcome = courseOutcomes.find(co => co._id === outcomeId);
         if (outcome) {
-          await axios.patch(`http://localhost:3000/api/co/updateCourseOutcome/${outcomeId}`, {
+          await axios.patch(`${process.env.REACT_APP_BACKEND_URI}/api/co/updateCourseOutcome/${outcomeId}`, {
             coNo: outcome.coNo,
             courseOutcome: outcome.courseOutcome,
             knowledgeLevel: outcome.knowledgeLevel,
@@ -143,7 +143,7 @@ const CourseOutcome = () => {
       for (const matrixId of modifiedMatrices) {
         const matrix = coPOMatrix.find(m => m._id === matrixId);
         if (matrix) {
-          await axios.patch(`http://localhost:3000/api/co/updateCOPOMatrix/${matrixId}`, matrix);
+          await axios.patch(`${process.env.REACT_APP_BACKEND_URI}/api/co/updateCOPOMatrix/${matrixId}`, matrix);
         }
       }
 
@@ -167,7 +167,7 @@ const CourseOutcome = () => {
     if (!isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomesBySubject/${selectedCourseName}`);
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URI}/api/co/deleteCourseOutcomesBySubject/${selectedCourseName}`);
       setCourseOutcomes([]);
       setCoPOMatrix([]);
       setModifiedOutcomes(new Set());
@@ -212,7 +212,7 @@ const CourseOutcome = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:3000/api/co/deleteCourseOutcomeById/${id}`);
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URI}/api/co/deleteCourseOutcomeById/${id}`);
       setCourseOutcomes(prevOutcomes => prevOutcomes.filter(outcome => outcome._id !== id));
       setCoPOMatrix(prevMatrix => prevMatrix.filter(matrix => matrix.courseOutcome !== courseOutcome));
       alert('Course outcome deleted successfully!');
@@ -225,7 +225,7 @@ const CourseOutcome = () => {
   const exportToExcel = async () => {
     try {
         // Fetch CO-PO Matrix Data from the API
-        const response = await fetch(`http://localhost:3000/api/co/getCOPOMatrix/${selectedCourseName}`);
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/co/getCOPOMatrix/${selectedCourseName}`);
         if (!response.ok) throw new Error("Failed to fetch CO-PO Matrix data");
         const fetchedCoPOMatrix = await response.json();
 

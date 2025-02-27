@@ -32,7 +32,7 @@ const AttendanceEntry = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:3000/api/students/attendance/month/${selectedMonth}/year/${selectedYearAttendance}/period/${selectedPeriod}`
+          `${process.env.REACT_APP_BACKEND_URI}/api/students/attendance/month/${selectedMonth}/year/${selectedYearAttendance}/period/${selectedPeriod}`
         );
         setAttendanceData(response.data);
         setShowTable(true);
@@ -50,7 +50,7 @@ const AttendanceEntry = () => {
       if (selectedYear && selectedSemester && selectedSection) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/students/filtered?year=${selectedYear}&semester=${selectedSemester}&section=${selectedSection}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/students/filtered?year=${selectedYear}&semester=${selectedSemester}&section=${selectedSection}`
           );
           setStudents(response.data);
         } catch (error) {
@@ -66,7 +66,7 @@ const AttendanceEntry = () => {
       if (selectedYear && selectedSemester) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
           // Check if API response contains subjects or a message
           if (

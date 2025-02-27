@@ -21,7 +21,7 @@ const Marks = () => {
       if (selectedYear && selectedSemester) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
           // Check if API response contains subjects or a message
           if (
@@ -51,12 +51,12 @@ const Marks = () => {
         try {
           // Fetch students based on selected criteria
           const studentsResponse = await axios.get(
-            `http://localhost:3000/api/students/filtered?branch=${selectedBranch}&year=${selectedYear}&semester=${selectedSemester}&section=${selectedSection}&subjectId=${selectedSubject}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/students/filtered?branch=${selectedBranch}&year=${selectedYear}&semester=${selectedSemester}&section=${selectedSection}&subjectId=${selectedSubject}`
           );
 
           // Fetch marks for the students
           const marksResponse = await axios.get(
-            `http://localhost:3000/api/marks/${selectedSubject}/${examType}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/marks/${selectedSubject}/${examType}`
           );
 
           // Map marks to the corresponding students
@@ -126,7 +126,7 @@ const Marks = () => {
         // Check if marks entry exists
         if (marks) {
           const existingMarkEntry = await axios.get(
-            `http://localhost:3000/api/marks/${selectedSubject}/${examType}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/marks/${selectedSubject}/${examType}`
           );
 
           const markEntryToUpdate = existingMarkEntry.data.find(
@@ -136,7 +136,7 @@ const Marks = () => {
           if (markEntryToUpdate) {
             // Make PUT request to update existing marks
             await axios.put(
-              `http://localhost:3000/api/marks/${selectedSubject}/${examType}/${markEntryToUpdate._id}`,
+              `${process.env.REACT_APP_BACKEND_URI}/api/marks/${selectedSubject}/${examType}/${markEntryToUpdate._id}`,
               {
                 student: _id,
                 subject: selectedSubject,
@@ -165,7 +165,7 @@ const Marks = () => {
   // Handle saving new marks for a student
   const handleSaveNewMarks = async (studentId, marks) => {
     try {
-      await axios.post(`http://localhost:3000/api/marks`, {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/marks`, {
         student: studentId,
         subject: selectedSubject,
         examType: examType,

@@ -35,7 +35,7 @@ const ProgressReport = () => {
       const formattedStartDate = moment(startDate).format("DD/MM/YYYY");
       const formattedEndDate = moment(endDate).format("DD/MM/YYYY");
       const response = await axios.get(
-        `http://localhost:3000/api/students/${rollNo}/data`,
+        `${process.env.REACT_APP_BACKEND_URI}/api/students/${rollNo}/data`,
         { params: { startDate: formattedStartDate, endDate: formattedEndDate } }
       );
       setReportData(response.data);

@@ -24,7 +24,7 @@ const Attendance = () => {
     if (filters.period) {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/students/attendance/month/${filters.month}/year/${year}/period/${filters.period}`
+          `${process.env.REACT_APP_BACKEND_URI}/api/students/attendance/month/${filters.month}/year/${year}/period/${filters.period}`
         );
         console.log("Attendance Data:", response.data);
         setAttendanceData(response.data); // Assuming `attendanceData` is a state variable to hold the attendance data
@@ -39,7 +39,7 @@ const Attendance = () => {
     if (filters.year && filters.semester) {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${filters.year}/semester/${filters.semester}`
+          `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${filters.year}/semester/${filters.semester}`
         );
         if (response.data.length > 0) {
           setSubjects(response.data); // Update with fetched subjects
@@ -60,7 +60,7 @@ const Attendance = () => {
       if (selectedBranch) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/students/filtered?branch=${selectedBranch}&year=${filters.year}&semester=${filters.semester}&section=${filters.section}&subjectId=${filters.subject}&period=${filters.period}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/students/filtered?branch=${selectedBranch}&year=${filters.year}&semester=${filters.semester}&section=${filters.section}&subjectId=${filters.subject}&period=${filters.period}`
           );
           setStudents(response.data);
         } catch (error) {
@@ -137,7 +137,7 @@ const Attendance = () => {
             // If _id exists, do PUT (update)
             console.log("Attempting to update attendance:", record); // Check PUT request
             const response = await axios.put(
-              `http://localhost:3000/api/students/attendance/${_id}`,
+              `${process.env.REACT_APP_BACKEND_URI}/api/students/attendance/${_id}`,
               {
                 student,
                 subject,
@@ -183,7 +183,7 @@ const Attendance = () => {
     try {
       console.log("Creating new attendance for student:", studentId); // Check if this is triggered
       const response = await axios.post(
-        `http://localhost:3000/api/students/attendance`,
+        `${process.env.REACT_APP_BACKEND_URI}/api/students/attendance`,
         {
           student: studentId,
           subject: subject,

@@ -23,7 +23,7 @@ const MarksReport = () => {
       if (selectedYear && selectedSemester) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
           );
           // Check if API response contains subjects or a message
           if (
@@ -52,7 +52,7 @@ const MarksReport = () => {
       try {
         setLoading(true);
         const marksResponse = await axios.get(
-          `http://localhost:3000/api/marks/${selectedYear}/${selectedSemester}/${selectedSection}/${examType}`
+          `${process.env.REACT_APP_BACKEND_URI}/api/marks/${selectedYear}/${selectedSemester}/${selectedSection}/${examType}`
         );
         setMarksData(marksResponse.data);
         setShowTable(true); // Show table after fetching marks

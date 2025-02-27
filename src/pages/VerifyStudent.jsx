@@ -8,7 +8,7 @@ const VerifyStudent = () => {
   const fetchStudentMarks = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/students/getall/${rollNo}`
+        `${process.env.REACT_APP_BACKEND_URI}/api/students/getall/${rollNo}`
       );
       setStudentData(response.data);
     } catch (error) {

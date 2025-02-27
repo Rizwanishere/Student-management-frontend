@@ -16,7 +16,7 @@ function PostStudent() {
 
       if (Array.isArray(records)) {
         for (const record of records) {
-          const response = await fetch("http://localhost:3000/api/students", {
+          const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/students`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
