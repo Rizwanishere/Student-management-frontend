@@ -127,6 +127,100 @@ const AttainmentReport = () => {
     }
   };
 
+  // Calculate statistics for a column
+  const calculateStats = (dataKey) => {
+    if (!students || students.length === 0)
+      return {
+        attempted: 0,
+        secured: 0,
+        percentage: 0,
+        level: 0,
+      };
+
+    // Get values from the relevant column
+    let values = [];
+
+    if (dataKey === "Q1") {
+      values = students.map((student) => student.internalMarks?.Q1 || 0);
+    } else if (dataKey === "Q2") {
+      values = students.map((student) => student.internalMarks?.Q2 || 0);
+    } else if (dataKey === "Q3") {
+      values = students.map((student) => student.internalMarks?.Q3 || 0);
+    } else if (dataKey === "saqs") {
+      values = students.map((student) => student.internalMarks?.saqs || 0);
+    } else if (dataKey === "surprise") {
+      values = students.map((student) => student.surpriseTestAverage || 0);
+    } else if (dataKey === "assignment") {
+      values = students.map((student) => student.assignmentAverage || 0);
+    } else if (dataKey === "total") {
+      values = students.map((student) => {
+        const q1Score = student.internalMarks?.Q1 || 0;
+        const q2Score = student.internalMarks?.Q2 || 0;
+        const q3Score = student.internalMarks?.Q3 || 0;
+        const saqScore = student.internalMarks?.saqs || 0;
+        const surpriseScore = student.surpriseTestAverage || 0;
+        const assignmentScore = student.assignmentAverage || 0;
+        return (
+          q1Score +
+          q2Score +
+          q3Score +
+          saqScore +
+          surpriseScore +
+          assignmentScore
+        );
+      });
+    }
+
+    // Count students who actually attempted (score > 0)
+    const attempted = values.filter((value) => value > 0).length;
+
+    // Calculate threshold based on column type
+    let threshold = 3.5; // Default threshold for question scores
+    // ... rest of threshold calculations ...
+
+    // Calculate statistics
+    const secured = values.filter((value) => value >= threshold).length;
+    const percentage =
+      attempted > 0 ? Math.round((secured / attempted) * 100) : 0;
+
+    // Determine attainment level
+    let level = 0;
+    if (percentage >= 70) level = 3;
+    else if (percentage > 50) level = 2;
+    else if (percentage > 0) level = 1;
+
+    return {
+      attempted,
+      secured,
+      percentage,
+      level,
+    };
+  };
+
+  // Calculate CO averages
+  const calculateCOAverages = () => {
+    if (students.length === 0) return { co1: 0, co2: 0, co3: 0 };
+
+    // Get individual attainment levels
+    const q1Level = calculateStats("Q1").level;
+    const q2Level = calculateStats("Q2").level;
+    const q3Level = calculateStats("Q3").level;
+    const saqLevel = calculateStats("saqs").level;
+    const surpriseLevel = calculateStats("surprise").level;
+    const assignmentLevel = calculateStats("assignment").level;
+
+    // Calculate CO1 average (Q1, surprise test, assignment)
+    const co1 = ((q1Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+
+    // Calculate CO2 average (Q2, surprise test, assignment)
+    const co2 = ((q2Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+
+    // Calculate CO3 average (Q3, surprise test, assignment)
+    const co3 = ((q3Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+
+    return { co1, co2, co3 };
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4 mb-36 mt-10">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -301,7 +395,7 @@ const AttainmentReport = () => {
 
                           {/* Q1 CO scores */}
                           <td className="border px-2 py-1 text-center">
-                            {q1Score || ""}
+                            {q1Score || 0}
                           </td>
                           <td className="border px-2 py-1 text-center"></td>
                           <td className="border px-2 py-1 text-center"></td>
@@ -309,26 +403,26 @@ const AttainmentReport = () => {
                           {/* Q2 CO scores */}
                           <td className="border px-2 py-1 text-center"></td>
                           <td className="border px-2 py-1 text-center">
-                            {q2Score || ""}
+                            {q2Score || 0}
                           </td>
                           <td className="border px-2 py-1 text-center"></td>
 
                           {/* Q3 CO scores */}
                           <td className="border px-2 py-1 text-center"></td>
-                          <td className="border px-2 py-1 text-center">
-                            {q3Score || ""}
-                          </td>
                           <td className="border px-2 py-1 text-center"></td>
+                          <td className="border px-2 py-1 text-center">
+                            {q3Score || 0}
+                          </td>
 
                           {/* Other scores */}
                           <td className="border px-2 py-1 text-center">
-                            {saqScore || ""}
+                            {saqScore || 0}
                           </td>
                           <td className="border px-2 py-1 text-center">
-                            {surpriseScore || ""}
+                            {surpriseScore || 0}
                           </td>
                           <td className="border px-2 py-1 text-center">
-                            {assignmentScore || ""}
+                            {assignmentScore || 0}
                           </td>
 
                           {/* Total */}
@@ -350,8 +444,223 @@ const AttainmentReport = () => {
                       </td>
                     </tr>
                   )}
+
+                  {/* Calculation Rows */}
+                  {students.length > 0 && (
+                    <>
+                      {/* No. of Students Attempted */}
+                      <tr className="bg-slate-50">
+                        <td
+                          colSpan="3"
+                          className="border px-2 py-1 text-right font-semibold"
+                        >
+                          No. of Students Attempted
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q1").attempted}
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q2").attempted}
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q3").attempted}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("saqs").attempted}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("surprise").attempted}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("assignment").attempted}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {/* {calculateStats("total").attempted} */}
+                        </td>
+                      </tr>
+
+                      {/* No. of Students secured >Threshold marks */}
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="border px-2 py-1 text-right font-semibold"
+                        >
+                          No. of Students secured &gt;Threshold marks
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q1").secured}
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q2").secured}
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q3").secured}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("saqs").secured}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("surprise").secured}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("assignment").secured}
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {/* {calculateStats("total").secured} */}
+                        </td>
+                      </tr>
+
+                      {/* % of Students secured >Threshold marks */}
+                      <tr className="bg-slate-50">
+                        <td
+                          colSpan="3"
+                          className="border px-2 py-1 text-right font-semibold"
+                        >
+                          % of Students secured &gt;Threshold marks
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q1").percentage}%
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q2").percentage}%
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q3").percentage}%
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("saqs").percentage}%
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("surprise").percentage}%
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("assignment").percentage}%
+                        </td>
+                        <td className="border px-2 py-1 text-center">
+                          {/* {calculateStats("total").percentage}% */}
+                        </td>
+                      </tr>
+
+                      {/* Attainment Level */}
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="border px-2 py-1 text-right font-semibold"
+                        >
+                          Attainment Level
+                        </td>
+                        <td className="border px-2 py-1 text-center font-bold">
+                          {calculateStats("Q1").level}
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center font-bold">
+                          {calculateStats("Q2").level}
+                        </td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center"></td>
+                        <td className="border px-2 py-1 text-center font-bold"></td>
+                        <td className="border px-2 py-1 text-center">
+                          {calculateStats("Q3").level}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-bold">
+                          {calculateStats("saqs").level}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-bold">
+                          {calculateStats("surprise").level}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-bold">
+                          {calculateStats("assignment").level}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-bold">
+                          {/* {calculateStats("total").level} */}
+                        </td>
+                      </tr>
+                    </>
+                  )}
                 </tbody>
               </table>
+
+              {/* CIE Attainments Table */}
+              {students.length > 0 && (
+                <table className="w-full border-collapse mt-6">
+                  <thead>
+                    <tr className="bg-slate-50">
+                      <th
+                        colSpan="7"
+                        className="border px-2 py-2 text-center font-bold text-lg"
+                      >
+                        {selectedExamType} ATTAINMENTS
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td
+                        className="border px-2 py-2 text-center font-semibold bg-slate-50"
+                        style={{ width: "25%" }}
+                      >
+                        CO AVERAGE
+                      </td>
+                      <td
+                        className="border px-2 py-2 text-center font-semibold"
+                        style={{ width: "12.5%" }}
+                      >
+                        C211.1
+                      </td>
+                      <td
+                        className="border px-2 py-2 text-center font-bold text-xl"
+                        style={{ width: "12.5%" }}
+                      >
+                        {calculateCOAverages().co1}
+                      </td>
+                      <td
+                        className="border px-2 py-2 text-center font-semibold"
+                        style={{ width: "12.5%" }}
+                      >
+                        C211.2
+                      </td>
+                      <td
+                        className="border px-2 py-2 text-center font-bold text-xl"
+                        style={{ width: "12.5%" }}
+                      >
+                        {calculateCOAverages().co2}
+                      </td>
+                      <td
+                        className="border px-2 py-2 text-center font-semibold"
+                        style={{ width: "12.5%" }}
+                      >
+                        C211.3
+                      </td>
+                      <td
+                        className="border px-2 py-2 text-center font-bold text-xl"
+                        style={{ width: "12.5%" }}
+                      >
+                        {calculateCOAverages().co3}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
         </div>
