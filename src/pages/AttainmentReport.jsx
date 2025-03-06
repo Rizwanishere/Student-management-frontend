@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Loader from "../utils/Loader";
+import * as XLSX from "xlsx";
 
 const AttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -127,6 +128,31 @@ const AttainmentReport = () => {
     }
   };
 
+  // Get CO labels based on selected exam type
+  const getCOLabels = () => {
+    if (selectedExamType === "CIE-1") {
+      return {
+        q1: ["CO1", "CO2", "CO3"],
+        q2: ["CO1", "CO2", "CO3"],
+        q3: ["CO1", "CO2", "CO3"],
+        coNumbers: ["C211.1", "C211.2", "C211.3"],
+      };
+    } else if (selectedExamType === "CIE-2") {
+      return {
+        q1: ["CO3", "CO4", "CO5"],
+        q2: ["CO3", "CO4", "CO5"],
+        q3: ["CO3", "CO4", "CO5"],
+        coNumbers: ["C211.3", "C211.4", "C211.5"],
+      };
+    }
+    return {
+      q1: ["CO1", "CO2", "CO3"],
+      q2: ["CO1", "CO2", "CO3"],
+      q3: ["CO1", "CO2", "CO3"],
+      coNumbers: ["C211.1", "C211.2", "C211.3"],
+    };
+  };
+
   // Calculate statistics for a column
   const calculateStats = (dataKey) => {
     if (!students || students.length === 0)
@@ -197,9 +223,14 @@ const AttainmentReport = () => {
     };
   };
 
-  // Calculate CO averages
+  // Calculate CO averages based on selected exam type
   const calculateCOAverages = () => {
-    if (students.length === 0) return { co1: 0, co2: 0, co3: 0 };
+    if (students.length === 0) {
+      if (selectedExamType === "CIE-2") {
+        return { co3: 0, co4: 0, co5: 0 };
+      }
+      return { co1: 0, co2: 0, co3: 0 };
+    }
 
     // Get individual attainment levels
     const q1Level = calculateStats("Q1").level;
@@ -209,17 +240,278 @@ const AttainmentReport = () => {
     const surpriseLevel = calculateStats("surprise").level;
     const assignmentLevel = calculateStats("assignment").level;
 
-    // Calculate CO1 average (Q1, surprise test, assignment)
-    const co1 = ((q1Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+    if (selectedExamType === "CIE-2") {
+      // Calculate CO3 average (Q1, surprise test, assignment)
+      const co3 = ((q1Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
 
-    // Calculate CO2 average (Q2, surprise test, assignment)
-    const co2 = ((q2Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+      // Calculate CO4 average (Q2, surprise test, assignment)
+      const co4 = ((q2Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
 
-    // Calculate CO3 average (Q3, surprise test, assignment)
-    const co3 = ((q3Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+      // Calculate CO5 average (Q3, surprise test, assignment)
+      const co5 = ((q3Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
 
-    return { co1, co2, co3 };
+      return { co3, co4, co5 };
+    } else {
+      // Calculate CO1 average (Q1, surprise test, assignment)
+      const co1 = ((q1Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+
+      // Calculate CO2 average (Q2, surprise test, assignment)
+      const co2 = ((q2Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+
+      // Calculate CO3 average (Q3, surprise test, assignment)
+      const co3 = ((q3Level + surpriseLevel + assignmentLevel) / 3).toFixed(1);
+
+      return { co1, co2, co3 };
+    }
   };
+
+  // Export data to Excel
+  const exportToExcel = () => {
+    if (students.length === 0) return;
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+
+    // Prepare data array for the main table
+    const mainData = [];
+    const coLabels = getCOLabels();
+
+    // Headers
+    mainData.push([
+      "S.No.",
+      "Roll. No.",
+      "Name",
+      "Q1 (7)",
+      "",
+      "",
+      "Q2 (7)",
+      "",
+      "",
+      "Q3 (7)",
+      "",
+      "",
+      "Short Answer (6)",
+      "Surprise Test (10)",
+      "Assignment (10)",
+      `${selectedExamType} (40)`,
+    ]);
+
+    mainData.push([
+      "",
+      "",
+      "",
+      coLabels.q1[0],
+      coLabels.q1[1],
+      coLabels.q1[2],
+      coLabels.q2[0],
+      coLabels.q2[1],
+      coLabels.q2[2],
+      coLabels.q3[0],
+      coLabels.q3[1],
+      coLabels.q3[2],
+      "",
+      "",
+      "",
+      "",
+    ]);
+
+    // Student data
+    students.forEach((student, index) => {
+      const q1Score = student.internalMarks?.Q1 || 0;
+      const q2Score = student.internalMarks?.Q2 || 0;
+      const q3Score = student.internalMarks?.Q3 || 0;
+      const saqScore = student.internalMarks?.saqs || 0;
+      const surpriseScore = student.surpriseTestAverage || 0;
+      const assignmentScore = student.assignmentAverage || 0;
+
+      const totalScore =
+        q1Score +
+        q2Score +
+        q3Score +
+        saqScore +
+        surpriseScore +
+        assignmentScore;
+
+      mainData.push([
+        index + 1,
+        student.student.rollNo,
+        student.student.name,
+        q1Score,
+        "", // Empty cells for other CO columns
+        "",
+        "", // Empty cells for other CO columns
+        q2Score,
+        "",
+        "", // Empty cells for other CO columns
+        "",
+        q3Score,
+        saqScore,
+        surpriseScore,
+        assignmentScore,
+        totalScore,
+      ]);
+    });
+
+    // Add calculation rows
+    mainData.push([
+      "",
+      "",
+      "No. of Students Attempted",
+      calculateStats("Q1").attempted,
+      "",
+      "",
+      "",
+      calculateStats("Q2").attempted,
+      "",
+      "",
+      "",
+      calculateStats("Q3").attempted,
+      calculateStats("saqs").attempted,
+      calculateStats("surprise").attempted,
+      calculateStats("assignment").attempted,
+      "",
+    ]);
+
+    mainData.push([
+      "",
+      "",
+      "No. of Students secured >Threshold marks",
+      calculateStats("Q1").secured,
+      "",
+      "",
+      "",
+      calculateStats("Q2").secured,
+      "",
+      "",
+      "",
+      calculateStats("Q3").secured,
+      calculateStats("saqs").secured,
+      calculateStats("surprise").secured,
+      calculateStats("assignment").secured,
+      "",
+    ]);
+
+    mainData.push([
+      "",
+      "",
+      "% of Students secured >Threshold marks",
+      `${calculateStats("Q1").percentage}%`,
+      "",
+      "",
+      "",
+      `${calculateStats("Q2").percentage}%`,
+      "",
+      "",
+      "",
+      `${calculateStats("Q3").percentage}%`,
+      `${calculateStats("saqs").percentage}%`,
+      `${calculateStats("surprise").percentage}%`,
+      `${calculateStats("assignment").percentage}%`,
+      "",
+    ]);
+
+    mainData.push([
+      "",
+      "",
+      "Attainment Level",
+      calculateStats("Q1").level,
+      "",
+      "",
+      "",
+      calculateStats("Q2").level,
+      "",
+      "",
+      "",
+      calculateStats("Q3").level,
+      calculateStats("saqs").level,
+      calculateStats("surprise").level,
+      calculateStats("assignment").level,
+      "",
+    ]);
+
+    // Add empty row
+    mainData.push([]);
+
+    // Add attainments table
+    const coAverages = calculateCOAverages();
+    mainData.push([`${selectedExamType} ATTAINMENTS`, "", "", "", "", "", ""]);
+
+    if (selectedExamType === "CIE-2") {
+      mainData.push([
+        "CO AVERAGE",
+        coLabels.coNumbers[0],
+        coAverages.co3,
+        coLabels.coNumbers[1],
+        coAverages.co4,
+        coLabels.coNumbers[2],
+        coAverages.co5,
+      ]);
+    } else {
+      mainData.push([
+        "CO AVERAGE",
+        coLabels.coNumbers[0],
+        coAverages.co1,
+        coLabels.coNumbers[1],
+        coAverages.co2,
+        coLabels.coNumbers[2],
+        coAverages.co3,
+      ]);
+    }
+
+    // Create worksheet and add to workbook
+    const ws = XLSX.utils.aoa_to_sheet(mainData);
+
+    // Set column widths
+    const columnWidths = [
+      { wch: 5 }, // S.No.
+      { wch: 10 }, // Roll No
+      { wch: 25 }, // Name
+      { wch: 8 }, // Q1
+      { wch: 8 }, // Empty
+      { wch: 8 }, // Empty
+      { wch: 8 }, // Empty
+      { wch: 8 }, // Q2
+      { wch: 8 }, // Empty
+      { wch: 8 }, // Empty
+      { wch: 8 }, // Empty
+      { wch: 8 }, // Q3
+      { wch: 12 }, // Short Answer
+      { wch: 15 }, // Surprise Test
+      { wch: 15 }, // Assignment
+      { wch: 12 }, // Total
+    ];
+
+    ws["!cols"] = columnWidths;
+
+    // Add styling by merging cells (headers)
+    ws["!merges"] = [
+      // Merge header cells
+      { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // S.No.
+      { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Roll. No.
+      { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } }, // Name
+      { s: { r: 0, c: 3 }, e: { r: 0, c: 5 } }, // Q1 (7)
+      { s: { r: 0, c: 6 }, e: { r: 0, c: 8 } }, // Q2 (7)
+      { s: { r: 0, c: 9 }, e: { r: 0, c: 11 } }, // Q3 (7)
+      { s: { r: 0, c: 12 }, e: { r: 1, c: 12 } }, // Short Answer
+      { s: { r: 0, c: 13 }, e: { r: 1, c: 13 } }, // Surprise Test
+      { s: { r: 0, c: 14 }, e: { r: 1, c: 14 } }, // Assignment
+      { s: { r: 0, c: 15 }, e: { r: 1, c: 15 } }, // Total
+
+      // Attainments header
+      {
+        s: { r: mainData.length - 2, c: 0 },
+        e: { r: mainData.length - 2, c: 6 },
+      },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, `${selectedExamType} Report`);
+
+    // Generate Excel file and trigger download
+    XLSX.writeFile(wb, `${selectedExamType}_Attainment_Report.xlsx`);
+  };
+
+  // Get CO data for display based on exam type
+  const coData = getCOLabels();
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 mb-36 mt-10">
@@ -314,6 +606,36 @@ const AttainmentReport = () => {
             <div className="text-center text-red-500 py-4">{error}</div>
           )}
 
+          {!loading && !error && selectedExamType && students.length > 0 && (
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={exportToExcel}
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded flex items-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-2"
+                >
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M8 13h2" />
+                  <path d="M8 17h2" />
+                  <path d="M14 13h2" />
+                  <path d="M14 17h2" />
+                </svg>
+                Export to Excel
+              </button>
+            </div>
+          )}
+
           {!loading && !error && selectedExamType && (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
@@ -351,15 +673,33 @@ const AttainmentReport = () => {
                     </th>
                   </tr>
                   <tr className="bg-slate-50">
-                    <th className="border px-2 py-1 text-center">CO1</th>
-                    <th className="border px-2 py-1 text-center">CO2</th>
-                    <th className="border px-2 py-1 text-center">CO3</th>
-                    <th className="border px-2 py-1 text-center">CO1</th>
-                    <th className="border px-2 py-1 text-center">CO2</th>
-                    <th className="border px-2 py-1 text-center">CO3</th>
-                    <th className="border px-2 py-1 text-center">CO1</th>
-                    <th className="border px-2 py-1 text-center">CO2</th>
-                    <th className="border px-2 py-1 text-center">CO3</th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q1[0]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q1[1]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q1[2]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q2[0]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q2[1]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q2[2]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q3[0]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q3[1]}
+                    </th>
+                    <th className="border px-2 py-1 text-center">
+                      {coData.q3[2]}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
