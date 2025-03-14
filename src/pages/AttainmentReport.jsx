@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Loader from "../utils/Loader";
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const AttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -278,8 +280,8 @@ const AttainmentReport = () => {
 
     // Headers
     mainData.push([
-      "S.No.",
-      "Roll. No.",
+      "S.No",
+      "Roll. No",
       "Name",
       "Q1 (7)",
       "",
@@ -463,7 +465,7 @@ const AttainmentReport = () => {
 
     // Set column widths
     const columnWidths = [
-      { wch: 5 }, // S.No.
+      { wch: 5 }, // S.No
       { wch: 10 }, // Roll No
       { wch: 25 }, // Name
       { wch: 8 }, // Q1
@@ -486,8 +488,8 @@ const AttainmentReport = () => {
     // Add styling by merging cells (headers)
     ws["!merges"] = [
       // Merge header cells
-      { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // S.No.
-      { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Roll. No.
+      { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // S.No
+      { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Roll. No
       { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } }, // Name
       { s: { r: 0, c: 3 }, e: { r: 0, c: 5 } }, // Q1 (7)
       { s: { r: 0, c: 6 }, e: { r: 0, c: 8 } }, // Q2 (7)
@@ -509,6 +511,283 @@ const AttainmentReport = () => {
     // Generate Excel file and trigger download
     XLSX.writeFile(wb, `${selectedExamType}_Attainment_Report.xlsx`);
   };
+
+  // Export data to PDF
+  const exportToPDF = async () => {
+    if (students.length === 0) return;
+
+    // Create a wrapper div to contain both tables for export
+    const wrapper = document.createElement("div");
+    wrapper.id = "pdf-wrapper";
+    wrapper.style.backgroundColor = "#ffffff";
+    wrapper.style.padding = "10px";
+    wrapper.style.width = "297mm"; // Landscape width
+    wrapper.style.maxWidth = "297mm";
+    wrapper.style.overflow = "visible";
+
+    // Clone the tables to avoid modifying the original ones
+    const tableOriginal = document.getElementById("attainment-table");
+    const cieTableOriginal = tableOriginal.nextElementSibling;
+
+    const tableClone = tableOriginal.cloneNode(true);
+    tableClone.classList.add("pdf-export");
+
+    // Ensure all table cells have explicit width settings
+    tableClone.querySelectorAll("th, td").forEach((cell) => {
+      // Add explicit width to cells based on content type
+      if (cell.textContent.includes("S.No")) {
+        cell.style.width = "40px";
+        cell.style.minWidth = "40px";
+      } else if (cell.textContent.includes("Roll. No")) {
+        cell.style.width = "85px";
+        cell.style.minWidth = "85px";
+      } else if (cell.textContent.includes("Name")) {
+        cell.style.width = "120px";
+        cell.style.minWidth = "60px";
+      } else if (
+        cell.textContent.includes("Short Answer") ||
+        cell.textContent.includes("Surprise Test") ||
+        cell.textContent.includes("Assignment") ||
+        cell.textContent.includes("40")
+      ) {
+        cell.style.width = "75px";
+        cell.style.minWidth = "75px";
+      } else {
+        cell.style.width = "140px";
+        cell.style.minWidth = "140px";
+      }
+    });
+
+    // Add the first table to the wrapper
+    wrapper.appendChild(tableClone);
+
+    // Add spacing between tables
+    const spacer = document.createElement("div");
+    spacer.style.height = "20px";
+    wrapper.appendChild(spacer);
+
+    // Clone and add the CIE ATTAINMENTS table if it exists
+    if (cieTableOriginal) {
+      const cieTableClone = cieTableOriginal.cloneNode(true);
+      cieTableClone.classList.add("pdf-export");
+
+      // Ensure all table cells have explicit width settings
+      cieTableClone.querySelectorAll("th, td").forEach((cell) => {
+        // Add explicit width to cells based on content type
+        if (cell.textContent.includes("S.No")) {
+          cell.style.width = "40px";
+          cell.style.minWidth = "40px";
+        } else if (cell.textContent.includes("Roll. No")) {
+          cell.style.width = "85px";
+          cell.style.minWidth = "85px";
+        } else if (cell.textContent.includes("Name")) {
+          cell.style.width = "120px";
+          cell.style.minWidth = "60px";
+        } else if (
+          cell.textContent.includes("Short Answer") ||
+          cell.textContent.includes("Surprise Test") ||
+          cell.textContent.includes("Assignment") ||
+          cell.textContent.includes("40")
+        ) {
+          cell.style.width = "75px";
+          cell.style.minWidth = "75px";
+        } else {
+          cell.style.width = "140px";
+          cell.style.minWidth = "140px";
+        }
+      });
+
+      wrapper.appendChild(cieTableClone);
+    }
+
+    // Fix for table layout and column visibility
+    Array.from(wrapper.querySelectorAll("table")).forEach((table) => {
+      table.style.width = "277mm"; // Slightly less than A4 landscape width
+      table.style.minWidth = "277mm";
+      table.style.tableLayout = "fixed"; // Fix layout to ensure headers render correctly
+
+      // Ensure all table headers are visible
+      const headers = table.querySelectorAll("th");
+      headers.forEach((header) => {
+        header.style.backgroundColor = "#e0e0e0";
+        header.style.fontWeight = "bold";
+        header.style.overflow = "visible";
+        header.style.whiteSpace = "normal";
+        header.style.height = "auto";
+        header.style.minHeight = "40px";
+        header.style.position = "relative"; // Ensure headers have a position
+        header.style.zIndex = "1"; // Set z-index to ensure visibility
+      });
+    });
+
+    // Temporarily add the wrapper to the document body for rendering
+    document.body.appendChild(wrapper);
+
+    try {
+      // PDF generation with better quality and text scaling
+      const canvas = await html2canvas(wrapper, {
+        scale: 2,
+        scrollX: 0,
+        scrollY: 0,
+        ignoreElements: (element) => element.tagName === "IFRAME",
+        onclone: (clonedDoc) => {
+          // Ensure all headers are explicitly visible before rendering
+          clonedDoc.querySelectorAll(".pdf-export th").forEach((header) => {
+            header.style.display = "table-cell";
+            header.style.visibility = "visible";
+            header.style.position = "relative";
+            header.style.zIndex = "1";
+          });
+
+          // Don't scale the tables as this can cause rendering issues
+          clonedDoc.querySelectorAll("table").forEach((table) => {
+            table.style.transform = "none";
+          });
+        },
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        width: wrapper.offsetWidth,
+        height: wrapper.offsetHeight,
+        letterRendering: true,
+        allowTaint: true, // Allow tainted canvas to handle all content
+        windowWidth: wrapper.scrollWidth,
+        windowHeight: wrapper.scrollHeight,
+      });
+
+      const imgRatio = canvas.width / canvas.height;
+      const orientation = imgRatio >= 1 ? "l" : "p"; // landscape or portrait
+
+      const pdf = new jsPDF({
+        orientation: orientation,
+        unit: "mm",
+        format: "a4",
+        compress: true,
+      });
+
+      const pdfWidth = orientation === "l" ? 297 : 210;
+      const pdfHeight = orientation === "l" ? 210 : 297;
+      const margin = 10;
+      const imgWidth = pdfWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight > pdfHeight - margin * 2) {
+        const pageContentHeight = pdfHeight - margin * 2;
+        const totalPages = Math.ceil(imgHeight / pageContentHeight);
+
+        for (let i = 0; i < totalPages; i++) {
+          if (i > 0) pdf.addPage();
+
+          const sourceY = (i * canvas.height) / totalPages;
+          const sourceHeight = canvas.height / totalPages;
+
+          const canvasForPage = document.createElement("canvas");
+          canvasForPage.width = canvas.width;
+          canvasForPage.height = sourceHeight;
+
+          const ctx = canvasForPage.getContext("2d");
+          ctx.drawImage(
+            canvas,
+            0,
+            sourceY,
+            canvas.width,
+            sourceHeight,
+            0,
+            0,
+            canvasForPage.width,
+            canvasForPage.height
+          );
+
+          const imgData = canvasForPage.toDataURL("image/jpeg", 1.0); // Use maximum quality
+          pdf.addImage(
+            imgData,
+            "JPEG",
+            margin,
+            margin,
+            imgWidth,
+            pageContentHeight
+          );
+        }
+      } else {
+        const imgData = canvas.toDataURL("image/jpeg", 1.0); // Use maximum quality
+        pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
+      }
+
+      pdf.save(`${selectedExamType}_Attainment_Report.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+    } finally {
+      document.body.removeChild(wrapper);
+    }
+  };
+
+  // Styling for the exported PDF tables
+  useEffect(() => {
+    const styleElement = document.createElement("style");
+    styleElement.innerHTML = `
+      .pdf-export {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 20px !important;
+        table-layout: fixed !important;
+      }
+      .pdf-export th, .pdf-export td {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+        text-align: center !important;
+        font-size: 12px !important;
+        word-wrap: break-word !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        position: relative !important;
+        min-height: 30px !important;
+      }
+      .pdf-export th {
+        background-color: #e0e0e0 !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        display: table-cell !important;
+        visibility: visible !important;
+        z-index: 10 !important;
+      }
+      .pdf-export th[rowspan], .pdf-export th[colspan] {
+        z-index: 20 !important; /* Higher z-index for spanned cells */
+        vertical-align: middle !important;
+      }
+      .pdf-export tr {
+        page-break-inside: avoid !important;
+      }
+      .pdf-export .text-right {
+        text-align: right !important;
+      }
+      .pdf-export .font-semibold, .pdf-export .font-bold {
+        font-weight: bold !important;
+      }
+      .pdf-export .text-lg, .pdf-export .text-xl {
+        font-size: 14px !important;
+      }
+      .pdf-export .bg-slate-50 {
+        background-color: #f1f5f9 !important;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .pdf-export th {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          background-color: #e0e0e0 !important;
+        }
+      }
+    `;
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   // Get CO data for display based on exam type
   const coData = getCOLabels();
@@ -607,7 +886,7 @@ const AttainmentReport = () => {
           )}
 
           {!loading && !error && selectedExamType && students.length > 0 && (
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end gap-4 mb-4">
               <button
                 onClick={exportToExcel}
                 className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded flex items-center"
@@ -633,19 +912,42 @@ const AttainmentReport = () => {
                 </svg>
                 Export to Excel
               </button>
+              <button
+                onClick={exportToPDF}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded flex items-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-2"
+                >
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M8 13h8" />
+                  <path d="M8 17h8" />
+                </svg>
+                Export to PDF
+              </button>
             </div>
           )}
 
           {!loading && !error && selectedExamType && (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
+              <table id="attainment-table" className="w-full border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
                     <th rowSpan="2" className="border px-2 py-1 text-center">
-                      S.No.
+                      S.No
                     </th>
                     <th rowSpan="2" className="border px-2 py-1 text-center">
-                      Roll. No.
+                      Roll. No
                     </th>
                     <th rowSpan="2" className="border px-2 py-1 text-center">
                       Name
