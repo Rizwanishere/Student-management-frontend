@@ -204,7 +204,16 @@ const AttainmentReport = () => {
 
     // Calculate threshold based on column type
     let threshold = 3.5; // Default threshold for question scores
-    // ... rest of threshold calculations ...
+
+    if (dataKey === "saqs") {
+      threshold = 3; // Threshold for Short Answer Questions
+    } else if (dataKey === "surprise") {
+      threshold = 5; // Threshold for Surprise Tests
+    } else if (dataKey === "assignment") {
+      threshold = 5; // Threshold for Assignments
+    } else if (dataKey === "total") {
+      threshold = 20; // Threshold for total score
+    }
 
     // Calculate statistics
     const secured = values.filter((value) => value >= threshold).length;
