@@ -312,10 +312,6 @@ const CourseOutcome = () => {
           );
         }
       }
-      // Calculate and save CO-PO averages
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-average/${selectedSubject}`
-      );
 
       // Increment save count and store in localStorage
       const newSaveCount = saveCount + 1;
@@ -361,11 +357,6 @@ const CourseOutcome = () => {
       // Delete all CO-PO matrices for this subject
       await axios.delete(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-matrices/${selectedSubject}`
-      );
-
-      // Delete CO-PO average
-      await axios.delete(
-        `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-average/${selectedSubject}`
       );
 
       // Delete all COs for this subject
