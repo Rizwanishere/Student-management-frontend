@@ -427,10 +427,8 @@ const CourseOutcome = () => {
             ${courseOutcomes.map((co, idx) => `
               <tr>
                 ${idx === 0 ?
-                  `<td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: middle; font-size: 10px;" rowspan="${courseOutcomes.length}">
-                    <div style="writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; min-height: 120px;">
-                      ${subjectName}
-                    </div>
+                  `<td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: bold;" rowspan="${courseOutcomes.length}">
+                    ${subjectName}
                   </td>` : ''
                 }
                 <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${co.coNo}</td>
