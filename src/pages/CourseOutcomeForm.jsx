@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import Loader from '../utils/Loader';
 
 const CourseOutcome = () => {
   const [selectedYear, setSelectedYear] = useState('');
@@ -565,7 +566,7 @@ const CourseOutcome = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 mb-24">
       <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
         <h1 className="text-2xl font-bold mb-6 text-gray-700">Course Outcome and CO-PO Matrix</h1>
 
@@ -867,6 +868,9 @@ const CourseOutcome = () => {
           </div>
         )}
       </div>
+
+      {/* Add Loader component here, conditionally rendered based on loading state */}
+      {loading && <Loader />}
     </div>
   );
 };
