@@ -570,7 +570,7 @@ const CourseOutcome = () => {
       <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
         <h1 className="text-2xl font-bold mb-6 text-gray-700">Course Outcome and CO-PO Matrix</h1>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-16">
           <div>
             <label className="block text-sm font-medium text-gray-600">Year</label>
             <select
