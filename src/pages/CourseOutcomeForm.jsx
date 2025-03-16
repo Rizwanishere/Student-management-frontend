@@ -211,10 +211,43 @@ const CourseOutcome = () => {
     return averages;
   };
 
+  const [saveCount, setSaveCount] = useState(() => {
+    // Initialize from localStorage if available
+    const savedCount = localStorage.getItem(`saveCount_${selectedSubject}`);
+    return savedCount ? parseInt(savedCount, 10) : 0;
+  });
+
+  const [saveDisabled, setSaveDisabled] = useState(() => {
+    // Initialize disabled state based on saved count
+    const savedCount = localStorage.getItem(`saveCount_${selectedSubject}`);
+    return savedCount ? parseInt(savedCount, 10) >= 2 : false;
+  });
+
+  // Update useEffect to reset save counts when subject changes
+  useEffect(() => {
+    if (selectedSubject) {
+      const savedCount = localStorage.getItem(`saveCount_${selectedSubject}`);
+      setSaveCount(savedCount ? parseInt(savedCount, 10) : 0);
+      setSaveDisabled(savedCount ? parseInt(savedCount, 10) >= 2 : false);
+    }
+  }, [selectedSubject]);
+
   const handleSave = async () => {
+    if (saveDisabled) {
+      return; // Early return if saves are disabled
+    }
+
     if (!selectedSubject || courseOutcomes.length === 0) {
       alert('Please select a subject and add course outcomes');
       return;
+    }
+
+    // Check if this is the second save attempt
+    if (saveCount === 1) {
+      const confirmSave = window.confirm('Are you sure you want to save? You won\'t be able to save after this time.');
+      if (!confirmSave) {
+        return; // User canceled the save
+      }
     }
 
     setLoading(true);
@@ -236,27 +269,22 @@ const CourseOutcome = () => {
               ...outcome
             }
           );
-
           // Update the CO with its new ID
           outcome._id = response.data._id;
         }
       }
-
       // Get updated course outcomes to ensure we have all IDs
       const coResponse = await axios.get(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/course-outcomes/${selectedSubject}`
       );
-
       // Update the CO-PO matrix
       for (let i = 0; i < coResponse.data.length; i++) {
         const co = coResponse.data[i];
-
         // Find or create the matrix entry for this CO
         let matrixEntry = coPOMatrix.find(entry =>
           entry.courseOutcome === co._id ||
           (entry.courseOutcome && entry.courseOutcome._id === co._id)
         );
-
         if (!matrixEntry) {
           matrixEntry = {
             subject: selectedSubject,
@@ -266,7 +294,6 @@ const CourseOutcome = () => {
             pso1: 0, pso2: 0
           };
         }
-
         if (matrixEntry._id) {
           // Update existing matrix entry
           await axios.patch(
@@ -285,25 +312,33 @@ const CourseOutcome = () => {
           );
         }
       }
-
       // Calculate and save CO-PO averages
       await axios.post(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-average/${selectedSubject}`
       );
 
-      alert('Data saved successfully!');
+      // Increment save count and store in localStorage
+      const newSaveCount = saveCount + 1;
+      setSaveCount(newSaveCount);
+      localStorage.setItem(`saveCount_${selectedSubject}`, newSaveCount);
+
+      // Disable save button after second save
+      if (newSaveCount >= 2) {
+        setSaveDisabled(true);
+        alert('Data saved successfully! You have reached your maximum number of saves.');
+      } else {
+        alert('Data saved successfully!');
+      }
 
       // Refresh data
       const copoResponse = await axios.get(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-matrix/${selectedSubject}`
       );
       setCOPOMatrix(copoResponse.data || []);
-
     } catch (error) {
       console.error('Error saving data:', error);
       alert('Error saving data. Please try again.');
     }
-
     setLoading(false);
   };
 
@@ -318,6 +353,11 @@ const CourseOutcome = () => {
 
     setLoading(true);
     try {
+      // Reset save count and disabled state for this subject
+      setSaveCount(0);
+      setSaveDisabled(false);
+      localStorage.removeItem(`saveCount_${selectedSubject}`);
+
       // Delete all CO-PO matrices for this subject
       await axios.delete(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-matrices/${selectedSubject}`
@@ -337,7 +377,7 @@ const CourseOutcome = () => {
       setCourseOutcomes([]);
       setCOPOMatrix([]);
 
-      alert('All entries have been deleted successfully!');
+      alert('All entries have been deleted successfully! You can now save again.');
     } catch (error) {
       console.error('Error resetting tables:', error);
       alert('Error deleting entries. Please try again.');
@@ -351,168 +391,183 @@ const CourseOutcome = () => {
       alert('Please select a subject and add course outcomes first');
       return;
     }
-
+  
     try {
       // Get subject details
       const subjectName = subjectOptions.find(s => s._id === selectedSubject)?.name || 'Subject';
-
-      // Create a container for the tables
+  
+      // Create a temporary container that will be hidden
       const container = document.createElement('div');
-      container.style.padding = '20px';
-      container.style.maxWidth = '1200px';
+      container.style.width = '1000px'; // Fixed width for consistent rendering
+      container.style.padding = '10px';
       container.style.margin = '0 auto';
       container.style.backgroundColor = 'white';
+      container.style.fontFamily = 'Arial, sans-serif';
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
       document.body.appendChild(container);
-
-      // Course Outcome Table
-      const coTable = document.createElement('table');
-      coTable.style.width = '100%';
-      coTable.style.borderCollapse = 'collapse';
-      coTable.style.marginBottom = '30px';
-      coTable.style.border = '1px solid black';
-
-      // CO Table Header
-      const coHeader = document.createElement('tr');
-      ['Course', 'CO No.', 'Course Outcomes (CO)', 'Knowledge Level\n(Blooms Taxonomy Level)'].forEach(text => {
-        const th = document.createElement('th');
-        th.style.border = '1px solid black';
-        th.style.padding = '8px';
-        th.style.backgroundColor = '#f2f2f2';
-        th.textContent = text;
-        coHeader.appendChild(th);
+  
+      // Create the main content as a single HTML string for better layout control
+      container.innerHTML = `
+        <div style="text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 14px;">
+          Course Outcomes and PO-PSO Matrix
+        </div>
+        
+        <!-- Course Outcomes Table -->
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid black; margin-bottom: 15px; font-size: 10px;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 15%; vertical-align: middle;">Course</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 8%; vertical-align: middle;">CO No.</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 60%; vertical-align: middle;">Course Outcomes (CO)</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 17%; vertical-align: middle;">Knowledge Level<br>(Blooms Taxonomy Level)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${courseOutcomes.map((co, idx) => `
+              <tr>
+                ${idx === 0 ?
+                  `<td style="border: 1px solid black; padding: 4px; text-align: center; vertical-align: middle; font-size: 10px;" rowspan="${courseOutcomes.length}">
+                    <div style="writing-mode: vertical-lr; transform: rotate(180deg); text-align: center; min-height: 120px;">
+                      ${subjectName}
+                    </div>
+                  </td>` : ''
+                }
+                <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${co.coNo}</td>
+                <td style="border: 1px solid black; padding: 4px; text-align: left; font-size: 10px;">${co.courseOutcome}</td>
+                <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${co.knowledgeLevel}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <!-- CO-PO Matrix Title -->
+        <div style="text-align: center; margin: 8px 0; font-weight: bold; font-size: 12px;">CO-PO Matrix</div>
+        
+        <!-- CO-PO Matrix Table -->
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid black; margin-bottom: 15px; font-size: 10px;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 30%;">Course Outcomes (COs)</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO1</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO2</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO3</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO4</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO5</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO6</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO7</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO8</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO9</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO10</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO11</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center;">PO12</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${courseOutcomes.map((co, idx) => {
+              const matrix = coPOMatrix.find(m =>
+                (m.courseOutcome === co._id) ||
+                (m.courseOutcome && m.courseOutcome._id === co._id)
+              ) || {};
+              
+              return `
+                <tr>
+                  <td style="border: 1px solid black; padding: 4px; text-align: left; font-size: 10px;">${co.courseOutcome}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po1 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po2 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po3 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po4 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po5 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po6 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po7 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po8 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po9 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po10 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po11 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.po12 || '-'}</td>
+                </tr>
+              `;
+            }).join('')}
+            <tr style="background-color: #f2f2f2; font-weight: bold;">
+              <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">AVERAGE</td>
+              ${(() => {
+                const averages = calculateAverages();
+                let cells = '';
+                for (let i = 1; i <= 12; i++) {
+                  cells += `<td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${averages['po' + i]}</td>`;
+                }
+                return cells;
+              })()}
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- CO-PSO Matrix Table -->
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid black; margin-top: 15px; font-size: 10px;">
+          <thead>
+            <tr style="background-color: #f2f2f2;">
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 70%;">Course Outcomes (COs)</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 15%;">PSO1</th>
+              <th style="border: 1px solid black; padding: 4px; text-align: center; width: 15%;">PSO2</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${courseOutcomes.map((co, idx) => {
+              const matrix = coPOMatrix.find(m =>
+                (m.courseOutcome === co._id) ||
+                (m.courseOutcome && m.courseOutcome._id === co._id)
+              ) || {};
+              
+              return `
+                <tr>
+                  <td style="border: 1px solid black; padding: 4px; text-align: left; font-size: 10px;">${co.courseOutcome}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.pso1 || '-'}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${matrix.pso2 || '-'}</td>
+                </tr>
+              `;
+            }).join('')}
+            <tr style="background-color: #f2f2f2; font-weight: bold;">
+              <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">AVERAGE</td>
+              ${(() => {
+                const averages = calculateAverages();
+                return `
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${averages.pso1}</td>
+                  <td style="border: 1px solid black; padding: 4px; text-align: center; font-size: 10px;">${averages.pso2}</td>
+                `;
+              })()}
+            </tr>
+          </tbody>
+        </table>
+      `;
+  
+      // Create PDF with landscape orientation
+      const pdf = new jsPDF('l', 'mm', 'a4');
+      
+      // Use html2canvas to convert the entire content to a single image
+      const canvas = await html2canvas(container, { 
+        scale: 2, // Higher scale for better quality
+        logging: false,
+        useCORS: true,
+        allowTaint: true
       });
-      coTable.appendChild(coHeader);
-
-      // CO Table Body
-      courseOutcomes.forEach(co => {
-        const tr = document.createElement('tr');
-
-        const tdCourse = document.createElement('td');
-        tdCourse.style.border = '1px solid black';
-        tdCourse.style.padding = '8px';
-        tdCourse.style.textAlign = 'center';
-        tdCourse.textContent = subjectName;
-        tr.appendChild(tdCourse);
-
-        const tdCoNo = document.createElement
-
-        tdCoNo.style.border = '1px solid black';
-        tdCoNo.style.padding = '8px';
-        tdCoNo.style.textAlign = 'center';
-        tdCoNo.textContent = co.coNo;
-        tr.appendChild(tdCoNo);
-
-        const tdCourseOutcome = document.createElement('td');
-        tdCourseOutcome.style.border = '1px solid black';
-        tdCourseOutcome.style.padding = '8px';
-        tdCourseOutcome.textContent = co.courseOutcome;
-        tr.appendChild(tdCourseOutcome);
-
-        const tdKnowledgeLevel = document.createElement('td');
-        tdKnowledgeLevel.style.border = '1px solid black';
-        tdKnowledgeLevel.style.padding = '8px';
-        tdKnowledgeLevel.style.textAlign = 'center';
-        tdKnowledgeLevel.textContent = co.knowledgeLevel;
-        tr.appendChild(tdKnowledgeLevel);
-
-        coTable.appendChild(tr);
-      });
-
-      container.appendChild(coTable);
-
-      // CO-PO Matrix Table
-      const copoTable = document.createElement('table');
-      copoTable.style.width = '100%';
-      copoTable.style.borderCollapse = 'collapse';
-      copoTable.style.border = '1px solid black';
-
-      // CO-PO Matrix Header
-      const copoHeader = document.createElement('tr');
-      const copoHeaderCell = document.createElement('th');
-      copoHeaderCell.style.border = '1px solid black';
-      copoHeaderCell.style.padding = '8px';
-      copoHeaderCell.style.backgroundColor = '#f2f2f2';
-      copoHeaderCell.textContent = 'Course Outcomes (COs)';
-      copoHeader.appendChild(copoHeaderCell);
-
-      for (let i = 1; i <= 12; i++) {
-        const th = document.createElement('th');
-        th.style.border = '1px solid black';
-        th.style.padding = '8px';
-        th.style.backgroundColor = '#f2f2f2';
-        th.style.textAlign = 'center';
-        th.textContent = `PO${i}`;
-        copoHeader.appendChild(th);
-      }
-
-      copoTable.appendChild(copoHeader);
-
-      // CO-PO Matrix Body
-      coPOMatrix.forEach(matrix => {
-        const tr = document.createElement('tr');
-
-        const tdCourseOutcome = document.createElement('td');
-        tdCourseOutcome.style.border = '1px solid black';
-        tdCourseOutcome.style.padding = '8px';
-        tdCourseOutcome.textContent = courseOutcomes.find(co => co._id === matrix.courseOutcome)?.courseOutcome || '';
-        tr.appendChild(tdCourseOutcome);
-
-        for (let i = 1; i <= 12; i++) {
-          const td = document.createElement('td');
-          td.style.border = '1px solid black';
-          td.style.padding = '8px';
-          td.style.textAlign = 'center';
-          td.textContent = matrix[`po${i}`] || '-';
-          tr.appendChild(td);
-        }
-
-        copoTable.appendChild(tr);
-      });
-
-      // Add Average Row
-      const averageRow = document.createElement('tr');
-      const averageLabel = document.createElement('td');
-      averageLabel.style.border = '1px solid black';
-      averageLabel.style.padding = '8px';
-      averageLabel.style.textAlign = 'center';
-      averageLabel.style.fontWeight = 'bold';
-      averageLabel.textContent = 'AVERAGE';
-      averageRow.appendChild(averageLabel);
-
-      const averages = calculateAverages();
-      for (let i = 1; i <= 12; i++) {
-        const td = document.createElement('td');
-        td.style.border = '1px solid black';
-        td.style.padding = '8px';
-        td.style.textAlign = 'center';
-        td.style.fontWeight = 'bold';
-        td.textContent = averages[`po${i}`] || '-';
-        averageRow.appendChild(td);
-      }
-
-      copoTable.appendChild(averageRow);
-
-      container.appendChild(copoTable);
-
-      // Capture the container as an image using html2canvas
-      const canvas = await html2canvas(container);
-      document.body.removeChild(container);
-
-      // Convert canvas to image
+      
       const imgData = canvas.toDataURL('image/png');
-
-      // Create a PDF using jsPDF
-      const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape mode for better fit
+      
+      // Get dimensions of the PDF page
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const imgWidth = pageWidth - 20; // 10mm margin on each side
+      
+      // Calculate appropriate width and height to fit everything on one page
+      const imgWidth = pageWidth - 20; // 10mm margins on each side
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      // Add the image to the PDF
+      
+      // Add image to PDF
       pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-
-      // Save the PDF file
+      
+      // Clean up the temporary container
+      document.body.removeChild(container);
+      
+      // Save the PDF
       pdf.save(`${subjectName}_Course_Outcomes.pdf`);
     } catch (error) {
       console.error('Error exporting to PDF:', error);
@@ -591,7 +646,9 @@ const CourseOutcome = () => {
                 <div className="flex space-x-3">
                   <button
                     onClick={addNewCourseOutcome}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center space-x-2 shadow-sm"
+                    disabled={saveCount >= 1}  // Disable when save count is 1 or more
+                    className={`px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm transition-colors duration-200 ${saveCount >= 1 ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"
+                      }`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -599,15 +656,18 @@ const CourseOutcome = () => {
                     <span>Add New Outcome</span>
                   </button>
 
-                  {/* <button
+
+                  <button
                     onClick={removeLastCourseOutcome}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center space-x-2 shadow-sm"
+                    disabled={saveCount >= 1}  // Disable when save count is 1 or more
+                    className={`px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm transition-colors duration-200 ${saveCount >= 1 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 text-white"
+                      }`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
                     </svg>
                     <span>Remove Last Outcome</span>
-                  </button> */}
+                  </button>
 
                 </div>
               </div>
@@ -620,7 +680,7 @@ const CourseOutcome = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CO No.</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Outcomes (CO)</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Knowledge Level</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Delete</th>
+                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Delete</th> */}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -661,7 +721,7 @@ const CourseOutcome = () => {
                             <option value="BTL-6">BTL-6</option>
                           </select>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-right">
                           <button
                             onClick={() => handleDeleteCourseOutcome(idx, outcome._id)}
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
@@ -671,7 +731,7 @@ const CourseOutcome = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -696,12 +756,20 @@ const CourseOutcome = () => {
                   <th className="border px-4 py-2 text-center text-sm font-medium text-gray-700 bg-gray-50">PSO2</th>
                 </tr>
               </thead>
+
               <tbody>
                 {coPOMatrix.map((matrix, idx) => (
                   <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="border px-4 py-2 text-sm text-gray-600">
-                      {courseOutcomes.find(co => co._id === matrix.courseOutcome)?.
-                        courseOutcome}
+                      {/* Check if matrix.courseOutcome exists and handle different data structures */}
+                      {matrix.courseOutcome ? (
+                        typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                          matrix.courseOutcome.courseOutcome :
+                          courseOutcomes.find(co => co && co._id === matrix.courseOutcome)?.courseOutcome
+                      ) : (
+                        // Fallback if courseOutcome is null or undefined
+                        "N/A"
+                      )}
                     </td>
                     {[...Array(12)].map((_, i) => (
                       <td key={i} className="border px-4 py-2 text-sm text-gray-600">
@@ -710,9 +778,20 @@ const CourseOutcome = () => {
                           min="0"
                           max="3"
                           value={matrix[`po${i + 1}`] || ''}
-                          onChange={(e) => handlePOChange(matrix.courseOutcome, `po${i + 1}`, e.target.value)}
+                          onChange={(e) => {
+                            // Safely get the courseOutcome ID
+                            const coId = matrix.courseOutcome ?
+                              (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                                matrix.courseOutcome._id : matrix.courseOutcome) :
+                              null;
+
+                            if (coId) {
+                              handlePOChange(coId, `po${i + 1}`, e.target.value);
+                            }
+                          }}
                           className="w-full p-2 border border-gray-300 rounded text-center"
                           placeholder="0"
+                          disabled={!matrix.courseOutcome}
                         />
                       </td>
                     ))}
@@ -722,9 +801,19 @@ const CourseOutcome = () => {
                         min="0"
                         max="3"
                         value={matrix.pso1 || ''}
-                        onChange={(e) => handlePOChange(matrix.courseOutcome, 'pso1', e.target.value)}
+                        onChange={(e) => {
+                          const coId = matrix.courseOutcome ?
+                            (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                              matrix.courseOutcome._id : matrix.courseOutcome) :
+                            null;
+
+                          if (coId) {
+                            handlePOChange(coId, 'pso1', e.target.value);
+                          }
+                        }}
                         className="w-full p-2 border border-gray-300 rounded text-center"
                         placeholder="0"
+                        disabled={!matrix.courseOutcome}
                       />
                     </td>
                     <td className="border px-4 py-2 text-sm text-gray-600">
@@ -733,9 +822,19 @@ const CourseOutcome = () => {
                         min="0"
                         max="3"
                         value={matrix.pso2 || ''}
-                        onChange={(e) => handlePOChange(matrix.courseOutcome, 'pso2', e.target.value)}
+                        onChange={(e) => {
+                          const coId = matrix.courseOutcome ?
+                            (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                              matrix.courseOutcome._id : matrix.courseOutcome) :
+                            null;
+
+                          if (coId) {
+                            handlePOChange(coId, 'pso2', e.target.value);
+                          }
+                        }}
                         className="w-full p-2 border border-gray-300 rounded text-center"
                         placeholder="0"
+                        disabled={!matrix.courseOutcome}
                       />
                     </td>
                   </tr>
@@ -743,13 +842,14 @@ const CourseOutcome = () => {
                 {/* Average Row */}
                 <tr className="bg-gray-100 font-medium">
                   <td className="border px-4 py-2 text-sm text-gray-800 font-bold">AVERAGE</td>
-                  {Object.values(calculateAverages()).map((avg, idx) => (
+                  {Object.entries(calculateAverages()).map(([key, avg], idx) => (
                     <td key={idx} className="border px-4 py-2 text-sm text-gray-800 text-center">
                       {avg}
                     </td>
                   ))}
                 </tr>
               </tbody>
+
             </table>
 
             <div className="mt-4 flex justify-between items-center">
@@ -769,9 +869,10 @@ const CourseOutcome = () => {
               </div>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-sm"
+                className={`px-6 py-2 ${saveDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-lg transition-colors duration-200 shadow-sm`}
+                disabled={saveDisabled}
               >
-                Save
+                {saveDisabled ? 'Saved' : 'Save'}
               </button>
             </div>
           </div>
