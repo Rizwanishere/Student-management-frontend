@@ -535,7 +535,7 @@ const CourseOutcome = () => {
       
       // Use html2canvas to convert the entire content to a single image
       const canvas = await html2canvas(container, { 
-        scale: 2, // Higher scale for better quality
+        scale: 1.5, // Higher scale for better quality
         logging: false,
         useCORS: true,
         allowTaint: true
@@ -552,7 +552,7 @@ const CourseOutcome = () => {
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       // Add image to PDF
-      pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPG', 10, 10, imgWidth, imgHeight);
       
       // Clean up the temporary container
       document.body.removeChild(container);
@@ -636,8 +636,8 @@ const CourseOutcome = () => {
                 <div className="flex space-x-3">
                   <button
                     onClick={addNewCourseOutcome}
-                    disabled={saveCount >= 1}  // Disable when save count is 1 or more
-                    className={`px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm transition-colors duration-200 ${saveCount >= 1 ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"
+                    disabled={saveCount >= 2}  // Disable when save count is 1 or more
+                    className={`px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm transition-colors duration-200 ${saveCount >= 2 ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"
                       }`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -726,6 +726,15 @@ const CourseOutcome = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className='flex justify-end mt-3'>
+              <button
+                onClick={handleSave}
+                className={`px-6 py-2 ${saveDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} mt-3 text-white rounded-lg transition-colors duration-200 shadow-sm`}
+                disabled={saveDisabled}
+              >
+                {saveDisabled ? 'Saved' : 'Save'}
+              </button>
               </div>
             </div>
 
@@ -848,7 +857,7 @@ const CourseOutcome = () => {
                   onClick={exportToPDF}
                   className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
                 >
-                  Export Table
+                  Export to PDF
                 </button>
                 <button
                   onClick={handleResetTables}
