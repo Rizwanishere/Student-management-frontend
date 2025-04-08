@@ -276,6 +276,7 @@ const Marks = () => {
             <option value="SURPRISE TEST-1">Surprise Test-1</option>
             <option value="SURPRISE TEST-2">Surprise Test-2</option>
             <option value="SURPRISE TEST-3">Surprise Test-3</option>
+            <option value="SEE">Semester End Exam</option>
           </select>
         </div>
 

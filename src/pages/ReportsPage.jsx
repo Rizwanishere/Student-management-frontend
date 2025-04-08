@@ -69,6 +69,18 @@ function ReportsPage() {
               </p>
             </div>
           </Link>
+
+          {/* CO SEE Attainment Section */}
+          <Link to="/attainment/see">
+            <div className="p-10 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border-t-4 border-secondary">
+              <h2 className="text-xl font-semibold text-blue-800">
+                SEE Attainment Report
+              </h2>
+              <p className="text-gray-500 mt-2">
+                Verify CO attainments for Semester End Exam.
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

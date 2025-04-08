@@ -19,6 +19,7 @@ import VerifyStudent from "../pages/VerifyStudent"
 import InternalMarks from "../pages/InternalMarks";
 import CourseOutcomeForm from "../pages/CourseOutcomeForm";
 import AttainmentReport from "../pages/AttainmentReport";
+import SEEAttainmentReport from "../pages/SEEAttainmentReport";
 
 const App = () => {
   const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
@@ -53,6 +54,7 @@ const App = () => {
         <Route path="/course-outcome" element={<CourseOutcomeForm />} />
 
         <Route path="/attainment" element={<AttainmentReport />} />
+        <Route path="/attainment/see" element={<SEEAttainmentReport />} />  
 
         {/* Redirect any unknown path to the root (Branch Selection) */}
         <Route path="*" element={<Navigate to="/" />} />
