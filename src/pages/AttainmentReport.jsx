@@ -97,6 +97,10 @@ const AttainmentReport = () => {
 
         const attResponse = await fetch(attainmentUrl);
 
+        // if (
+        //   !attResponse.attainmentData ||
+        //   attResponse.attainmentData.some((co) => co.attainmentLevel == null)
+        // ) {
         if (!attResponse.ok) {
           console.log("Attainment data not available, using calculated values");
           setAttainmentData([]);
@@ -886,6 +890,61 @@ const AttainmentReport = () => {
     return "N/A"; // Return a placeholder instead of 0 to make it clear this is missing
   };
 
+  // Updating the attainmentLevels bottom table with existing coNo present in the attainments api
+  const saveCalculatedAttainments = async () => {
+    // Get CO numbers for the current exam type
+    const coNumbers = getCONumbers();
+
+    // Calculate attainment levels for each CO
+    const coAverages = calculateCOAverages();
+
+    // Map the CO averages to the format expected by the API
+    const attainmentUpdates = coNumbers.map((coNumber, index) => {
+      let attainmentLevel;
+
+      if (selectedExamType === "CIE-2") {
+        if (index === 0) attainmentLevel = coAverages.co3;
+        else if (index === 1) attainmentLevel = coAverages.co4;
+        else if (index === 2) attainmentLevel = coAverages.co5;
+      } else {
+        if (index === 0) attainmentLevel = coAverages.co1;
+        else if (index === 1) attainmentLevel = coAverages.co2;
+        else if (index === 2) attainmentLevel = coAverages.co3;
+      }
+
+      return {
+        coNo: coNumber,
+        attainmentLevel: attainmentLevel || 2,
+      };
+    });
+
+    console.log("Saving calculated attainment values:", attainmentUpdates);
+
+    try {
+      const attainmentUrl = `${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${selectedSubject}/examType/${selectedExamType}`;
+
+      const response = await fetch(attainmentUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ attainmentUpdates }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save attainment data: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Attainment data saved successfully:", result);
+
+      // Update local state with the newly saved data
+      setAttainmentData(attainmentUpdates);
+    } catch (error) {
+      console.error("Error saving attainment data:", error);
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4 mb-36 mt-10">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -1380,6 +1439,33 @@ const AttainmentReport = () => {
                     </tr>
                   </tbody>
                 </table>
+              )}
+
+              {/* Save Attainments Button - Placed below the last table */}
+              {students.length > 0 && (
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={saveCalculatedAttainments}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded flex items-center"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="mr-2"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                    </svg>
+                    Save Attainments
+                  </button>
+                </div>
               )}
             </div>
           )}
