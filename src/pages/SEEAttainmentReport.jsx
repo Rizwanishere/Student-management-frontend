@@ -146,11 +146,11 @@ const SEEAttainmentReport = () => {
 
           {/* Summary Table */}
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white shadow-md">
+            <table className="min-w-1/2 bg-white shadow-md">
               <thead className="bg-green-100 text-green-800 text-md">
                 <tr>
                   <th className="py-3 px-4 border-b text-left">Metric</th>
-                  <th className="py-3 px-4 border-b text-left">Value</th>
+                  <th className="py-3 px-8 border-b text-left">Value</th>
                 </tr>
               </thead>
               <tbody className="text-left">
@@ -179,13 +179,13 @@ const SEEAttainmentReport = () => {
                         <td className="py-2 px-4 border-b">
                           No. of Students Attempted
                         </td>
-                        <td className="py-2 px-4 border-b">{attempted}</td>
+                        <td className="py-2 px-8 border-b">{attempted}</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-b">
                           No. of Students secured &gt; Threshold
                         </td>
-                        <td className="py-2 px-4 border-b">
+                        <td className="py-2 px-8 border-b">
                           {securedAboveThreshold}
                         </td>
                       </tr>
@@ -193,13 +193,13 @@ const SEEAttainmentReport = () => {
                         <td className="py-2 px-4 border-b">
                           % of Students secured &gt; Threshold marks
                         </td>
-                        <td className="py-2 px-4 border-b">
+                        <td className="py-2 px-8 border-b">
                           {(percentSecured * 100).toFixed(2)}%
                         </td>
                       </tr>
                       <tr>
                         <td className="py-2 px-4 border-b">Attainment Level</td>
-                        <td className="py-2 px-4 border-b">
+                        <td className="py-2 px-8 border-b">
                           {attainmentLevel}
                         </td>
                       </tr>
@@ -207,7 +207,7 @@ const SEEAttainmentReport = () => {
                         <td className="py-2 px-4 border-b">
                           CO SEE ATTAINMENT
                         </td>
-                        <td className="py-2 px-4 border-b">
+                        <td className="py-2 px-8 border-b">
                           {attainmentLevel}
                         </td>
                       </tr>

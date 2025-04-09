@@ -14,6 +14,7 @@ const AttainmentReport = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [attainmentData, setAttainmentData] = useState([]);
 
   // Get branch from local storage
   const selectedBranch = localStorage.getItem("selectedBranch") || "";
@@ -56,6 +57,7 @@ const AttainmentReport = () => {
         console.error("Error fetching subjects:", err);
         setError(err.message);
         setSubjects([]);
+        setAttainmentData([]);
       } finally {
         setLoading(false);
       }
@@ -88,6 +90,26 @@ const AttainmentReport = () => {
         const data = await response.json();
         console.log("Marks data fetched:", data);
         setStudents(data);
+
+        // Fetch attainment data
+        const attainmentUrl = `${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${selectedSubject}/examType/${selectedExamType}`;
+        console.log("Fetching attainment data from:", attainmentUrl);
+
+        const attResponse = await fetch(attainmentUrl);
+
+        if (!attResponse.ok) {
+          console.log("Attainment data not available, using calculated values");
+          setAttainmentData([]);
+        } else {
+          const attData = await attResponse.json();
+          console.log("Attainment data fetched:", attData);
+
+          if (attData && attData.length > 0) {
+            setAttainmentData(attData[0].attainmentData || []);
+          } else {
+            setAttainmentData([]);
+          }
+        }
       } catch (err) {
         console.error("Error fetching marks data:", err);
         setError(err.message);
@@ -108,6 +130,7 @@ const AttainmentReport = () => {
     setSelectedExamType("");
     setSubjects([]);
     setStudents([]);
+    setAttainmentData([]);
   };
 
   // Handle semester change
@@ -116,6 +139,7 @@ const AttainmentReport = () => {
     setSelectedSubject("");
     setSelectedExamType("");
     setStudents([]);
+    setAttainmentData([]);
   };
 
   // Get exam title based on selected exam type
@@ -130,28 +154,47 @@ const AttainmentReport = () => {
     }
   };
 
+  // Function to get CO numbers from attainment data
+  const getCONumbers = () => {
+    // If we have attainment data from API, use those CO numbers
+    if (attainmentData && attainmentData.length > 0) {
+      return attainmentData.map((item) => item.coNo);
+    }
+
+    // Fallback to default CO numbers if API data isn't available
+    if (selectedExamType === "CIE-1") {
+      return ["C211.1", "C211.2", "C211.3"];
+    } else if (selectedExamType === "CIE-2") {
+      return ["C211.3", "C211.4", "C211.5"];
+    }
+
+    return ["C211.1", "C211.2", "C211.3"];
+  };
+
   // Get CO labels based on selected exam type
   const getCOLabels = () => {
+    // Get CO numbers from the existing function
+    const coNumbers = getCONumbers();
     if (selectedExamType === "CIE-1") {
       return {
         q1: ["CO1", "CO2", "CO3"],
         q2: ["CO1", "CO2", "CO3"],
         q3: ["CO1", "CO2", "CO3"],
-        coNumbers: ["C211.1", "C211.2", "C211.3"],
+        coNumbers: coNumbers, // Use the CO numbers from the API or fallback
       };
     } else if (selectedExamType === "CIE-2") {
       return {
         q1: ["CO3", "CO4", "CO5"],
         q2: ["CO3", "CO4", "CO5"],
         q3: ["CO3", "CO4", "CO5"],
-        coNumbers: ["C211.3", "C211.4", "C211.5"],
+        coNumbers: coNumbers, // Use the CO numbers from the API or fallback
       };
     }
     return {
       q1: ["CO1", "CO2", "CO3"],
       q2: ["CO1", "CO2", "CO3"],
       q3: ["CO1", "CO2", "CO3"],
-      coNumbers: ["C211.1", "C211.2", "C211.3"],
+      coNumbers: coNumbers, // Use the CO numbers from the API or fallback
     };
   };
 
@@ -751,7 +794,7 @@ const AttainmentReport = () => {
         overflow: visible !important;
         position: relative !important;
         min-height: 30px !important;
-      }
+    }
       .pdf-export th {
         background-color: #e0e0e0 !important;
         font-weight: bold !important;
@@ -800,6 +843,48 @@ const AttainmentReport = () => {
 
   // Get CO data for display based on exam type
   const coData = getCOLabels();
+
+  // Get attainment value from API data or calculated values
+  const getAttainmentValue = (coNumber, index) => {
+    // First check if we have this CO in the API data
+    if (attainmentData && attainmentData.length > 0) {
+      const coData = attainmentData.find((item) => item.coNo === coNumber);
+      if (coData && coData.attainmentLevel !== undefined) {
+        return coData.attainmentLevel;
+      }
+    }
+
+    // Fall back to calculated values if API data is not available
+    const coAverages = calculateCOAverages();
+    console.log("Calculated CO Averages for fallback:", coAverages);
+
+    // For fallback calculation, we need to determine which CO we're dealing with
+    const coMapping = {
+      "CIE-1": {
+        0: "co1",
+        1: "co2",
+        2: "co3",
+      },
+      "CIE-2": {
+        0: "co3",
+        1: "co4",
+        2: "co5",
+      },
+    };
+
+    const examType = selectedExamType || "CIE-1";
+    const coKey = coMapping[examType][index];
+
+    if (coKey && coAverages && coAverages[coKey] !== undefined) {
+      return coAverages[coKey];
+    }
+
+    // If we still don't have a value, debug
+    console.log(
+      `No value found for CO: ${coNumber}, index: ${index}, examType: ${examType}`
+    );
+    return "N/A"; // Return a placeholder instead of 0 to make it clear this is missing
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 mb-36 mt-10">
@@ -857,6 +942,7 @@ const AttainmentReport = () => {
                   setSelectedSubject(e.target.value);
                   setSelectedExamType("");
                   setStudents([]);
+                  setAttainmentData([]);
                 }}
                 disabled={subjects.length === 0}
               >
@@ -876,7 +962,10 @@ const AttainmentReport = () => {
               <select
                 className="w-32 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={selectedExamType}
-                onChange={(e) => setSelectedExamType(e.target.value)}
+                onChange={(e) => {
+                  setSelectedExamType(e.target.value);
+                  setAttainmentData([]);
+                }}
                 disabled={!selectedSubject}
               >
                 <option value="">Select Exam</option>
@@ -1272,42 +1361,22 @@ const AttainmentReport = () => {
                       >
                         CO AVERAGE
                       </td>
-                      <td
-                        className="border px-2 py-2 text-center font-semibold"
-                        style={{ width: "12.5%" }}
-                      >
-                        C211.1
-                      </td>
-                      <td
-                        className="border px-2 py-2 text-center font-bold text-xl"
-                        style={{ width: "12.5%" }}
-                      >
-                        {calculateCOAverages().co1}
-                      </td>
-                      <td
-                        className="border px-2 py-2 text-center font-semibold"
-                        style={{ width: "12.5%" }}
-                      >
-                        C211.2
-                      </td>
-                      <td
-                        className="border px-2 py-2 text-center font-bold text-xl"
-                        style={{ width: "12.5%" }}
-                      >
-                        {calculateCOAverages().co2}
-                      </td>
-                      <td
-                        className="border px-2 py-2 text-center font-semibold"
-                        style={{ width: "12.5%" }}
-                      >
-                        C211.3
-                      </td>
-                      <td
-                        className="border px-2 py-2 text-center font-bold text-xl"
-                        style={{ width: "12.5%" }}
-                      >
-                        {calculateCOAverages().co3}
-                      </td>
+                      {getCONumbers().map((coNumber, index) => (
+                        <React.Fragment key={index}>
+                          <td
+                            className="border px-2 py-2 text-center font-semibold"
+                            style={{ width: "12.5%" }}
+                          >
+                            {coNumber}
+                          </td>
+                          <td
+                            className="border px-2 py-2 text-center font-bold text-xl"
+                            style={{ width: "12.5%" }}
+                          >
+                            {getAttainmentValue(coNumber, index)}
+                          </td>
+                        </React.Fragment>
+                      ))}
                     </tr>
                   </tbody>
                 </table>
