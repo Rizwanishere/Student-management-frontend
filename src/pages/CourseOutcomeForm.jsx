@@ -274,6 +274,34 @@ const CourseOutcome = () => {
           outcome._id = response.data._id;
         }
       }
+
+      // Get the first 5 CO numbers
+      const firstFiveCOs = courseOutcomes.slice(0, 5).map(co => co.coNo);
+
+      // Make first POST request for CIE-1 (CO 1-3)
+      if (firstFiveCOs.length >= 3) {
+        const cie1Data = {
+          subject: selectedSubject,
+          attainmentData: firstFiveCOs.slice(0, 3).map(coNo => ({ coNo })),
+          attainmentType: "direct",
+          examType: "CIE-1"
+        };
+
+        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, cie1Data);
+      }
+
+      // Make second POST request for CIE-2 (CO 3-5)
+      if (firstFiveCOs.length >= 5) {
+        const cie2Data = {
+          subject: selectedSubject,
+          attainmentData: firstFiveCOs.slice(2, 5).map(coNo => ({ coNo })),
+          attainmentType: "direct",
+          examType: "CIE-2"
+        };
+
+        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, cie2Data);
+      }
+
       // Get updated course outcomes to ensure we have all IDs
       const coResponse = await axios.get(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/course-outcomes/${selectedSubject}`
