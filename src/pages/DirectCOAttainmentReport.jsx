@@ -138,6 +138,44 @@ const DirectCOAttainmentReport = () => {
         ...(seeData?.attainmentData || []).map(item => item.coNo)
     ])].sort() : [];
 
+    const postAttainmentData = async () => {
+        // Only proceed with POST request if we have the data
+        if (showTable && allCOs.length > 0) {
+            try {
+                setLoading(true);
+
+                // Map the attainment data
+                const mappedAttainmentData = allCOs.map(coNo => ({
+                    coNo,
+                    attainmentLevel: parseFloat(calculateDirectCoAttainment(
+                        calculateAverageAttainment(coNo),
+                        seeData?.attainmentData.find(item => item.coNo === coNo)?.attainmentLevel || '-'
+                    ))
+                })).filter(item => !isNaN(item.attainmentLevel));
+
+                // Prepare the request body
+                const requestBody = {
+                    subject: selectedSubject,
+                    attainmentData: mappedAttainmentData,
+                    attainmentType: "computedDirect",
+                    examType: "COMPUTED"
+                };
+
+                // Make the POST request
+                await axios.post(
+                    `${process.env.REACT_APP_BACKEND_URI}/api/attainment`,
+                    requestBody
+                );
+
+            } catch (error) {
+                console.error('Error posting computed direct attainment:', error);
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+    }
+
     return (
         <div className="w-full max-w-6xl mx-auto p-4 mb-36 mt-10">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -234,6 +272,19 @@ const DirectCOAttainmentReport = () => {
                             calculateAverageAttainment={calculateAverageAttainment}
                             calculateDirectCoAttainment={calculateDirectCoAttainment}
                         />
+                    )}
+
+                    {showTable && !loading && (
+                        <div className="flex justify-center mb-8">
+                            <button
+                                onClick={postAttainmentData}
+                                disabled={!selectedSubject}
+                                className={`mt-5 px-6 py-2 text-white rounded ${!selectedSubject ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                            >
+                                Save Attainments
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
