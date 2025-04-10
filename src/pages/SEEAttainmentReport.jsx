@@ -9,6 +9,9 @@ const SEEAttainmentReport = () => {
   const [subjectId, setSubjectId] = useState("");
   const [marksData, setMarksData] = useState([]);
 
+  // Add new state for CO numbers
+  const [coNumbers, setCoNumbers] = useState([]);
+
   const yearOptions = [1, 2, 3, 4];
   const semesterOptions = [1, 2];
 
@@ -20,6 +23,84 @@ const SEEAttainmentReport = () => {
     6: "D",
     5: "E",
     0: "F",
+  };
+
+  const fetchMarks = async (id) => {
+    try {
+      const marksUrl = `${process.env.REACT_APP_BACKEND_URI}/api/marks/${id}/SEE`;
+      const res = await axios.get(marksUrl);
+      
+      // Process the marks data to add grades
+      const processedData = res.data.map(entry => {
+        const percent = (entry.marks / entry.maxMarks) * 100;
+        let gradePoint = 0;
+
+        if (percent >= 90) gradePoint = 10;
+        else if (percent >= 80) gradePoint = 9;
+        else if (percent >= 70) gradePoint = 8;
+        else if (percent >= 60) gradePoint = 7;
+        else if (percent >= 50) gradePoint = 6;
+        else if (percent >= 40) gradePoint = 5;
+        else gradePoint = 0;
+
+        return {
+          ...entry,
+          gradePoint,
+          finalGrade: gradeMapper[gradePoint]
+        };
+      });
+
+      setMarksData(processedData);
+      
+      // Only fetch CIE data and post attainment if we have marks data
+      if (processedData.length > 0) {
+        // Calculate attainment level here before passing to fetchCIEAttainment
+        const attempted = processedData.length;
+        const securedAboveThreshold = processedData.filter((entry) =>
+          ["S", "A", "B", "C", "D", "E"].includes(entry.finalGrade)
+        ).length;
+
+        const percentSecured = attempted ? (securedAboveThreshold / attempted) : 0;
+        const calculatedAttainmentLevel = percentSecured >= 0.7 ? 3 
+          : percentSecured >= 0.5 ? 2 
+          : percentSecured >= 0.1 ? 1 
+          : 0;
+
+        await fetchCIEAttainment(id, calculatedAttainmentLevel);
+      }
+    } catch (err) {
+      console.error("Failed to fetch marks:", err);
+    }
+  };
+
+  const fetchCIEAttainment = async (id, calculatedAttainmentLevel) => {
+    try {
+      const [cie1Response, cie2Response] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-1`),
+        axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-2`)
+      ]);
+
+      // Extract unique CO numbers from both CIE-1 and CIE-2
+      const cie1COs = cie1Response.data[0]?.attainmentData?.map(item => item.coNo) || [];
+      const cie2COs = cie2Response.data[0]?.attainmentData?.map(item => item.coNo) || [];
+      
+      // Combine and remove duplicates
+      const uniqueCOs = [...new Set([...cie1COs, ...cie2COs])].sort();
+      setCoNumbers(uniqueCOs);
+
+      // Post the CO numbers for SEE attainment with the passed attainment level
+      await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, {
+        subject: id,
+        attainmentData: uniqueCOs.map(coNo => ({ 
+          coNo,
+          attainmentLevel: calculatedAttainmentLevel // Use the passed attainment level
+        })),
+        attainmentType: "direct",
+        examType: "SEE"
+      });
+    } catch (err) {
+      console.error("Failed to fetch CIE data or post SEE attainment:", err);
+    }
   };
 
   useEffect(() => {
@@ -36,16 +117,6 @@ const SEEAttainmentReport = () => {
     };
     fetchSubjects();
   }, [year, semester]);
-
-  const fetchMarks = async (id) => {
-    try {
-      const marksUrl = `${process.env.REACT_APP_BACKEND_URI}/api/marks/${id}/SEE`;
-      const res = await axios.get(marksUrl);
-      setMarksData(res.data);
-    } catch (err) {
-      console.error("Failed to fetch marks:", err);
-    }
-  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto mb-44">
@@ -112,34 +183,19 @@ const SEEAttainmentReport = () => {
                 </tr>
               </thead>
               <tbody>
-                {marksData.map((entry, index) => {
-                  const percent = (entry.marks / entry.maxMarks) * 100;
-                  let gradePoint = 0;
-
-                  if (percent >= 90) gradePoint = 10;
-                  else if (percent >= 80) gradePoint = 9;
-                  else if (percent >= 70) gradePoint = 8;
-                  else if (percent >= 60) gradePoint = 7;
-                  else if (percent >= 50) gradePoint = 6;
-                  else if (percent >= 40) gradePoint = 5;
-                  else gradePoint = 0;
-
-                  entry.finalGrade = gradeMapper[gradePoint]; // add grade to entry
-
-                  return (
-                    <tr
-                      key={entry._id || index}
-                      className="text-center hover:bg-blue-50 transition duration-200"
-                    >
-                      <td className="py-2 px-4 border-b">{index + 1}</td>
-                      <td className="py-2 px-4 border-b">
-                        {entry.student?.rollNo}
-                      </td>
-                      <td className="py-2 px-4 border-b">{gradePoint}</td>
-                      <td className="py-2 px-4 border-b">{entry.finalGrade}</td>
-                    </tr>
-                  );
-                })}
+                {marksData.map((entry, index) => (
+                  <tr
+                    key={entry._id || index}
+                    className="text-center hover:bg-blue-50 transition duration-200"
+                  >
+                    <td className="py-2 px-4 border-b">{index + 1}</td>
+                    <td className="py-2 px-4 border-b">
+                      {entry.student?.rollNo}
+                    </td>
+                    <td className="py-2 px-4 border-b">{entry.gradePoint}</td>
+                    <td className="py-2 px-4 border-b">{entry.finalGrade}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
