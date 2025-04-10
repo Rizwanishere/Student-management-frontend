@@ -81,6 +81,18 @@ function ReportsPage() {
               </p>
             </div>
           </Link>
+
+          {/* Direct CO Attainment Section */}
+          <Link to="/attainment/direct">
+            <div className="p-10 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border-t-4 border-secondary">
+              <h2 className="text-xl font-semibold text-blue-800">
+                Direct Attainments
+              </h2>
+              <p className="text-gray-500 mt-2">
+                Verify Direct CO attainments Reports with Graph.
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
