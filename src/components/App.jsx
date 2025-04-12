@@ -22,6 +22,7 @@ import AttainmentReport from "../pages/AttainmentReport";
 import SEEAttainmentReport from "../pages/SEEAttainmentReport";
 import DirectCOAttainmentReport from "../pages/DirectCOAttainmentReport";
 import IndirectAttainment from "../pages/IndirectAttainment";
+import IndirectCOAttainmentReport from "../pages/IndirectCOAttainmentReport";
 
 const App = () => {
   const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
@@ -58,7 +59,8 @@ const App = () => {
         <Route path="/attainment" element={<AttainmentReport />} />
         <Route path="/attainment/see" element={<SEEAttainmentReport />} /> 
 
-        <Route path="/attainment/direct" element={<DirectCOAttainmentReport />} />  
+        <Route path="/attainment/direct" element={<DirectCOAttainmentReport />} />
+        <Route path="/attainment/indirect" element={<IndirectCOAttainmentReport />} />
 
         <Route path="/attainment/entry" element={<IndirectAttainment />} />
 
