@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const IndirectCOAttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -152,6 +171,59 @@ const IndirectCOAttainmentReport = () => {
   };
 
   const summaryData = calculateSummary();
+
+  const renderGraph = () => {
+    if (!summaryData || coHeaders.length === 0) {
+      return null;
+    }
+
+    const data = {
+      labels: coHeaders,
+      datasets: [
+        {
+          label: "CO Indirect Attainment Level",
+          data: coHeaders.map((header) => summaryData[header].attainment),
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+          borderColor: "rgba(255, 99, 132, 1)",
+          borderWidth: 1,
+          barThickness: 30, // Adjust bar thickness
+        },
+      ],
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false, // Allow custom height and width
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        title: {
+          display: true,
+          text: "CO Indirect Attainment Levels",
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxRotation: 0,
+            minRotation: 0,
+          },
+        },
+        y: {
+          beginAtZero: true,
+        },
+      },
+    };
+
+    return (
+      <div style={{ height: "400px", width: "450px", marginTop: "10px" }}>
+        {" "}
+        {/* Add margin-top and set height */}
+        <Bar data={data} options={options} />
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -316,98 +388,115 @@ const IndirectCOAttainmentReport = () => {
             </div>
 
             {summaryData && (
-              <div className="bg-white shadow-lg rounded-lg p-6">
-                <h2 className="text-xl font-bold mb-4 text-blue-800">
-                  Computation of CO Indirect Attainment in the course:
-                </h2>
+              <>
+                <div className="bg-white shadow-lg rounded-lg p-6">
+                  <h2 className="text-xl font-bold mb-4 text-blue-800">
+                    Computation of CO Indirect Attainment in the course:
+                  </h2>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border border-gray-300">
-                    <thead>
-                      <tr className="bg-blue-100">
-                        <th className="px-4 py-2 border border-gray-300 text-center">
-                          Course Outcomes
-                        </th>
-                        {coHeaders.map((header) => (
-                          <th
-                            key={header}
-                            className="px-4 py-2 border border-gray-300 text-center"
-                          >
-                            {header}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border border-gray-300">
+                      <thead>
+                        <tr className="bg-blue-100">
+                          <th className="px-4 py-2 border border-gray-300 text-center">
+                            Course Outcomes
                           </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="px-4 py-2 border border-gray-300 font-bold">
-                          Students Answered Level-1
-                        </td>
-                        {coHeaders.map((header) => (
-                          <td
-                            key={`${header}-l1`}
-                            className="px-4 py-2 border border-gray-300 text-center"
-                          >
-                            {summaryData[header].level1}
+                          {coHeaders.map((header) => (
+                            <th
+                              key={header}
+                              className="px-4 py-2 border border-gray-300 text-center"
+                            >
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-300 font-bold">
+                            Students Answered Level-1
                           </td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border border-gray-300 font-bold">
-                          Students Answered Level-2
-                        </td>
-                        {coHeaders.map((header) => (
-                          <td
-                            key={`${header}-l2`}
-                            className="px-4 py-2 border border-gray-300 text-center"
-                          >
-                            {summaryData[header].level2}
+                          {coHeaders.map((header) => (
+                            <td
+                              key={`${header}-l1`}
+                              className="px-4 py-2 border border-gray-300 text-center"
+                            >
+                              {summaryData[header].level1}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-300 font-bold">
+                            Students Answered Level-2
                           </td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border border-gray-300 font-bold">
-                          Students Answered Level-3
-                        </td>
-                        {coHeaders.map((header) => (
-                          <td
-                            key={`${header}-l3`}
-                            className="px-4 py-2 border border-gray-300 text-center"
-                          >
-                            {summaryData[header].level3}
+                          {coHeaders.map((header) => (
+                            <td
+                              key={`${header}-l2`}
+                              className="px-4 py-2 border border-gray-300 text-center"
+                            >
+                              {summaryData[header].level2}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-300 font-bold">
+                            Students Answered Level-3
                           </td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border border-gray-300 font-bold">
-                          Total Students participated
-                        </td>
-                        {coHeaders.map((header) => (
-                          <td
-                            key={`${header}-total`}
-                            className="px-4 py-2 border border-gray-300 text-center"
-                          >
-                            {summaryData[header].total}
+                          {coHeaders.map((header) => (
+                            <td
+                              key={`${header}-l3`}
+                              className="px-4 py-2 border border-gray-300 text-center"
+                            >
+                              {summaryData[header].level3}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-300 font-bold">
+                            Total Students participated
                           </td>
-                        ))}
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-2 border border-gray-300 font-bold">
-                          CO Indirect Attainment Level
-                        </td>
-                        {coHeaders.map((header) => (
-                          <td
-                            key={`${header}-attainment`}
-                            className="px-4 py-2 border border-gray-300 text-center font-bold text-xl"
-                          >
-                            {summaryData[header].attainment}
+                          {coHeaders.map((header) => (
+                            <td
+                              key={`${header}-total`}
+                              className="px-4 py-2 border border-gray-300 text-center"
+                            >
+                              {summaryData[header].total}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-300 font-bold">
+                            CO Indirect Attainment Level
                           </td>
-                        ))}
-                      </tr>
-                    </tbody>
-                  </table>
+                          {coHeaders.map((header) => (
+                            <td
+                              key={`${header}-attainment`}
+                              className="px-4 py-2 border border-gray-300 text-center font-bold text-xl"
+                            >
+                              {summaryData[header].attainment}
+                            </td>
+                          ))}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+
+                <div className="bg-white shadow-lg rounded-lg p-6 mb-8 mt-6 flex justify-center">
+                  {" "}
+                  {/* Added flex and justify-center to align graph in center */}
+                  <div style={{ height: "500px", width: "450px" }}>
+                    {" "}
+                    {/* Adjusted width to match graph box */}
+                    <h2 className="text-xl font-bold mb-4 text-blue-800 text-center">
+                      {" "}
+                      {/* Centered the heading */}
+                      Graphical Representation of CO Indirect Attainment:
+                    </h2>
+                    {renderGraph()}
+                  </div>
+                </div>
+              </>
             )}
           </>
         )}
