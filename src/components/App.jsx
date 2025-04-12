@@ -21,6 +21,7 @@ import CourseOutcomeForm from "../pages/CourseOutcomeForm";
 import AttainmentReport from "../pages/AttainmentReport";
 import SEEAttainmentReport from "../pages/SEEAttainmentReport";
 import DirectCOAttainmentReport from "../pages/DirectCOAttainmentReport";
+import IndirectAttainment from "../pages/IndirectAttainment";
 
 const App = () => {
   const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
@@ -58,6 +59,8 @@ const App = () => {
         <Route path="/attainment/see" element={<SEEAttainmentReport />} /> 
 
         <Route path="/attainment/direct" element={<DirectCOAttainmentReport />} />  
+
+        <Route path="/attainment/entry" element={<IndirectAttainment />} />
 
         {/* Redirect any unknown path to the root (Branch Selection) */}
         <Route path="*" element={<Navigate to="/" />} />

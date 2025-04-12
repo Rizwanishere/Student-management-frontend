@@ -64,6 +64,16 @@ const Home = () => {
             </Link>
           </div>
 
+          {/* Feedback indirect attainment Entry Column */}
+          <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-xl transition-shadow">
+            <h2 className="text-2xl font-semibold mb-4">CO Attainments Entry</h2>
+            <p className="text-gray-600">Enter and manage indirect attainments for subjects.</p>
+            <Link to="/attainment/entry">
+              <button className="mt-4 px-4 py-2 bg-primary text-white rounded">
+                Go to Indirect Attainments
+              </button>
+            </Link>
+          </div>
 
         </div>
       </div>
