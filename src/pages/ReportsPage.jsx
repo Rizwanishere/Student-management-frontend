@@ -105,6 +105,19 @@ function ReportsPage() {
               </p>
             </div>
           </Link>
+
+          {/* Overall CO Attainment Section */}
+          <Link to="/attainment/overall">
+            <div className="p-10 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border-t-4 border-secondary">
+              <h2 className="text-xl font-semibold text-blue-800">
+                Overall Attainments
+              </h2>
+              <p className="text-gray-500 mt-2">
+                Verify Overall CO attainments Reports with Graph.
+              </p>
+            </div>
+          </Link>
+          
         </div>
       </div>
     </div>
