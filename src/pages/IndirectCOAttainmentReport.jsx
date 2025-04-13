@@ -225,6 +225,35 @@ const IndirectCOAttainmentReport = () => {
     );
   };
 
+  const handleSubmitAttainments = async () => {
+    if (!summaryData || coHeaders.length === 0) {
+      console.log("No data available to submit.");
+      return;
+    }
+
+    const attainmentData = coHeaders.map((header) => ({
+      coNo: header,
+      attainmentLevel: summaryData[header].attainment,
+    }));
+
+    const payload = {
+      subject: selectedSubject,
+      attainmentData,
+      attainmentType: "computedIndirect",
+      examType: "COMPUTED",
+    };
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URI}/api/attainment`,
+        payload
+      );
+      console.log("Attainments submitted successfully:", response.data);
+    } catch (error) {
+      console.error("Error submitting attainments:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -495,6 +524,15 @@ const IndirectCOAttainmentReport = () => {
                     </h2>
                     {renderGraph()}
                   </div>
+                </div>
+
+                <div className="flex justify-center mt-4">
+                  <button
+                    onClick={handleSubmitAttainments}
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    Submit Attainments
+                  </button>
                 </div>
               </>
             )}
