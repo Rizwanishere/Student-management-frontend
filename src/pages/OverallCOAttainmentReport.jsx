@@ -29,10 +29,11 @@ const OverallCOAttainmentReport = () => {
   const [directAttainment, setDirectAttainment] = useState([]);
   const [indirectAttainment, setIndirectAttainment] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showTable, setShowTable] = useState(false); // State to control table visibility
+  const [showTable, setShowTable] = useState(false);
+  const [actionPlans, setActionPlans] = useState({});
 
   const handleSubmit = () => {
-    setShowTable(true); // Show the table when the button is clicked
+    setShowTable(true);
   };
 
   const fetchSubjects = async () => {
@@ -69,6 +70,14 @@ const OverallCOAttainmentReport = () => {
         ]);
         setDirectAttainment(directResponse.data[0]?.attainmentData || []);
         setIndirectAttainment(indirectResponse.data[0]?.attainmentData || []);
+
+        // Initialize action plans with default values
+        const initialActionPlans = {};
+        directResponse.data[0]?.attainmentData.forEach((item) => {
+          initialActionPlans[item.coNo] =
+            "• Assignment for critical topics\n• Solutions for problems in previous question papers";
+        });
+        setActionPlans(initialActionPlans);
       } catch (error) {
         console.error("Error fetching attainments:", error);
       } finally {
@@ -170,6 +179,13 @@ const OverallCOAttainmentReport = () => {
     );
   };
 
+  const handleActionPlanChange = (coNo, value) => {
+    setActionPlans({
+      ...actionPlans,
+      [coNo]: value,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
@@ -228,8 +244,6 @@ const OverallCOAttainmentReport = () => {
           </div>
 
           <div className="flex justify-center mb-6">
-            {" "}
-            {/* Submit button container */}
             <button
               onClick={handleSubmit}
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -245,7 +259,7 @@ const OverallCOAttainmentReport = () => {
           </p>
         )}
 
-        {showTable /* Render headings and table only when showTable is true */ && (
+        {showTable && (
           <>
             <h1 className="text-2xl font-bold mb-2 text-center">
               OVERALL CO ATTAINMENT
@@ -256,73 +270,119 @@ const OverallCOAttainmentReport = () => {
             </p>
             <hr className="border-t-2 border-black mb-6" />
 
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="md:w-2/3">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="md:w-2/3">
+                  <table className="w-full border-collapse border border-gray-800">
+                    <thead>
+                      <tr>
+                        <th
+                          className="border border-gray-800 p-3 bg-white text-center"
+                          rowSpan="2"
+                        >
+                          CO
+                        </th>
+                        <th className="border border-gray-800 p-3 bg-white text-center">
+                          Direct CO
+                        </th>
+                        <th className="border border-gray-800 p-3 bg-white text-center">
+                          Indirect CO
+                        </th>
+                        <th className="border border-gray-800 p-3 bg-white text-center">
+                          Overall CO
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="border border-gray-800 p-3 bg-white text-center">
+                          Attainment Level (DA)
+                        </th>
+                        <th className="border border-gray-800 p-3 bg-white text-center">
+                          Attainment Level (IDA)
+                        </th>
+                        <th className="border border-gray-800 p-3 bg-white text-center">
+                          Attainment Level ((0.8*DA)+(0.2*IDA))
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {overallData.map((item) => (
+                        <tr key={item.coNo}>
+                          <td className="border border-gray-800 p-3 text-center font-semibold">
+                            {item.coNo}
+                          </td>
+                          <td className="border border-gray-800 p-3 text-center">
+                            {item.direct.toFixed(2)}
+                          </td>
+                          <td className="border border-gray-800 p-3 text-center">
+                            {item.indirect.toFixed(2)}
+                          </td>
+                          <td className="border border-gray-800 p-3 text-center">
+                            {item.overall.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                      <tr>
+                        <td
+                          className="border border-gray-800 p-3 text-right font-semibold"
+                          colSpan="3"
+                        >
+                          Average CO Attainment
+                        </td>
+                        <td className="border border-gray-800 p-3 text-center font-bold">
+                          {averageAttainment}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="md:w-[500px] border border-gray-300 rounded-lg p-4">
+                  {renderGraph()}
+                </div>
+              </div>
+
+              {/* Course Outcome Action Plan Table */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-4">
+                  Course Outcome Action Plan
+                </h2>
                 <table className="w-full border-collapse border border-gray-800">
                   <thead>
-                    <tr>
-                      <th
-                        className="border border-gray-800 p-3 bg-white text-center"
-                        rowSpan="2"
-                      >
+                    <tr className="bg-white">
+                      <th className="border border-gray-800 p-2 text-center w-1/6">
                         CO
                       </th>
-                      <th className="border border-gray-800 p-3 bg-white text-center">
-                        Direct CO
+                      <th className="border border-gray-800 p-2 text-center w-1/6">
+                        Attainment
                       </th>
-                      <th className="border border-gray-800 p-3 bg-white text-center">
-                        Indirect CO
-                      </th>
-                      <th className="border border-gray-800 p-3 bg-white text-center">
-                        Overall CO
-                      </th>
-                    </tr>
-                    <tr>
-                      <th className="border border-gray-800 p-3 bg-white text-center">
-                        Attainment Level (DA)
-                      </th>
-                      <th className="border border-gray-800 p-3 bg-white text-center">
-                        Attainment Level (IDA)
-                      </th>
-                      <th className="border border-gray-800 p-3 bg-white text-center">
-                        Attainment Level ((0.8*DA)+(0.2*IDA))
+                      <th className="border border-gray-800 p-2 text-center">
+                        Action Plan
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {overallData.map((item) => (
-                      <tr key={item.coNo}>
-                        <td className="border border-gray-800 p-3 text-center font-semibold">
+                      <tr key={`action-${item.coNo}`}>
+                        <td className="border border-gray-800 p-2 text-center font-semibold">
                           {item.coNo}
                         </td>
-                        <td className="border border-gray-800 p-3 text-center">
-                          {item.direct.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-800 p-3 text-center">
-                          {item.indirect.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-800 p-3 text-center">
+                        <td className="border border-gray-800 p-2 text-center">
                           {item.overall.toFixed(2)}
+                        </td>
+                        <td className="border border-gray-800 p-2">
+                          <textarea
+                            className="w-full p-2 border border-gray-300 rounded"
+                            rows="2"
+                            value={actionPlans[item.coNo] || ""}
+                            onChange={(e) =>
+                              handleActionPlanChange(item.coNo, e.target.value)
+                            }
+                          />
                         </td>
                       </tr>
                     ))}
-                    <tr>
-                      <td
-                        className="border border-gray-800 p-3 text-right font-semibold"
-                        colSpan="3"
-                      >
-                        Average CO Attainment
-                      </td>
-                      <td className="border border-gray-800 p-3 text-center font-bold">
-                        {averageAttainment}
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
-              </div>
-
-              <div className="md:w-[500px] border border-gray-300 rounded-lg p-4">
-                {renderGraph()}
               </div>
             </div>
           </>

@@ -155,7 +155,6 @@ const Marks = () => {
           }
         }
       }
-      alert("Marks updated successfully");
     } catch (error) {
       console.error("Error updating marks:", error);
       alert("Failed to update marks");
@@ -176,7 +175,6 @@ const Marks = () => {
         semester: selectedSemester,
         section: selectedSection,
       });
-      alert("Marks created successfully");
     } catch (error) {
       console.error("Error creating marks:", error);
       alert("Failed to create marks");
