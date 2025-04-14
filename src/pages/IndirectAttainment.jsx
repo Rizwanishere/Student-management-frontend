@@ -50,7 +50,7 @@ const IndirectAttainment = () => {
           );
 
           const feedbackResponse = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/feebackattainment/`
+            `${process.env.REACT_APP_BACKEND_URI}/api/feedbackattainment/`
           );
 
           const studentsWithFeedback = studentsResponse.data.map((student) => {
@@ -118,7 +118,7 @@ const IndirectAttainment = () => {
           if (feedbackId) {
             // Update existing feedback
             await axios.put(
-              `${process.env.REACT_APP_BACKEND_URI}/api/feebackattainment/${feedbackId}`,
+              `${process.env.REACT_APP_BACKEND_URI}/api/feedbackattainment/${feedbackId}`,
               {
                 student: _id,
                 subject: selectedSubject,
@@ -132,7 +132,7 @@ const IndirectAttainment = () => {
           } else {
             // Create new feedback
             await axios.post(
-              `${process.env.REACT_APP_BACKEND_URI}/api/feebackattainment/`,
+              `${process.env.REACT_APP_BACKEND_URI}/api/feedbackattainment/`,
               {
                 student: _id,
                 subject: selectedSubject,

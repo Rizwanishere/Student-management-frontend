@@ -101,7 +101,7 @@ const IndirectCOAttainmentReport = () => {
         try {
           setLoading(true);
           const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/feebackattainment/subject/${selectedSubject}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/feedbackattainment/subject/${selectedSubject}`
           );
           setFeedbackData(response.data);
 
