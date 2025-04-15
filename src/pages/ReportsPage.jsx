@@ -117,6 +117,18 @@ function ReportsPage() {
               </p>
             </div>
           </Link>
+
+          {/* PO Attainment Section */}
+          <Link to="/attainment/po">
+            <div className="p-10 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center text-center border-t-4 border-secondary">
+              <h2 className="text-xl font-semibold text-blue-800">
+                PO Attainments
+              </h2>
+              <p className="text-gray-500 mt-2">
+                Verify Overall PO attainments Reports with Graph.
+              </p>
+            </div>
+          </Link>
           
         </div>
       </div>
