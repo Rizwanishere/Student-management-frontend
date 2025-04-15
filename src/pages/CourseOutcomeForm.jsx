@@ -275,33 +275,6 @@ const CourseOutcome = () => {
         }
       }
 
-      // Get the first 5 CO numbers
-      const firstFiveCOs = courseOutcomes.slice(0, 5).map(co => co.coNo);
-
-      // Make first POST request for CIE-1 (CO 1-3)
-      if (firstFiveCOs.length >= 3) {
-        const cie1Data = {
-          subject: selectedSubject,
-          attainmentData: firstFiveCOs.slice(0, 3).map(coNo => ({ coNo })),
-          attainmentType: "direct",
-          examType: "CIE-1"
-        };
-
-        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, cie1Data);
-      }
-
-      // Make second POST request for CIE-2 (CO 3-5)
-      if (firstFiveCOs.length >= 5) {
-        const cie2Data = {
-          subject: selectedSubject,
-          attainmentData: firstFiveCOs.slice(2, 5).map(coNo => ({ coNo })),
-          attainmentType: "direct",
-          examType: "CIE-2"
-        };
-
-        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, cie2Data);
-      }
-
       // Get updated course outcomes to ensure we have all IDs
       const coResponse = await axios.get(
         `${process.env.REACT_APP_BACKEND_URI}/api/co/course-outcomes/${selectedSubject}`
@@ -342,6 +315,9 @@ const CourseOutcome = () => {
         }
       }
 
+      // After CO-PO matrix entries are saved
+      await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/co/copo-average/${selectedSubject}`);
+
       // Increment save count and store in localStorage
       const newSaveCount = saveCount + 1;
       setSaveCount(newSaveCount);
@@ -360,6 +336,33 @@ const CourseOutcome = () => {
         `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-matrix/${selectedSubject}`
       );
       setCOPOMatrix(copoResponse.data || []);
+
+      // Get the first 5 CO numbers
+      const firstFiveCOs = courseOutcomes.slice(0, 5).map(co => co.coNo);
+
+      // Make first POST request for CIE-1 (CO 1-3)
+      if (firstFiveCOs.length >= 3) {
+        const cie1Data = {
+          subject: selectedSubject,
+          attainmentData: firstFiveCOs.slice(0, 3).map(coNo => ({ coNo })),
+          attainmentType: "direct",
+          examType: "CIE-1"
+        };
+
+        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, cie1Data);
+      }
+
+      // Make second POST request for CIE-2 (CO 3-5)
+      if (firstFiveCOs.length >= 5) {
+        const cie2Data = {
+          subject: selectedSubject,
+          attainmentData: firstFiveCOs.slice(2, 5).map(coNo => ({ coNo })),
+          attainmentType: "direct",
+          examType: "CIE-2"
+        };
+
+        await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, cie2Data);
+      }
     } catch (error) {
       console.error('Error saving data:', error);
       alert('Error saving data. Please try again.');
