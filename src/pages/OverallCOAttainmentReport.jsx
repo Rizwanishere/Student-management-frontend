@@ -186,6 +186,28 @@ const OverallCOAttainmentReport = () => {
     });
   };
 
+  const handleSubmitAttainments = async () => {
+    const attainmentData = overallData.map((item) => ({
+      coNo: item.coNo,
+      attainmentLevel: item.overall,
+    }));
+
+    const payload = {
+      subject: selectedSubject,
+      attainmentData,
+      attainmentType: "computedOverall",
+      examType: "COMPUTED",
+    };
+
+    try {
+      await axios.post("http://localhost:3000/api/attainment", payload);
+      alert("Attainments submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting attainments:", error);
+      alert("Failed to submit attainments. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
@@ -384,6 +406,15 @@ const OverallCOAttainmentReport = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleSubmitAttainments}
+                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+              >
+                Submit Attainments
+              </button>
             </div>
           </>
         )}
