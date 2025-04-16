@@ -200,7 +200,10 @@ const OverallCOAttainmentReport = () => {
     };
 
     try {
-      await axios.post("http://localhost:3000/api/attainment", payload);
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URI}/api/attainment`,
+        payload
+      );
       alert("Attainments submitted successfully!");
     } catch (error) {
       console.error("Error submitting attainments:", error);

@@ -11,6 +11,7 @@ const POAttainmentReport = () => {
   const [coAttainmentAvg, setCoAttainmentAvg] = useState(0);
   const [poData, setPoData] = useState([]);
   const [finalPoValues, setFinalPoValues] = useState([]);
+  const [poResponse, setPoResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
 
@@ -40,7 +41,7 @@ const POAttainmentReport = () => {
         setLoading(true);
         // Fetch CO attainment data
         const coResponse = await axios.get(
-          `http://localhost:3000/api/attainment/subject/${selectedSubject}/attainmentType/computedOverall`
+          `${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${selectedSubject}/attainmentType/computedOverall`
         );
 
         // Calculate CO attainment average
@@ -53,19 +54,20 @@ const POAttainmentReport = () => {
         setCoAttainmentAvg(average);
 
         // Fetch PO mapping data
-        const poResponse = await axios.get(
-          `http://localhost:3000/api/co/copo-average/${selectedSubject}`
+        const poResponseData = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URI}/api/co/copo-average/${selectedSubject}`
         );
+        setPoResponse({ data: poResponseData.data });
 
         // Calculate final PO values
         const poValues = [];
         for (let i = 1; i <= 12; i++) {
           const poKey = `po${i}_avg`;
-          if (poResponse.data[poKey]) {
+          if (poResponseData.data[poKey]) {
             poValues.push({
               po: `PO${i}`,
-              value: (poResponse.data[poKey] * average) / 3,
-              weightedAverage: poResponse.data[poKey],
+              value: (poResponseData.data[poKey] * average) / 3,
+              weightedAverage: poResponseData.data[poKey],
             });
           }
         }
@@ -252,6 +254,136 @@ const POAttainmentReport = () => {
                     <Tooltip />
                     <Bar dataKey="value" fill="#800000" barSize={20} />
                   </BarChart>
+                </div>
+              </div>
+            </div>
+
+            {/* PSO Section */}
+            <div className="mt-12">
+              <h1 className="text-2xl font-bold mb-2 text-center">
+                Programme Specific Outcomes (PSOs) Attainment
+              </h1>
+              <p className="text-lg font-semibold text-center mb-6">
+                PSO = (Weighted Average value of PSO * CO Attainment Average) /
+                3
+              </p>
+              <hr className="border-t-2 border-black mb-6" />
+
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="md:w-1/3">
+                  {/* First PSO Table */}
+                  <div className="mb-4">
+                    <table className="w-full border-collapse border border-gray-800">
+                      <thead>
+                        <tr>
+                          <th className="border border-gray-800 px-4 py-2">
+                            Course
+                          </th>
+                          <th className="border border-gray-800 px-4 py-2">
+                            PSO1
+                          </th>
+                          <th className="border border-gray-800 px-4 py-2">
+                            PSO2
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="border border-gray-800 px-4 py-2">
+                            Weighted Average
+                          </td>
+                          <td className="border border-gray-800 px-4 py-2 text-center">
+                            {poResponse?.data?.pso1_avg?.toFixed(1) || "-"}
+                          </td>
+                          <td className="border border-gray-800 px-4 py-2 text-center">
+                            {poResponse?.data?.pso2_avg?.toFixed(1) || "-"}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Second PSO Table */}
+                  <table className="w-full border-collapse border border-gray-800 mt-10">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-800 px-4 py-2">
+                          PSO
+                        </th>
+                        <th className="border border-gray-800 px-4 py-2">
+                          <div className="flex flex-col">
+                            <span>Attainment</span>
+                            <span>Level</span>
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-gray-800 px-4 py-2 text-center">
+                          PSO1
+                        </td>
+                        <td className="border border-gray-800 px-4 py-2 text-center">
+                          {(
+                            (poResponse?.data?.pso1_avg * coAttainmentAvg) /
+                            3
+                          ).toFixed(2) || "-"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-800 px-4 py-2 text-center">
+                          PSO2
+                        </td>
+                        <td className="border border-gray-800 px-4 py-2 text-center">
+                          {(
+                            (poResponse?.data?.pso2_avg * coAttainmentAvg) /
+                            3
+                          ).toFixed(2) || "-"}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* PSO Graph */}
+                <div className="md:w-2/3">
+                  <div style={{ height: "350px", width: "100%" }}>
+                    <BarChart
+                      width={500}
+                      height={300}
+                      data={[
+                        {
+                          name: "PSO1",
+                          value:
+                            Number(
+                              (
+                                (poResponse?.data?.pso1_avg * coAttainmentAvg) /
+                                3
+                              ).toFixed(2)
+                            ) || 0,
+                        },
+                        {
+                          name: "PSO2",
+                          value:
+                            Number(
+                              (
+                                (poResponse?.data?.pso2_avg * coAttainmentAvg) /
+                                3
+                              ).toFixed(2)
+                            ) || 0,
+                        },
+                      ]}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis
+                        domain={[0, 3]}
+                        ticks={[0, 0.5, 1, 1.5, 2, 2.5, 3]}
+                      />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#FF4500" barSize={80} />
+                    </BarChart>
+                  </div>
                 </div>
               </div>
             </div>
