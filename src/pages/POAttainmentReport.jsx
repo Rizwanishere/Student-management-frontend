@@ -387,6 +387,202 @@ const POAttainmentReport = () => {
                 </div>
               </div>
             </div>
+
+            {/* PO Action Taken Report Table */}
+            <div className="mt-12">
+              <h1 className="text-2xl font-bold mb-2 text-center">
+                PO Action Taken Report
+              </h1>
+              <hr className="border-t-2 border-black mb-6" />
+
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-800">
+                  <thead>
+                    <tr>
+                      <th className="border border-gray-800 px-4 py-2 w-20">
+                        PO
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2 w-24">
+                        <div className="flex flex-col">
+                          <span>Target</span>
+                          <span>set by</span>
+                          <span>PAC</span>
+                        </div>
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2 w-24">
+                        Attained
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2 w-32">
+                        Status
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2">
+                        Action Taken
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {poData.map((po) => (
+                      <tr key={po.po}>
+                        <td className="border border-gray-800 px-4 py-2 text-center">
+                          {po.po}
+                        </td>
+                        <td className="border border-gray-800 p-0">
+                          <input
+                            type="number"
+                            step="0.1"
+                            className="w-full h-full px-2 py-2 border-none focus:outline-none"
+                            placeholder="Enter target"
+                          />
+                        </td>
+                        <td className="border border-gray-800 px-4 py-2 text-center">
+                          {po.value.toFixed(2)}
+                        </td>
+                        <td className="border border-gray-800 p-0">
+                          <input
+                            type="text"
+                            className="w-full h-full px-2 py-2 border-none focus:outline-none"
+                            placeholder="Enter status"
+                          />
+                        </td>
+                        <td className="border border-gray-800 p-0">
+                          <textarea
+                            className="w-full h-full px-2 py-2 border-none focus:outline-none resize-none"
+                            rows="2"
+                            placeholder="Enter action taken"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* PSO Action Taken Report Table */}
+            <div className="mt-12">
+              <h1 className="text-2xl font-bold mb-2 text-center">
+                PSO Action Taken Report
+              </h1>
+              <hr className="border-t-2 border-black mb-6" />
+
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-800">
+                  <thead>
+                    <tr>
+                      <th className="border border-gray-800 px-4 py-2 w-20">
+                        PSO
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2 w-24">
+                        <div className="flex flex-col">
+                          <span>Target</span>
+                          <span>set by</span>
+                          <span>PAC</span>
+                        </div>
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2 w-24">
+                        Attained
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2 w-32">
+                        Status
+                      </th>
+                      <th className="border border-gray-800 px-4 py-2">
+                        Action Taken
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-800 px-4 py-2 text-center">
+                        PSO1
+                      </td>
+                      <td className="border border-gray-800 p-0">
+                        <input
+                          type="number"
+                          step="0.1"
+                          className="w-full h-full px-2 py-2 border-none focus:outline-none"
+                          placeholder="Enter target"
+                        />
+                      </td>
+                      <td className="border border-gray-800 px-4 py-2 text-center">
+                        {(
+                          (poResponse?.data?.pso1_avg * coAttainmentAvg) /
+                          3
+                        ).toFixed(2) || "-"}
+                      </td>
+                      <td className="border border-gray-800 p-0">
+                        <input
+                          type="text"
+                          className="w-full h-full px-2 py-2 border-none focus:outline-none"
+                          placeholder="Enter status"
+                        />
+                      </td>
+                      <td className="border border-gray-800 p-0">
+                        <textarea
+                          className="w-full h-full px-2 py-2 border-none focus:outline-none resize-none"
+                          rows="2"
+                          placeholder="Enter action taken"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-800 px-4 py-2 text-center">
+                        PSO2
+                      </td>
+                      <td className="border border-gray-800 p-0">
+                        <input
+                          type="number"
+                          step="0.1"
+                          className="w-full h-full px-2 py-2 border-none focus:outline-none"
+                          placeholder="Enter target"
+                        />
+                      </td>
+                      <td className="border border-gray-800 px-4 py-2 text-center">
+                        {(
+                          (poResponse?.data?.pso2_avg * coAttainmentAvg) /
+                          3
+                        ).toFixed(2) || "-"}
+                      </td>
+                      <td className="border border-gray-800 p-0">
+                        <input
+                          type="text"
+                          className="w-full h-full px-2 py-2 border-none focus:outline-none"
+                          placeholder="Enter status"
+                        />
+                      </td>
+                      <td className="border border-gray-800 p-0">
+                        <textarea
+                          className="w-full h-full px-2 py-2 border-none focus:outline-none resize-none"
+                          rows="2"
+                          placeholder="Enter action taken"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Footer Section */}
+            <div className="mt-12 mb-8">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <p className="font-semibold">Date</p>
+                  <div className="mt-1 border-b border-black w-48"></div>
+                </div>
+                <div className="flex-1 text-center">
+                  <p className="font-semibold">Name & Signature of Faculty</p>
+                  <div className="mt-1 border-b border-black w-72 mx-auto"></div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-end">
+                    <div className="text-right">
+                      <p className="font-semibold mt-1">Signature of HOD</p>
+                      <div className="mt-1 border-b border-black w-48"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>
