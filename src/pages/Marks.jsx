@@ -97,9 +97,11 @@ const Marks = () => {
     const selectedExamType = e.target.value;
     setExamType(selectedExamType);
 
-    // Set max marks based on exam type
+    // Set max marks based on exam type (included SEE)
     if (selectedExamType === "CIE-1" || selectedExamType === "CIE-2") {
       setMaxMarks(20);
+    } else if (selectedExamType === "SEE") {
+      setMaxMarks(100);
     } else {
       setMaxMarks(10);
     }
@@ -184,16 +186,16 @@ const Marks = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
       <form
-        className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl"
+        className="bg-white shadow-lg rounded-lg p-6 mb-8 w-full max-w-2xl"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-2xl font-semibold mb-4">Marks Entry</h2>
+        <h2 className="text-3xl tracking-tigher font-semibold mb-4">Marks Entry</h2>
 
         {/* Dropdowns for selecting criteria */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* Static Year Dropdown */}
           <select
-            className="border p-2 rounded"
+            className="border px-1 rounded-lg h-8 text-sm font-medium shadow-sm focus-visible:outline-none"
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
           >
@@ -206,7 +208,7 @@ const Marks = () => {
 
           {/* Static Semester Dropdown */}
           <select
-            className="border p-2 rounded"
+            className="border px-1 rounded-lg h-8 text-sm font-medium shadow-sm focus-visible:outline-none"
             value={selectedSemester}
             onChange={(e) => setSelectedSemester(e.target.value)}
           >
@@ -217,7 +219,7 @@ const Marks = () => {
 
           {/* Static Section Dropdown */}
           <select
-            className="border p-2 rounded"
+            className="border px-1 rounded-lg h-8 text-sm font-medium shadow-sm focus-visible:outline-none"
             value={selectedSection}
             onChange={(e) => setSelectedSection(e.target.value)}
           >
@@ -229,7 +231,7 @@ const Marks = () => {
 
           {/* Static Regulation Dropdown */}
           <select
-            className="border p-2 rounded"
+            className="border px-1 rounded-lg h-8 text-sm font-medium shadow-sm focus-visible:outline-none"
             value={selectedRegulation}
             onChange={(e) => setSelectedRegulation(e.target.value)}
           >
@@ -241,7 +243,7 @@ const Marks = () => {
 
           {/* Subject Dropdown (dynamically populated) */}
           <select
-            className="border p-2 rounded"
+            className="border px-1 rounded-lg h-8 text-sm font-medium shadow-sm focus-visible:outline-none"
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
           >
@@ -261,7 +263,7 @@ const Marks = () => {
 
           {/* Static Exam Type Dropdown */}
           <select
-            className="border p-2 rounded"
+            className="border px-1 rounded-lg h-8 text-sm font-medium shadow-sm focus-visible:outline-none"
             value={examType}
             onChange={handleExamTypeChange}
           >
@@ -280,20 +282,26 @@ const Marks = () => {
 
         {/* Max Marks Display */}
         {examType && (
-          <p className="mt-6 ml-28 text-lg text-blue-700">
-            The maximum marks for {examType} is {maxMarks}.
+          <div className="flex justify-center">
+          <p className="mt-3 text-lg text-blue-700 transition-all transition-smooth tracking-tight flex gap-x-1">
+            The maximum marks for{" "}
+            <span className="text-blue-800 font-semibold">{examType}</span> is
+            <span className="text-blue-800 text-xl font-semibold">
+              {maxMarks}.
+            </span>
           </p>
+        </div>
         )}
 
         {/* Submit button */}
         <button
           type="submit"
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="mt-4 px-4 w-32 h-8 text-center  bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Enter
         </button>
       </form>
-
+``
       {/* Conditionally render the table after marks data is fetched */}
       {submitted && students.length > 0 && (
         <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-2xl">
