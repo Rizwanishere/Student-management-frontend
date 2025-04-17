@@ -24,6 +24,7 @@ const Attendance = () => {
   });
   const [importErrors, setImportErrors] = useState([]);
   const [importWarnings, setImportWarnings] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Fetch attendance from the backend
   const fetchAttendance = async () => {
@@ -119,6 +120,7 @@ const Attendance = () => {
     const year = currentDate.getFullYear();
 
     try {
+      setIsSaving(true);
       for (let record of attendanceData) {
         const { student, _id, classesAttended, subject } = record;
         if (subject === filters.subject) {
@@ -155,6 +157,8 @@ const Attendance = () => {
     } catch (error) {
       console.error("Error saving attendance:", error);
       alert("Failed to save attendance");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -252,20 +256,6 @@ const Attendance = () => {
     if (!data || data.length === 0) {
       errors.push("No valid data found in Excel file");
       return { isValid: false, errors, warnings };
-    }
-
-    // Try to determine total classes from the data
-    let maxClasses = 0;
-    data.forEach(row => {
-      const classes = Number(row["Classes Attended"]);
-      if (!isNaN(classes) && classes > maxClasses) {
-        maxClasses = classes;
-      }
-    });
-
-    if (maxClasses > 0) {
-      setTotalClasses(maxClasses.toString());
-      warnings.push(`Total classes not specified. Using maximum attendance value (${maxClasses}) as total classes.`);
     }
 
     // Validate each row
@@ -554,9 +544,20 @@ const Attendance = () => {
 
             <button
               onClick={handleSave}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSaving}
             >
-              Save Attendance
+              {isSaving ? (
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </div>
+              ) : (
+                "Save Attendance"
+              )}
             </button>
           </div>
         </div>
