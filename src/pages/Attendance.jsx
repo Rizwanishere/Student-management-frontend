@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import Loader from "../utils/Loader";
 
 const Attendance = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -25,6 +26,7 @@ const Attendance = () => {
   const [importErrors, setImportErrors] = useState([]);
   const [importWarnings, setImportWarnings] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch attendance from the backend
   const fetchAttendance = async () => {
@@ -97,7 +99,7 @@ const Attendance = () => {
       );
 
       const newData = [...prevData];
-      
+
       if (existingIndex !== -1) {
         newData[existingIndex] = {
           ...newData[existingIndex],
@@ -120,6 +122,7 @@ const Attendance = () => {
     const year = currentDate.getFullYear();
 
     try {
+      setIsLoading(true);
       setIsSaving(true);
       for (let record of attendanceData) {
         const { student, _id, classesAttended, subject } = record;
@@ -159,6 +162,7 @@ const Attendance = () => {
       alert("Failed to save attendance");
     } finally {
       setIsSaving(false);
+      setIsLoading(false);
     }
   };
 
@@ -169,7 +173,7 @@ const Attendance = () => {
         try {
           const data = e.target.result;
           const workbook = XLSX.read(data, { type: "array" });
-          
+
           if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
             throw new Error("Excel file contains no sheets");
           }
@@ -192,7 +196,7 @@ const Attendance = () => {
             // Check each cell for our column indicators
             for (let j = 0; j < row.length; j++) {
               const cellValue = String(row[j] || '').toLowerCase();
-              
+
               if (cellValue.includes('roll') || cellValue.includes('rno') || cellValue.includes('reg')) {
                 rollNumberIndex = j;
               }
@@ -252,7 +256,7 @@ const Attendance = () => {
   const validateExcelData = (data) => {
     const errors = [];
     const warnings = [];
-    
+
     if (!data || data.length === 0) {
       errors.push("No valid data found in Excel file");
       return { isValid: false, errors, warnings };
@@ -274,8 +278,8 @@ const Attendance = () => {
       }
     });
 
-    return { 
-      isValid: errors.length === 0, 
+    return {
+      isValid: errors.length === 0,
       errors,
       warnings
     };
@@ -297,7 +301,7 @@ const Attendance = () => {
     try {
       // Read and parse Excel
       const data = await readExcel(file);
-      
+
       // Validate data
       const { isValid, errors, warnings } = validateExcelData(data);
       setImportWarnings(warnings);
@@ -311,7 +315,7 @@ const Attendance = () => {
       const unmatchedRollNumbers = [];
       const newAttendanceData = students.map(student => {
         // Case-insensitive comparison
-        const excelRow = data.find(row => 
+        const excelRow = data.find(row =>
           row["Roll Number"].toLowerCase() === student.rollNo.toLowerCase()
         );
 
@@ -338,7 +342,7 @@ const Attendance = () => {
 
       let statusMessage = "Attendance imported successfully!";
       let statusType = "success";
-      
+
       if (unmatchedRollNumbers.length > 0) {
         statusMessage += ` (${unmatchedRollNumbers.length} students not found in Excel)`;
         statusType = "warning";
@@ -362,6 +366,9 @@ const Attendance = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
+      {
+        isLoading && <Loader />
+      }
       <form
         className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl"
         onSubmit={handleSubmit}
@@ -420,9 +427,9 @@ const Attendance = () => {
             onChange={(e) => setFilters({ ...filters, month: e.target.value })}
           >
             <option value="">Select Month</option>
-            {Array.from({length: 12}, (_, i) => (
-              <option key={i+1} value={i+1}>
-                {new Date(0, i).toLocaleString('default', {month: 'long'})}
+            {Array.from({ length: 12 }, (_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {new Date(0, i).toLocaleString('default', { month: 'long' })}
               </option>
             ))}
           </select>
@@ -478,11 +485,10 @@ const Attendance = () => {
             </div>
 
             {importStatus.message && (
-              <div className={`p-4 rounded ${
-                importStatus.type === 'success' ? 'bg-green-100 text-green-700' :
-                importStatus.type === 'error' ? 'bg-red-100 text-red-700' :
-                'bg-yellow-100 text-yellow-700'
-              }`}>
+              <div className={`p-4 rounded ${importStatus.type === 'success' ? 'bg-green-100 text-green-700' :
+                  importStatus.type === 'error' ? 'bg-red-100 text-red-700' :
+                    'bg-yellow-100 text-yellow-700'
+                }`}>
                 {importStatus.message}
               </div>
             )}
