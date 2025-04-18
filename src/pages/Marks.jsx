@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import Loader from "../utils/Loader";
+
 
 const Marks = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -21,6 +23,10 @@ const Marks = () => {
   });
   const [importErrors, setImportErrors] = useState([]);
   const [importWarnings, setImportWarnings] = useState([]);
+  const [loading,setloading] = useState(false);
+
+  
+
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -428,6 +434,7 @@ const Marks = () => {
         message: statusMessage,
         type: statusType,
       });
+      e.target.value = null;
     } catch (error) {
       console.error("Import failed:", error);
       setImportStatus({
@@ -435,11 +442,13 @@ const Marks = () => {
         message: error.message || "Failed to import Excel file",
         type: "error",
       });
+      e.target.value = null;
     }
   };
 
   // Handle save marks
   const handleSave = async () => {
+    setloading(true);
     try {
       for (let student of students) {
         const { _id, marks } = student;
@@ -488,9 +497,13 @@ const Marks = () => {
         }
       }
       alert("Marks saved successfully");
+      
     } catch (error) {
       console.error("Error saving marks:", error);
       alert("Failed to save marks");
+    }
+    finally{
+      setloading(false);
     }
   };
 
@@ -719,9 +732,13 @@ const Marks = () => {
                     </td>
                   </tr>
                 ))}
-              </tbody>
+              </tbody>  
             </table>
-
+            {loading && (
+          <div className="text-center">
+            <Loader />
+          </div>
+        )}
             <button
               onClick={handleSave}
               className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
