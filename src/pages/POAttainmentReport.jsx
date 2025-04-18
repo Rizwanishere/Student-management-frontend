@@ -161,7 +161,6 @@ const POAttainmentReport = () => {
         {loading && (
           <div className="text-center">
             <Loader />
-            
           </div>
         )}
 
