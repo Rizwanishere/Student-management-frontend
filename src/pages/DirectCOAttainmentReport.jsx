@@ -309,7 +309,7 @@ const DirectCOAttainmentReport = () => {
             });
 
             const pdfWidth = 297; // Landscape A4 width
-            const pdfHeight = 210; // Landscape A4 height
+            // const pdfHeight = 210; // Landscape A4 height
             const margin = 10;
             const imgWidth = pdfWidth - margin * 2;
             const imgHeight = (tableCanvas.height * imgWidth) / tableCanvas.width;

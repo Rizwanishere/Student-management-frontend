@@ -3,7 +3,7 @@ import Loader from "../utils/Loader";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { FaFileExcel, FaFilePdf, FaSave, FaSearch } from 'react-icons/fa';
+import { FaFileExcel, FaFilePdf, FaSave } from 'react-icons/fa';
 
 const AttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -295,7 +295,7 @@ const AttainmentReport = () => {
     const q1Level = calculateStats("Q1").level;
     const q2Level = calculateStats("Q2").level;
     const q3Level = calculateStats("Q3").level;
-    const saqLevel = calculateStats("saqs").level;
+    // const saqLevel = calculateStats("saqs").level;
     const surpriseLevel = calculateStats("surprise").level;
     const assignmentLevel = calculateStats("assignment").level;
 

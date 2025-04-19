@@ -159,34 +159,34 @@ const CourseOutcome = () => {
     setCOPOMatrix(updatedMatrix);
   };
 
-  const handleDeleteCourseOutcome = async (index, coId) => {
-    if (!window.confirm('Are you sure you want to delete this course outcome?')) {
-      return;
-    }
+  // const handleDeleteCourseOutcome = async (index, coId) => {
+  //   if (!window.confirm('Are you sure you want to delete this course outcome?')) {
+  //     return;
+  //   }
 
-    try {
-      // If the CO has an ID, delete it from the database
-      if (coId) {
-        await axios.delete(`${process.env.REACT_APP_BACKEND_URI}/api/co/course-outcome/${coId}`);
-        await axios.delete(`${process.env.REACT_APP_BACKEND_URI}/api/co/copo-matrix/${coId}`);
-      }
+  //   try {
+  //     // If the CO has an ID, delete it from the database
+  //     if (coId) {
+  //       await axios.delete(`${process.env.REACT_APP_BACKEND_URI}/api/co/course-outcome/${coId}`);
+  //       await axios.delete(`${process.env.REACT_APP_BACKEND_URI}/api/co/copo-matrix/${coId}`);
+  //     }
 
-      // Remove from state
-      const updatedCOs = [...courseOutcomes];
-      updatedCOs.splice(index, 1);
-      setCourseOutcomes(updatedCOs);
+  //     // Remove from state
+  //     const updatedCOs = [...courseOutcomes];
+  //     updatedCOs.splice(index, 1);
+  //     setCourseOutcomes(updatedCOs);
 
-      // Also remove any associated matrix entries
-      const updatedMatrix = coPOMatrix.filter(entry =>
-        entry.courseOutcome !== coId && entry.courseOutcome._id !== coId
-      );
-      setCOPOMatrix(updatedMatrix);
+  //     // Also remove any associated matrix entries
+  //     const updatedMatrix = coPOMatrix.filter(entry =>
+  //       entry.courseOutcome !== coId && entry.courseOutcome._id !== coId
+  //     );
+  //     setCOPOMatrix(updatedMatrix);
 
-    } catch (error) {
-      console.error('Error deleting course outcome:', error);
-      alert('Failed to delete course outcome. Please try again.');
-    }
-  };
+  //   } catch (error) {
+  //     console.error('Error deleting course outcome:', error);
+  //     alert('Failed to delete course outcome. Please try again.');
+  //   }
+  // };
 
   const calculateAverages = () => {
     const poFields = [
@@ -577,7 +577,7 @@ const CourseOutcome = () => {
       
       // Get dimensions of the PDF page
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      // const pageHeight = pdf.internal.pageSize.getHeight();
       
       // Calculate appropriate width and height to fit everything on one page
       const imgWidth = pageWidth - 20; // 10mm margins on each side

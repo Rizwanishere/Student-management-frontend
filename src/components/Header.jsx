@@ -1,25 +1,34 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
 
 const Header = () => {
   const navigate = useNavigate();
   const isLoggedIn = localStorage.getItem("isLoggedIn");
 
   const onLogoutButton = () => {
-    localStorage.removeItem("token");
     localStorage.removeItem("isLoggedIn"); // Clear login state
     navigate("/login");
+  };
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    if (isLoggedIn) {
+      navigate("/home");
+    } else {
+      navigate("/login");
+    }
   };
 
   return (
     <div className="flex items-center shadow-lg">
       <div className="border-8 border-white h-20 flex items-center mx-4 sm:mx-0 w-1/2 sm:w-auto bg-white rounded-r-lg">
-        <img
-          src="https://www.lords.ac.in/wp-content/uploads/2023/04/Website-Logo.png"
-          alt="Lords Institute Logo"
-          className="h-20 w-full ml-3 sm:w-56 object-contain transition-transform duration-300 hover:scale-105"
-        />
+        <Link to="#" onClick={handleLogoClick} className="flex items-center justify-center h-full">
+          <img
+            src="https://www.lords.ac.in/wp-content/uploads/2023/04/Website-Logo.png"
+            alt="Lords Institute Logo"
+            className="h-20 w-full ml-3 sm:w-56 object-contain transition-transform duration-300 hover:scale-105"
+          />
+        </Link>
       </div>
       <header className="bg-gradient-to-r from-secondary to-primary h-24 flex-grow ml-6 rounded-l-lg">
         <div className="h-full flex items-center justify-end px-4 sm:px-16">

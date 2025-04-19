@@ -1,7 +1,5 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import moment from "moment";
 import html2pdf from "html2pdf.js";
 import Loader from "../utils/Loader";
@@ -177,18 +175,6 @@ const ProgressReport = () => {
   };
 
   const totals = calculateTotals();
-
-  const generatePDF = () => {
-    const input = printRef.current;
-    html2canvas(input, { scale: 2, useCORS: true }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
-      pdf.save("progress-report.pdf");
-    });
-  };
 
   const captureAndGeneratePDF = () => {
     const element = document.getElementById("elementToCapture"); // Target the element you want to capture

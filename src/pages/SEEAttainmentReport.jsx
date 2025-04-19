@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaGraduationCap, FaBook, FaChalkboardTeacher, FaSave } from 'react-icons/fa';
+import { FaGraduationCap, FaBook, FaChalkboardTeacher} from 'react-icons/fa';
 
 const SEEAttainmentReport = () => {
   const selectedBranch = localStorage.getItem("selectedBranch");
@@ -124,7 +124,7 @@ const SEEAttainmentReport = () => {
       }
     };
     fetchSubjects();
-  }, [year, semester]);
+  }, [year, semester, selectedBranch]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">

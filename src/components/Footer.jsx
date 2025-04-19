@@ -3,6 +3,7 @@ import React from 'react';
 import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa';
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
   return (
     <footer className="bg-gradient-to-b from-secondary to-primary text-white py-12">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -22,6 +23,7 @@ const Footer = () => {
               <a 
                 href="https://www.lords.ac.in/overview/" 
                 target="_blank" 
+                rel="noreferrer"
                 className="hover:text-tertiary transition-colors duration-300 hover:underline"
               >
                 Overview
@@ -31,6 +33,7 @@ const Footer = () => {
               <a 
                 href="https://www.lords.ac.in/campus-life/events/" 
                 target="_blank" 
+                rel="noreferrer"
                 className="hover:text-tertiary transition-colors duration-300 hover:underline"
               >
                 Events
@@ -40,6 +43,7 @@ const Footer = () => {
               <a 
                 href="https://www.lords.ac.in/infrastructure/world-class-facilities/" 
                 target="_blank" 
+                rel="noreferrer"
                 className="hover:text-tertiary transition-colors duration-300 hover:underline"
               >
                 Facilities
@@ -54,6 +58,7 @@ const Footer = () => {
               <a 
                 href="https://www.lords.ac.in/domestic/courses-offered/"  
                 target="_blank" 
+                rel="noreferrer"
                 className="hover:text-tertiary transition-colors duration-300 hover:underline"
               >
                 Courses Offered
@@ -63,6 +68,7 @@ const Footer = () => {
               <a 
                 href="https://www.lords.ac.in/nri/courses-offered/" 
                 target="_blank" 
+                rel="noreferrer"
                 className="hover:text-tertiary transition-colors duration-300 hover:underline"
               >
                 NRI Admissions
@@ -72,6 +78,7 @@ const Footer = () => {
               <a 
                 href="https://www.lords.ac.in/international/courses-offered/" 
                 target="_blank" 
+                rel="noreferrer"
                 className="hover:text-tertiary transition-colors duration-300 hover:underline"
               >
                 International Students
@@ -94,6 +101,7 @@ const Footer = () => {
             <a 
               href="https://www.facebook.com/lordsinstitute/" 
               target="_blank" 
+              rel="noreferrer"
               className="hover:text-tertiary transition-all duration-300 transform hover:scale-125"
             >
               <FaFacebook size={24} />
@@ -101,6 +109,7 @@ const Footer = () => {
             <a 
               href="https://x.com/lords_institute/" 
               target="_blank" 
+              rel="noreferrer"
               className="hover:text-tertiary transition-all duration-300 transform hover:scale-125"
             >
               <FaTwitter size={24} />
@@ -108,6 +117,7 @@ const Footer = () => {
             <a 
               href="https://www.linkedin.com/school/lords-institute-of-engineering-&-technology/" 
               target="_blank" 
+              rel="noreferrer"
               className="hover:text-tertiary transition-all duration-300 transform hover:scale-125"
             >
               <FaLinkedin size={24} />
@@ -116,7 +126,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="mt-12 pt-6 border-t border-white/20 text-center">
-        <p className="text-white/80">&copy; 2024 Lords Institute of Engineering and Technology. All rights reserved.</p>
+        <p className="text-white/80">&copy; {currentYear} Lords Institute of Engineering and Technology. All rights reserved.</p>
       </div>
     </footer>
   );
