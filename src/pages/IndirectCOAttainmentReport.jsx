@@ -10,6 +10,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { FaFilePdf } from 'react-icons/fa';
 
 ChartJS.register(
   CategoryScale,
@@ -254,85 +257,172 @@ const IndirectCOAttainmentReport = () => {
     }
   };
 
+  // Export data to PDF
+  const exportToPDF = async () => {
+    try {
+      // Create a new PDF document
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Get the elements we want to capture
+      const firstTableElement = document.querySelector(".bg-white.shadow-lg.rounded-lg.p-6.mb-8 table"); // Student response table
+      const secondTableElement = document.querySelectorAll(".bg-white.shadow-lg.rounded-lg.p-6 table")[1]; // CO attainment table
+      const graphElement = document.querySelector(".bg-white.shadow-lg.rounded-lg.p-6.mb-8.mt-6"); // Graph container
+
+      if (!firstTableElement || !secondTableElement || !graphElement) {
+        throw new Error("Required elements not found. Please ensure all data is loaded.");
+      }
+
+      // Function to capture an element as canvas
+      const captureElement = async (element) => {
+        if (!element) return null;
+        
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+          scrollX: 0,
+          scrollY: 0,
+          backgroundColor: "#ffffff",
+        });
+        return canvas;
+      };
+
+      // Add first table (Student response sheet)
+      const firstTableCanvas = await captureElement(firstTableElement);
+      if (!firstTableCanvas) {
+        throw new Error("Failed to capture first table");
+      }
+
+      const firstTableImgData = firstTableCanvas.toDataURL("image/jpeg", 1.0);
+      const firstTableWidth = pdf.internal.pageSize.getWidth() - 20;
+      const firstTableHeight = (firstTableCanvas.height * firstTableWidth) / firstTableCanvas.width;
+      
+      pdf.addImage(firstTableImgData, "JPEG", 10, 20, firstTableWidth, firstTableHeight);
+
+      // Add second table (CO attainment)
+      pdf.addPage();
+      const secondTableCanvas = await captureElement(secondTableElement);
+      if (!secondTableCanvas) {
+        throw new Error("Failed to capture second table");
+      }
+
+      const secondTableImgData = secondTableCanvas.toDataURL("image/jpeg", 1.0);
+      const secondTableWidth = pdf.internal.pageSize.getWidth() - 20;
+      const secondTableHeight = (secondTableCanvas.height * secondTableWidth) / secondTableCanvas.width;
+      
+      pdf.addImage(secondTableImgData, "JPEG", 10, 20, secondTableWidth, secondTableHeight);
+
+      // Add graph (always on a new page)
+      pdf.addPage();
+      const graphCanvas = await captureElement(graphElement);
+      if (!graphCanvas) {
+        throw new Error("Failed to capture graph");
+      }
+
+      const graphImgData = graphCanvas.toDataURL("image/jpeg", 1.0);
+      const graphWidth = pdf.internal.pageSize.getWidth() - 40;
+      const graphHeight = (graphCanvas.height * graphWidth) / graphCanvas.width;
+      
+      pdf.addImage(graphImgData, "JPEG", 20, 20, graphWidth, graphHeight);
+
+      // Save the PDF
+      pdf.save("Indirect_CO_Attainment_Report.pdf");
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert(`Error generating PDF: ${error.message}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-          <h1 className="text-2xl font-bold mb-6 text-center text-blue-800">
-            CO ATTAINMENT (INDIRECT METHOD)
-          </h1>
+          <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-white">
+              CO ATTAINMENT (INDIRECT METHOD)
+            </h1>
+            {summaryData && (
+              <button
+                onClick={exportToPDF}
+                className="inline-flex items-center px-6 py-3 bg-white text-primary rounded-lg font-semibold shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
+              >
+                <FaFilePdf className="mr-2 text-xl" />
+                Export to PDF
+              </button>
+            )}
+          </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6 mt-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Year
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
               >
                 <option value="">Select Year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Semester
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedSemester}
                 onChange={(e) => setSelectedSemester(e.target.value)}
               >
                 <option value="">Select Semester</option>
-                <option value="1">1st Semester</option>
-                <option value="2">2nd Semester</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Section
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedSection}
                 onChange={(e) => setSelectedSection(e.target.value)}
               >
                 <option value="">Select Section</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+                <option value="A">Section A</option>
+                <option value="B">Section B</option>
+                <option value="C">Section C</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Subject
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 disabled={loading || subjectOptions.length === 0}
               >
                 <option value="">Select Subject</option>
-                {subjectOptions.length > 0 ? (
-                  subjectOptions.map((subject) => (
-                    <option key={subject._id} value={subject._id}>
-                      {subject.name}
-                    </option>
-                  ))
-                ) : (
-                  <option value="" disabled>
-                    No subjects available
+                {subjectOptions.map((subject) => (
+                  <option key={subject._id} value={subject._id}>
+                    {subject.name}
                   </option>
-                )}
+                ))}
               </select>
             </div>
           </div>
