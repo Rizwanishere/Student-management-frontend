@@ -3,6 +3,7 @@ import Loader from "../utils/Loader";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { FaFileExcel, FaFilePdf, FaSave, FaSearch } from 'react-icons/fa';
 
 const AttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -946,529 +947,494 @@ const AttainmentReport = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 mb-36 mt-10">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        {/* Header */}
-        <div className="bg-slate-50 p-4 border-b">
-          <h2 className="text-xl font-bold text-center">CO Attainment</h2>
-          {selectedExamType && (
-            <div className="text-center font-bold">{getExamTitle()}</div>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="p-4">
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Year</label>
-              <select
-                className="w-32 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedYear}
-                onChange={handleYearChange}
-              >
-                <option value="">Select Year</option>
-                {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Semester</label>
-              <select
-                className="w-32 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedSemester}
-                onChange={handleSemesterChange}
-                disabled={!selectedYear}
-              >
-                <option value="">Select Semester</option>
-                {semesters.map((sem) => (
-                  <option key={sem} value={sem}>
-                    {sem}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Subject</label>
-              <select
-                className="w-64 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedSubject}
-                onChange={(e) => {
-                  setSelectedSubject(e.target.value);
-                  setSelectedExamType("");
-                  setStudents([]);
-                  setAttainmentData([]);
-                }}
-                disabled={subjects.length === 0}
-              >
-                <option value="">Select Subject</option>
-                {subjects.map((subject) => (
-                  <option key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Exam Type
-              </label>
-              <select
-                className="w-32 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedExamType}
-                onChange={(e) => {
-                  setSelectedExamType(e.target.value);
-                  setAttainmentData([]);
-                }}
-                disabled={!selectedSubject}
-              >
-                <option value="">Select Exam</option>
-                {examTypes.map((examType) => (
-                  <option key={examType} value={examType}>
-                    {examType}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {loading && <Loader />}
-          {error && (
-            <div className="text-center text-red-500 py-4">{error}</div>
-          )}
-
-          {!loading && !error && selectedExamType && students.length > 0 && (
-            <div className="flex justify-end gap-4 mb-4">
-              <button
-                onClick={exportToExcel}
-                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-2"
-                >
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <path d="M8 13h2" />
-                  <path d="M8 17h2" />
-                  <path d="M14 13h2" />
-                  <path d="M14 17h2" />
-                </svg>
-                Export to Excel
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-2"
-                >
-                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <path d="M8 13h8" />
-                  <path d="M8 17h8" />
-                </svg>
-                Export to PDF
-              </button>
-            </div>
-          )}
-
-          {!loading && !error && selectedExamType && (
-            <div className="overflow-x-auto">
-              <table id="attainment-table" className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-slate-50">
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      S.No
-                    </th>
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      Roll. No
-                    </th>
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      Name
-                    </th>
-                    <th colSpan="3" className="border px-2 py-1 text-center">
-                      Q1 (7)
-                    </th>
-                    <th colSpan="3" className="border px-2 py-1 text-center">
-                      Q2 (7)
-                    </th>
-                    <th colSpan="3" className="border px-2 py-1 text-center">
-                      Q3 (7)
-                    </th>
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      Short Answer (6)
-                    </th>
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      Surprise Test (10)
-                    </th>
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      Assignment (10)
-                    </th>
-                    <th rowSpan="2" className="border px-2 py-1 text-center">
-                      {selectedExamType} (40)
-                    </th>
-                  </tr>
-                  <tr className="bg-slate-50">
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q1[0]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q1[1]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q1[2]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q2[0]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q2[1]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q2[2]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q3[0]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q3[1]}
-                    </th>
-                    <th className="border px-2 py-1 text-center">
-                      {coData.q3[2]}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.length > 0 ? (
-                    students.map((student, index) => {
-                      // Calculate the total score
-                      const q1Score = student.internalMarks?.Q1 || 0;
-                      const q2Score = student.internalMarks?.Q2 || 0;
-                      const q3Score = student.internalMarks?.Q3 || 0;
-                      const saqScore = student.internalMarks?.saqs || 0;
-                      const surpriseScore = student.surpriseTestAverage || 0;
-                      const assignmentScore = student.assignmentAverage || 0;
-
-                      const totalScore =
-                        q1Score +
-                        q2Score +
-                        q3Score +
-                        saqScore +
-                        surpriseScore +
-                        assignmentScore;
-
-                      return (
-                        <tr key={student.student.id}>
-                          <td className="border px-2 py-1 text-center">
-                            {index + 1}
-                          </td>
-                          <td className="border px-2 py-1 text-center">
-                            {student.student.rollNo}
-                          </td>
-                          <td className="border px-2 py-1">
-                            {student.student.name}
-                          </td>
-
-                          {/* Q1 CO scores */}
-                          <td className="border px-2 py-1 text-center">
-                            {q1Score || 0}
-                          </td>
-                          <td className="border px-2 py-1 text-center"></td>
-                          <td className="border px-2 py-1 text-center"></td>
-
-                          {/* Q2 CO scores */}
-                          <td className="border px-2 py-1 text-center"></td>
-                          <td className="border px-2 py-1 text-center">
-                            {q2Score || 0}
-                          </td>
-                          <td className="border px-2 py-1 text-center"></td>
-
-                          {/* Q3 CO scores */}
-                          <td className="border px-2 py-1 text-center"></td>
-                          <td className="border px-2 py-1 text-center"></td>
-                          <td className="border px-2 py-1 text-center">
-                            {q3Score || 0}
-                          </td>
-
-                          {/* Other scores */}
-                          <td className="border px-2 py-1 text-center">
-                            {saqScore || 0}
-                          </td>
-                          <td className="border px-2 py-1 text-center">
-                            {surpriseScore || 0}
-                          </td>
-                          <td className="border px-2 py-1 text-center">
-                            {assignmentScore || 0}
-                          </td>
-
-                          {/* Total */}
-                          <td className="border px-2 py-1 text-center font-bold">
-                            {totalScore}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="17" className="border px-4 py-4 text-center">
-                        {selectedYear &&
-                        selectedSemester &&
-                        selectedSubject &&
-                        selectedExamType
-                          ? "No data found"
-                          : "Please select all criteria to view data"}
-                      </td>
-                    </tr>
-                  )}
-
-                  {/* Calculation Rows */}
-                  {students.length > 0 && (
-                    <>
-                      {/* No. of Students Attempted */}
-                      <tr className="bg-slate-50">
-                        <td
-                          colSpan="3"
-                          className="border px-2 py-1 text-right font-semibold"
-                        >
-                          No. of Students Attempted
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q1").attempted}
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q2").attempted}
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q3").attempted}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("saqs").attempted}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("surprise").attempted}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("assignment").attempted}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {/* {calculateStats("total").attempted} */}
-                        </td>
-                      </tr>
-
-                      {/* No. of Students secured >Threshold marks */}
-                      <tr>
-                        <td
-                          colSpan="3"
-                          className="border px-2 py-1 text-right font-semibold"
-                        >
-                          No. of Students secured &gt;Threshold marks
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q1").secured}
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q2").secured}
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q3").secured}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("saqs").secured}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("surprise").secured}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("assignment").secured}
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {/* {calculateStats("total").secured} */}
-                        </td>
-                      </tr>
-
-                      {/* % of Students secured >Threshold marks */}
-                      <tr className="bg-slate-50">
-                        <td
-                          colSpan="3"
-                          className="border px-2 py-1 text-right font-semibold"
-                        >
-                          % of Students secured &gt;Threshold marks
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q1").percentage}%
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q2").percentage}%
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q3").percentage}%
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("saqs").percentage}%
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("surprise").percentage}%
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("assignment").percentage}%
-                        </td>
-                        <td className="border px-2 py-1 text-center">
-                          {/* {calculateStats("total").percentage}% */}
-                        </td>
-                      </tr>
-
-                      {/* Attainment Level */}
-                      <tr>
-                        <td
-                          colSpan="3"
-                          className="border px-2 py-1 text-right font-semibold"
-                        >
-                          Attainment Level
-                        </td>
-                        <td className="border px-2 py-1 text-center font-bold">
-                          {calculateStats("Q1").level}
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center font-bold">
-                          {calculateStats("Q2").level}
-                        </td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center"></td>
-                        <td className="border px-2 py-1 text-center font-bold"></td>
-                        <td className="border px-2 py-1 text-center">
-                          {calculateStats("Q3").level}
-                        </td>
-                        <td className="border px-2 py-1 text-center font-bold">
-                          {calculateStats("saqs").level}
-                        </td>
-                        <td className="border px-2 py-1 text-center font-bold">
-                          {calculateStats("surprise").level}
-                        </td>
-                        <td className="border px-2 py-1 text-center font-bold">
-                          {calculateStats("assignment").level}
-                        </td>
-                        <td className="border px-2 py-1 text-center font-bold">
-                          {/* {calculateStats("total").level} */}
-                        </td>
-                      </tr>
-                    </>
-                  )}
-                </tbody>
-              </table>
-
-              {/* CIE Attainments Table */}
-              {students.length > 0 && (
-                <table className="w-full border-collapse mt-6">
-                  <thead>
-                    <tr className="bg-slate-50">
-                      <th
-                        colSpan="7"
-                        className="border px-2 py-2 text-center font-bold text-lg"
-                      >
-                        {selectedExamType} ATTAINMENTS
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td
-                        className="border px-2 py-2 text-center font-semibold bg-slate-50"
-                        style={{ width: "25%" }}
-                      >
-                        CO AVERAGE
-                      </td>
-                      {getCONumbers().map((coNumber, index) => (
-                        <React.Fragment key={index}>
-                          <td
-                            className="border px-2 py-2 text-center font-semibold"
-                            style={{ width: "12.5%" }}
-                          >
-                            {coNumber}
-                          </td>
-                          <td
-                            className="border px-2 py-2 text-center font-bold text-xl"
-                            style={{ width: "12.5%" }}
-                          >
-                            {getAttainmentValue(coNumber, index)}
-                          </td>
-                        </React.Fragment>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary to-blue-600 -mx-8 -mt-8 px-8 py-6 mb-8">
+              <h2 className="text-2xl font-bold text-white text-center">CO Attainment</h2>
+              {selectedExamType && (
+                <div className="text-center font-semibold text-white mt-2">{getExamTitle()}</div>
               )}
+            </div>
 
-              {/* Save Attainments Button - Placed below the last table */}
-              {students.length > 0 && (
-                <div className="flex justify-end mt-4">
-                  <button
-                    onClick={saveCalculatedAttainments}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded flex items-center"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="mr-2"
-                    >
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+            {/* Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Year</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedYear}
+                  onChange={handleYearChange}
+                >
+                  <option value="">Select Year</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSemester}
+                  onChange={handleSemesterChange}
+                  disabled={!selectedYear}
+                >
+                  <option value="">Select Semester</option>
+                  {semesters.map((sem) => (
+                    <option key={sem} value={sem}>{sem}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Subject</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSubject}
+                  onChange={(e) => {
+                    setSelectedSubject(e.target.value);
+                    setSelectedExamType("");
+                    setStudents([]);
+                    setAttainmentData([]);
+                  }}
+                  disabled={subjects.length === 0}
+                >
+                  <option value="">Select Subject</option>
+                  {subjects.map((subject) => (
+                    <option key={subject._id} value={subject._id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Exam Type</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedExamType}
+                  onChange={(e) => {
+                    setSelectedExamType(e.target.value);
+                    setAttainmentData([]);
+                  }}
+                  disabled={!selectedSubject}
+                >
+                  <option value="">Select Exam</option>
+                  {examTypes.map((examType) => (
+                    <option key={examType} value={examType}>
+                      {examType}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {loading && (
+              <div className="flex justify-center my-8">
+                <Loader />
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
-                    Save Attainments
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && selectedExamType && students.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-4 justify-end">
+                  <button
+                    onClick={exportToExcel}
+                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg font-semibold shadow-md hover:bg-green-700 transition-all duration-300"
+                  >
+                    <FaFileExcel className="mr-2" />
+                    Export to Excel
+                  </button>
+                  <button
+                    onClick={exportToPDF}
+                    className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg font-semibold shadow-md hover:bg-red-700 transition-all duration-300"
+                  >
+                    <FaFilePdf className="mr-2" />
+                    Export to PDF
                   </button>
                 </div>
-              )}
-            </div>
-          )}
+
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table id="attainment-table" className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50">
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            S.No
+                          </th>
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            Roll. No
+                          </th>
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            Name
+                          </th>
+                          <th colSpan="3" className="border px-2 py-1 text-center">
+                            Q1 (7)
+                          </th>
+                          <th colSpan="3" className="border px-2 py-1 text-center">
+                            Q2 (7)
+                          </th>
+                          <th colSpan="3" className="border px-2 py-1 text-center">
+                            Q3 (7)
+                          </th>
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            Short Answer (6)
+                          </th>
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            Surprise Test (10)
+                          </th>
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            Assignment (10)
+                          </th>
+                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                            {selectedExamType} (40)
+                          </th>
+                        </tr>
+                        <tr className="bg-slate-50">
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q1[0]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q1[1]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q1[2]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q2[0]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q2[1]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q2[2]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q3[0]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q3[1]}
+                          </th>
+                          <th className="border px-2 py-1 text-center">
+                            {coData.q3[2]}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {students.length > 0 ? (
+                          students.map((student, index) => {
+                            // Calculate the total score
+                            const q1Score = student.internalMarks?.Q1 || 0;
+                            const q2Score = student.internalMarks?.Q2 || 0;
+                            const q3Score = student.internalMarks?.Q3 || 0;
+                            const saqScore = student.internalMarks?.saqs || 0;
+                            const surpriseScore = student.surpriseTestAverage || 0;
+                            const assignmentScore = student.assignmentAverage || 0;
+
+                            const totalScore =
+                              q1Score +
+                              q2Score +
+                              q3Score +
+                              saqScore +
+                              surpriseScore +
+                              assignmentScore;
+
+                            return (
+                              <tr key={student.student.id}>
+                                <td className="border px-2 py-1 text-center">
+                                  {index + 1}
+                                </td>
+                                <td className="border px-2 py-1 text-center">
+                                  {student.student.rollNo}
+                                </td>
+                                <td className="border px-2 py-1">
+                                  {student.student.name}
+                                </td>
+
+                                {/* Q1 CO scores */}
+                                <td className="border px-2 py-1 text-center">
+                                  {q1Score || 0}
+                                </td>
+                                <td className="border px-2 py-1 text-center"></td>
+                                <td className="border px-2 py-1 text-center"></td>
+
+                                {/* Q2 CO scores */}
+                                <td className="border px-2 py-1 text-center"></td>
+                                <td className="border px-2 py-1 text-center">
+                                  {q2Score || 0}
+                                </td>
+                                <td className="border px-2 py-1 text-center"></td>
+
+                                {/* Q3 CO scores */}
+                                <td className="border px-2 py-1 text-center"></td>
+                                <td className="border px-2 py-1 text-center"></td>
+                                <td className="border px-2 py-1 text-center">
+                                  {q3Score || 0}
+                                </td>
+
+                                {/* Other scores */}
+                                <td className="border px-2 py-1 text-center">
+                                  {saqScore || 0}
+                                </td>
+                                <td className="border px-2 py-1 text-center">
+                                  {surpriseScore || 0}
+                                </td>
+                                <td className="border px-2 py-1 text-center">
+                                  {assignmentScore || 0}
+                                </td>
+
+                                {/* Total */}
+                                <td className="border px-2 py-1 text-center font-bold">
+                                  {totalScore}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan="17" className="border px-4 py-4 text-center">
+                              {selectedYear &&
+                              selectedSemester &&
+                              selectedSubject &&
+                              selectedExamType
+                                ? "No data found"
+                                : "Please select all criteria to view data"}
+                            </td>
+                          </tr>
+                        )}
+
+                        {/* Calculation Rows */}
+                        {students.length > 0 && (
+                          <>
+                            {/* No. of Students Attempted */}
+                            <tr className="bg-slate-50">
+                              <td
+                                colSpan="3"
+                                className="border px-2 py-1 text-right font-semibold"
+                              >
+                                No. of Students Attempted
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q1").attempted}
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q2").attempted}
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q3").attempted}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("saqs").attempted}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("surprise").attempted}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("assignment").attempted}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {/* {calculateStats("total").attempted} */}
+                              </td>
+                            </tr>
+
+                            {/* No. of Students secured >Threshold marks */}
+                            <tr>
+                              <td
+                                colSpan="3"
+                                className="border px-2 py-1 text-right font-semibold"
+                              >
+                                No. of Students secured &gt;Threshold marks
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q1").secured}
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q2").secured}
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q3").secured}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("saqs").secured}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("surprise").secured}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("assignment").secured}
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {/* {calculateStats("total").secured} */}
+                              </td>
+                            </tr>
+
+                            {/* % of Students secured >Threshold marks */}
+                            <tr className="bg-slate-50">
+                              <td
+                                colSpan="3"
+                                className="border px-2 py-1 text-right font-semibold"
+                              >
+                                % of Students secured &gt;Threshold marks
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q1").percentage}%
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q2").percentage}%
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q3").percentage}%
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("saqs").percentage}%
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("surprise").percentage}%
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("assignment").percentage}%
+                              </td>
+                              <td className="border px-2 py-1 text-center">
+                                {/* {calculateStats("total").percentage}% */}
+                              </td>
+                            </tr>
+
+                            {/* Attainment Level */}
+                            <tr>
+                              <td
+                                colSpan="3"
+                                className="border px-2 py-1 text-right font-semibold"
+                              >
+                                Attainment Level
+                              </td>
+                              <td className="border px-2 py-1 text-center font-bold">
+                                {calculateStats("Q1").level}
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center font-bold">
+                                {calculateStats("Q2").level}
+                              </td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center"></td>
+                              <td className="border px-2 py-1 text-center font-bold"></td>
+                              <td className="border px-2 py-1 text-center">
+                                {calculateStats("Q3").level}
+                              </td>
+                              <td className="border px-2 py-1 text-center font-bold">
+                                {calculateStats("saqs").level}
+                              </td>
+                              <td className="border px-2 py-1 text-center font-bold">
+                                {calculateStats("surprise").level}
+                              </td>
+                              <td className="border px-2 py-1 text-center font-bold">
+                                {calculateStats("assignment").level}
+                              </td>
+                              <td className="border px-2 py-1 text-center font-bold">
+                                {/* {calculateStats("total").level} */}
+                              </td>
+                            </tr>
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+
+                    {/* CIE Attainments Table */}
+                    {students.length > 0 && (
+                      <table className="w-full border-collapse mt-6">
+                        <thead>
+                          <tr className="bg-slate-50">
+                            <th
+                              colSpan="7"
+                              className="border px-2 py-2 text-center font-bold text-lg"
+                            >
+                              {selectedExamType} ATTAINMENTS
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td
+                              className="border px-2 py-2 text-center font-semibold bg-slate-50"
+                              style={{ width: "25%" }}
+                            >
+                              CO AVERAGE
+                            </td>
+                            {getCONumbers().map((coNumber, index) => (
+                              <React.Fragment key={index}>
+                                <td
+                                  className="border px-2 py-2 text-center font-semibold"
+                                  style={{ width: "12.5%" }}
+                                >
+                                  {coNumber}
+                                </td>
+                                <td
+                                  className="border px-2 py-2 text-center font-bold text-xl"
+                                  style={{ width: "12.5%" }}
+                                >
+                                  {getAttainmentValue(coNumber, index)}
+                                </td>
+                              </React.Fragment>
+                            ))}
+                          </tr>
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+
+                {students.length > 0 && (
+                  <div className="flex justify-end mt-6">
+                    <button
+                      onClick={saveCalculatedAttainments}
+                      className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:bg-blue-600 transition-all duration-300"
+                    >
+                      <FaSave className="mr-2" />
+                      Save Attainments
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
