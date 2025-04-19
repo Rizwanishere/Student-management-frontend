@@ -304,8 +304,10 @@ const IndirectCOAttainmentReport = () => {
       
       pdf.addImage(firstTableImgData, "JPEG", 10, 20, firstTableWidth, firstTableHeight);
 
-      // Add second table (CO attainment)
+      // Add second table and graph on the same page
       pdf.addPage();
+      
+      // Capture and add second table
       const secondTableCanvas = await captureElement(secondTableElement);
       if (!secondTableCanvas) {
         throw new Error("Failed to capture second table");
@@ -315,10 +317,10 @@ const IndirectCOAttainmentReport = () => {
       const secondTableWidth = pdf.internal.pageSize.getWidth() - 20;
       const secondTableHeight = (secondTableCanvas.height * secondTableWidth) / secondTableCanvas.width;
       
+      // Add second table at the top of the page
       pdf.addImage(secondTableImgData, "JPEG", 10, 20, secondTableWidth, secondTableHeight);
 
-      // Add graph (always on a new page)
-      pdf.addPage();
+      // Capture and add graph below the second table
       const graphCanvas = await captureElement(graphElement);
       if (!graphCanvas) {
         throw new Error("Failed to capture graph");
@@ -328,7 +330,10 @@ const IndirectCOAttainmentReport = () => {
       const graphWidth = pdf.internal.pageSize.getWidth() - 40;
       const graphHeight = (graphCanvas.height * graphWidth) / graphCanvas.width;
       
-      pdf.addImage(graphImgData, "JPEG", 20, 20, graphWidth, graphHeight);
+      // Calculate position for graph (below the second table)
+      const graphYPosition = 20 + secondTableHeight + 10; // 10mm gap between table and graph
+      
+      pdf.addImage(graphImgData, "JPEG", 20, graphYPosition, graphWidth, graphHeight);
 
       // Save the PDF
       pdf.save("Indirect_CO_Attainment_Report.pdf");
