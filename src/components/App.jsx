@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Home from "./Home";
 import Header from "./Header";
 import Footer from "./Footer";
+import Contact from "./Contact";
 import BranchSelection from '../pages/BranchSelection';
 import Login from '../pages/Login';
 import ScrollToTop from "../utils/ScrollToTop";
@@ -25,6 +26,7 @@ import IndirectAttainment from "../pages/IndirectAttainment";
 import IndirectCOAttainmentReport from "../pages/IndirectCOAttainmentReport";
 import OverallCOAttainmentReport from "../pages/OverallCOAttainmentReport";
 import POAttainmentReport from "../pages/POAttainmentReport";
+import AboutUs from "./AboutUs";
 
 const App = () => {
   const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
@@ -40,6 +42,9 @@ const App = () => {
 
         {/* Route to home after login */}
         <Route path="/home" element={<Home />} />
+
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<AboutUs />} />
 
         {/* Routes for Attendance and Marks are now accessible without login */}
         <Route path="/attendance" element={<Attendance />} />

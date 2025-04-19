@@ -259,11 +259,11 @@ const SEEAttainmentReport = () => {
                                 <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{attempted}</td>
                               </tr>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900">No. of Students secured > Threshold</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">No. of Students secured &gt; Threshold</td>
                                 <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{securedAboveThreshold}</td>
                               </tr>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900">% of Students secured > Threshold marks</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">% of Students secured &gt; Threshold marks</td>
                                 <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{(percentSecured * 100).toFixed(2)}%</td>
                               </tr>
                               <tr className="hover:bg-gray-50">

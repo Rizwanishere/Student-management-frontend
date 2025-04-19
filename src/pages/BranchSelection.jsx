@@ -8,7 +8,7 @@ const BranchSelection = () => {
   const handleBranchSelection = () => {
     if (branch) {
       localStorage.setItem("selectedBranch", branch); // Store the selected branch
-      navigate("/home"); // Navigate to Home page
+      navigate("/login"); // Navigate to Home page
     }
   };
 
