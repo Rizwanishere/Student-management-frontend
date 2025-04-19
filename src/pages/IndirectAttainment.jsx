@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { FaSearch, FaSave, FaGraduationCap, FaBook, FaUsers } from 'react-icons/fa';
+import Loader from "../utils/Loader";
 
 const IndirectAttainment = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -9,6 +11,7 @@ const IndirectAttainment = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -93,21 +96,23 @@ const IndirectAttainment = () => {
     selectedSection,
   ]);
 
-  // Ensure the table remains visible after clicking submit by keeping `submitted` true
-  const handleDropdownSubmit = (e) => {
+  const handleDropdownSubmit = async (e) => {
     e.preventDefault();
-    setStudents([]); // Clear the students data to ensure the table is reset
-    setSubmitted(false); // Temporarily set to false to trigger re-fetch
-    setTimeout(() => setSubmitted(true), 0); // Immediately set back to true to keep the table visible
+    setLoading(true);
+    setStudents([]); 
+    setSubmitted(false);
+    setTimeout(() => {
+      setSubmitted(true);
+      setLoading(false);
+    }, 0);
   };
 
-  // Updated the handleSubmit function to only make PUT or POST requests for students whose CO values have changed
   const handleSubmit = async () => {
     try {
+      setLoading(true);
       for (let student of students) {
         const { _id, CO1, CO2, CO3, CO4, CO5, feedbackId } = student;
 
-        // Check if any CO value has changed
         if (
           student.originalCO1 !== CO1 ||
           student.originalCO2 !== CO2 ||
@@ -116,31 +121,21 @@ const IndirectAttainment = () => {
           student.originalCO5 !== CO5
         ) {
           if (feedbackId) {
-            // Update existing feedback
             await axios.put(
               `${process.env.REACT_APP_BACKEND_URI}/api/feedbackattainment/${feedbackId}`,
               {
                 student: _id,
                 subject: selectedSubject,
-                CO1,
-                CO2,
-                CO3,
-                CO4,
-                CO5,
+                CO1, CO2, CO3, CO4, CO5,
               }
             );
           } else {
-            // Create new feedback
             await axios.post(
               `${process.env.REACT_APP_BACKEND_URI}/api/feedbackattainment/`,
               {
                 student: _id,
                 subject: selectedSubject,
-                CO1,
-                CO2,
-                CO3,
-                CO4,
-                CO5,
+                CO1, CO2, CO3, CO4, CO5,
               }
             );
           }
@@ -150,6 +145,8 @@ const IndirectAttainment = () => {
     } catch (error) {
       console.error("Error saving feedback attainment data:", error);
       alert("Failed to save feedback attainment data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -164,125 +161,169 @@ const IndirectAttainment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <form
-        className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl"
-        onSubmit={handleDropdownSubmit}
-      >
-        <h2 className="text-2xl font-semibold mb-4">Indirect Attainment</h2>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Indirect Attainment</h1>
+              <div className="text-sm text-gray-500">
+                {selectedBranch && `Branch: ${selectedBranch}`}
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <select
-            className="border p-2 rounded"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-          >
-            <option value="">Select Year</option>
-            <option value="1">1st Year</option>
-            <option value="2">2nd Year</option>
-            <option value="3">3rd Year</option>
-            <option value="4">4th Year</option>
-          </select>
+            <form onSubmit={handleDropdownSubmit} className="mb-8">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Year</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaGraduationCap className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                    >
+                      <option value="">Select Year</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
+                </div>
 
-          <select
-            className="border p-2 rounded"
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-          >
-            <option value="">Select Semester</option>
-            <option value="1">1st Semester</option>
-            <option value="2">2nd Semester</option>
-          </select>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaBook className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedSemester}
+                      onChange={(e) => setSelectedSemester(e.target.value)}
+                    >
+                      <option value="">Select Semester</option>
+                      <option value="1">1st Semester</option>
+                      <option value="2">2nd Semester</option>
+                    </select>
+                  </div>
+                </div>
 
-          <select
-            className="border p-2 rounded"
-            value={selectedSection}
-            onChange={(e) => setSelectedSection(e.target.value)}
-          >
-            <option value="">Select Section</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Section</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaUsers className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedSection}
+                      onChange={(e) => setSelectedSection(e.target.value)}
+                    >
+                      <option value="">Select Section</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </div>
+                </div>
 
-          <select
-            className="border p-2 rounded"
-            value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
-          >
-            <option value="">Select Subject</option>
-            {subjectOptions.length > 0 ? (
-              subjectOptions.map((subject) => (
-                <option key={subject.id} value={subject._id}>
-                  {subject.name}
-                </option>
-              ))
-            ) : (
-              <option value="" disabled>
-                No subjects available
-              </option>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Subject</label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                  >
+                    <option value="">Select Subject</option>
+                    {subjectOptions.length > 0 ? (
+                      subjectOptions.map((subject) => (
+                        <option key={subject.id} value={subject._id}>
+                          {subject.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No subjects available
+                      </option>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  <FaSearch className="mr-2" />
+                  Search Students
+                </button>
+              </div>
+            </form>
+
+            {submitted && students.length > 0 && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Feedback Attainment Data</h2>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CO1</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CO2</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CO3</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CO4</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CO5</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {students.map((student, index) => (
+                          <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{index + 1}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.rollNo}</td>
+                            {["CO1", "CO2", "CO3", "CO4", "CO5"].map((coKey) => (
+                              <td className="px-6 py-4 whitespace-nowrap text-center" key={coKey}>
+                                <input
+                                  type="number"
+                                  className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-center"
+                                  value={student[coKey]}
+                                  onChange={(e) => handleCOChange(index, coKey, e.target.value)}
+                                  max={3}
+                                  min={0}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      onClick={handleSubmit}
+                    >
+                      <FaSave className="mr-2" />
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Submit
-        </button>
-      </form>
-
-      {submitted && students.length > 0 && (
-        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-2xl">
-          <h2 className="text-2xl font-semibold mb-4">
-            Feedback Attainment Data
-          </h2>
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr>
-                <th className="py-2 border">S.No</th>
-                <th className="py-2 border">Roll No</th>
-                <th className="py-2 border">CO1</th>
-                <th className="py-2 border">CO2</th>
-                <th className="py-2 border">CO3</th>
-                <th className="py-2 border">CO4</th>
-                <th className="py-2 border">CO5</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student, index) => (
-                <tr key={student._id}>
-                  <td className="py-2 border text-center">{index + 1}</td>
-                  <td className="py-2 border text-center">{student.rollNo}</td>
-
-                  {["CO1", "CO2", "CO3", "CO4", "CO5"].map((coKey) => (
-                    <td className="py-2 border text-center" key={coKey}>
-                      <input
-                        type="number"
-                        className="border p-2 rounded w-full text-center"
-                        value={student[coKey]}
-                        onChange={(e) =>
-                          handleCOChange(index, coKey, e.target.value)
-                        }
-                        max={3}
-                        min={0}
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mt-4 flex justify-end space-x-4">
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              onClick={handleSubmit}
-            >
-              Submit
-            </button>
           </div>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Loader />
         </div>
       )}
     </div>

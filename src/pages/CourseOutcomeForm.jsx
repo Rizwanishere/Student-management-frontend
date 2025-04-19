@@ -3,6 +3,7 @@ import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import Loader from '../utils/Loader';
+import { FaPlus, FaMinus, FaDownload, FaSave, FaTrash, FaTable } from 'react-icons/fa';
 
 const CourseOutcome = () => {
   const [selectedYear, setSelectedYear] = useState('');
@@ -597,320 +598,306 @@ const CourseOutcome = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 mb-24">
-      <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
-        <h1 className="text-2xl font-bold mb-6 text-gray-700">Course Outcome and CO-PO Matrix</h1>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Course Outcome and CO-PO Matrix</h1>
+              <div className="text-sm text-gray-500">
+                {selectedBranch && `Branch: ${selectedBranch}`}
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-16">
-          <div>
-            <label className="block text-sm font-medium text-gray-600">Year</label>
-            <select
-              className="mt-1 p-2 border border-gray-300 rounded w-full"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
-              <option value="">Select Year</option>
-              <option value="1">1st Year</option>
-              <option value="2">2nd Year</option>
-              <option value="3">3rd Year</option>
-              <option value="4">4th Year</option>
-            </select>
-          </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Year</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="">Select Year</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">Semester</label>
-            <select
-              className="mt-1 p-2 border border-gray-300 rounded w-full"
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-            >
-              <option value="">Select Semester</option>
-              <option value="1">1st Semester</option>
-              <option value="2">2nd Semester</option>
-            </select>
-          </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                >
+                  <option value="">Select Semester</option>
+                  <option value="1">1st Semester</option>
+                  <option value="2">2nd Semester</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-600">Course</label>
-            <select
-              className="mt-1 p-2 border border-gray-300 rounded w-full"
-              value={selectedSubject}
-              onChange={handleSubjectSelect}
-              disabled={!selectedYear || !selectedSemester}
-            >
-              <option value="">Select Course</option>
-              {subjectOptions.map((subject) => (
-                <option key={subject._id} value={subject._id}>
-                  {subject.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Course</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSubject}
+                  onChange={handleSubjectSelect}
+                  disabled={!selectedYear || !selectedSemester}
+                >
+                  <option value="">Select Course</option>
+                  {subjectOptions.map((subject) => (
+                    <option key={subject._id} value={subject._id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-        {selectedSubject && !showTables && (
-          <div className="text-center">
-            <button
-              onClick={() => setShowTables(true)}
-              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-            >
-              Generate Table
-            </button>
-          </div>
-        )}
+            {selectedSubject && !showTables && (
+              <div className="text-center py-8">
+                <button
+                  onClick={() => setShowTables(true)}
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  <FaTable className="mr-2" />
+                  Generate Table
+                </button>
+              </div>
+            )}
 
-        {showTables && selectedSubject && (
-          <div>
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-700">Course Outcome Table</h2>
-                <div className="flex space-x-3">
+            {showTables && selectedSubject && (
+              <div className="space-y-8">
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">Course Outcome Table</h2>
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={addNewCourseOutcome}
+                          disabled={saveCount >= 2}
+                          className={`inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
+                            saveCount >= 2
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-green-500 hover:bg-green-600 text-white hover:shadow"
+                          }`}
+                        >
+                          <FaPlus className="mr-2" />
+                          Add New Outcome
+                        </button>
+
+                        <button
+                          onClick={removeLastCourseOutcome}
+                          disabled={saveCount >= 1}
+                          className={`inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
+                            saveCount >= 1
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-red-500 hover:bg-red-600 text-white hover:shadow"
+                          }`}
+                        >
+                          <FaMinus className="mr-2" />
+                          Remove Last Outcome
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CO No.</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Outcomes (CO)</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Knowledge Level</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {courseOutcomes.map((outcome, idx) => (
+                            <tr key={idx} className="hover:bg-gray-50 transition-colors duration-200">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {subjectOptions.find(s => s._id === selectedSubject)?.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="text"
+                                  value={outcome.coNo}
+                                  onChange={(e) => handleCourseOutcomeChange(idx, 'coNo', e.target.value)}
+                                  className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="CO1"
+                                />
+                              </td>
+                              <td className="px-6 py-4">
+                                <input
+                                  type="text"
+                                  value={outcome.courseOutcome}
+                                  onChange={(e) => handleCourseOutcomeChange(idx, 'courseOutcome', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="Enter course outcome"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <select
+                                  value={outcome.knowledgeLevel}
+                                  onChange={(e) => handleCourseOutcomeChange(idx, 'knowledgeLevel', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                >
+                                  <option value="BTL-1">BTL-1</option>
+                                  <option value="BTL-2">BTL-2</option>
+                                  <option value="BTL-3">BTL-3</option>
+                                  <option value="BTL-4">BTL-4</option>
+                                  <option value="BTL-5">BTL-5</option>
+                                  <option value="BTL-6">BTL-6</option>
+                                </select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">CO-PO Matrix</h2>
+                    <div>
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Course Outcomes (COs)</th>
+                            {[...Array(12)].map((_, i) => (
+                              <th key={i} className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                PO{i + 1}
+                              </th>
+                            ))}
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">PSO1</th>
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">PSO2</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {coPOMatrix.map((matrix, idx) => (
+                            <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-xs">
+                                {matrix.courseOutcome ? (
+                                  typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                                    matrix.courseOutcome.courseOutcome :
+                                    courseOutcomes.find(co => co && co._id === matrix.courseOutcome)?.courseOutcome
+                                ) : "N/A"}
+                              </td>
+                              {[...Array(12)].map((_, i) => (
+                                <td key={i} className="px-1 py-2 text-center">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="3"
+                                    value={matrix[`po${i + 1}`] || ''}
+                                    onChange={(e) => {
+                                      const coId = matrix.courseOutcome ?
+                                        (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                                          matrix.courseOutcome._id : matrix.courseOutcome) :
+                                        null;
+                                      if (coId) handlePOChange(coId, `po${i + 1}`, e.target.value);
+                                    }}
+                                    className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    placeholder="0"
+                                    disabled={!matrix.courseOutcome}
+                                  />
+                                </td>
+                              ))}
+                              <td className="px-1 py-2 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="3"
+                                  value={matrix.pso1 || ''}
+                                  onChange={(e) => {
+                                    const coId = matrix.courseOutcome ?
+                                      (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                                        matrix.courseOutcome._id : matrix.courseOutcome) :
+                                      null;
+                                    if (coId) handlePOChange(coId, 'pso1', e.target.value);
+                                  }}
+                                  className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="0"
+                                  disabled={!matrix.courseOutcome}
+                                />
+                              </td>
+                              <td className="px-1 py-2 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="3"
+                                  value={matrix.pso2 || ''}
+                                  onChange={(e) => {
+                                    const coId = matrix.courseOutcome ?
+                                      (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
+                                        matrix.courseOutcome._id : matrix.courseOutcome) :
+                                      null;
+                                    if (coId) handlePOChange(coId, 'pso2', e.target.value);
+                                  }}
+                                  className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="0"
+                                  disabled={!matrix.courseOutcome}
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                          <tr className="bg-gray-100 font-medium">
+                            <td className="px-3 py-2 text-sm font-bold text-gray-900">AVERAGE</td>
+                            {Object.entries(calculateAverages()).map(([key, avg], idx) => (
+                              <td key={idx} className="px-1 py-2 text-sm text-gray-900 text-center font-semibold">
+                                {avg}
+                              </td>
+                            ))}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center mt-8">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={exportToPDF}
+                      className="inline-flex items-center px-6 py-3 bg-green-500 text-white rounded-lg font-semibold shadow-md hover:bg-green-600 transition-all duration-200"
+                    >
+                      <FaDownload className="mr-2" />
+                      Export to PDF
+                    </button>
+                    <button
+                      onClick={handleResetTables}
+                      className="inline-flex items-center px-6 py-3 bg-red-500 text-white rounded-lg font-semibold shadow-md hover:bg-red-600 transition-all duration-200"
+                    >
+                      <FaTrash className="mr-2" />
+                      Reset Table
+                    </button>
+                  </div>
                   <button
-                    onClick={addNewCourseOutcome}
-                    disabled={saveCount >= 2}  // Disable when save count is 1 or more
-                    className={`px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm transition-colors duration-200 ${saveCount >= 2 ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"
-                      }`}
+                    onClick={handleSave}
+                    disabled={saveDisabled}
+                    className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 ${
+                      saveDisabled
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-primary hover:bg-blue-600 text-white hover:shadow-lg'
+                    }`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span>Add New Outcome</span>
+                    <FaSave className="mr-2" />
+                    {saveDisabled ? 'Saved' : 'Save'}
                   </button>
-
-
-                  <button
-                    onClick={removeLastCourseOutcome}
-                    disabled={saveCount >= 1}  // Disable when save count is 1 or more
-                    className={`px-4 py-2 rounded-lg flex items-center space-x-2 shadow-sm transition-colors duration-200 ${saveCount >= 1 ? "bg-gray-400 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 text-white"
-                      }`}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                    </svg>
-                    <span>Remove Last Outcome</span>
-                  </button>
-
                 </div>
               </div>
-
-              <div className="overflow-x-auto rounded-lg shadow">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CO No.</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course Outcomes (CO)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Knowledge Level</th>
-                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Delete</th> */}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {courseOutcomes.map((outcome, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50 transition-colors duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {subjectOptions.find(s => s._id === selectedSubject)?.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="text"
-                            value={outcome.coNo}
-                            onChange={(e) => handleCourseOutcomeChange(idx, 'coNo', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                            placeholder="CO1"
-                          />
-                        </td>
-                        <td className="px-6 py-4">
-                          <input
-                            type="text"
-                            value={outcome.courseOutcome}
-                            onChange={(e) => handleCourseOutcomeChange(idx, 'courseOutcome', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                            placeholder="Enter course outcome"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <select
-                            value={outcome.knowledgeLevel}
-                            onChange={(e) => handleCourseOutcomeChange(idx, 'knowledgeLevel', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                          >
-                            <option value="BTL-1">BTL-1</option>
-                            <option value="BTL-2">BTL-2</option>
-                            <option value="BTL-3">BTL-3</option>
-                            <option value="BTL-4">BTL-4</option>
-                            <option value="BTL-5">BTL-5</option>
-                            <option value="BTL-6">BTL-6</option>
-                          </select>
-                        </td>
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <button
-                            onClick={() => handleDeleteCourseOutcome(idx, outcome._id)}
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
-                            title="Delete course outcome"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </td> */}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className='flex justify-end mt-3'>
-              <button
-                onClick={handleSave}
-                className={`px-6 py-2 ${saveDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} mt-3 text-white rounded-lg transition-colors duration-200 shadow-sm`}
-                disabled={saveDisabled}
-              >
-                {saveDisabled ? 'Saved' : 'Save'}
-              </button>
-              </div>
-            </div>
-
-            <h2 className="text-xl font-bold mt-8 mb-4 text-gray-700">CO-PO Matrix</h2>
-
-            <table className="min-w-full table-auto border-collapse mb-6">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2 text-left text-sm font-medium text-gray-700 bg-gray-50">
-                    Course Outcomes (COs)
-                  </th>
-                  {[...Array(12)].map((_, i) => (
-                    <th key={i} className="border px-4 py-2 text-center text-sm font-medium text-gray-700 bg-gray-50">
-                      PO{i + 1}
-                    </th>
-                  ))}
-                  <th className="border px-4 py-2 text-center text-sm font-medium text-gray-700 bg-gray-50">PSO1</th>
-                  <th className="border px-4 py-2 text-center text-sm font-medium text-gray-700 bg-gray-50">PSO2</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {coPOMatrix.map((matrix, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="border px-4 py-2 text-sm text-gray-600">
-                      {/* Check if matrix.courseOutcome exists and handle different data structures */}
-                      {matrix.courseOutcome ? (
-                        typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
-                          matrix.courseOutcome.courseOutcome :
-                          courseOutcomes.find(co => co && co._id === matrix.courseOutcome)?.courseOutcome
-                      ) : (
-                        // Fallback if courseOutcome is null or undefined
-                        "N/A"
-                      )}
-                    </td>
-                    {[...Array(12)].map((_, i) => (
-                      <td key={i} className="border px-4 py-2 text-sm text-gray-600">
-                        <input
-                          type="number"
-                          min="0"
-                          max="3"
-                          value={matrix[`po${i + 1}`] || ''}
-                          onChange={(e) => {
-                            // Safely get the courseOutcome ID
-                            const coId = matrix.courseOutcome ?
-                              (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
-                                matrix.courseOutcome._id : matrix.courseOutcome) :
-                              null;
-
-                            if (coId) {
-                              handlePOChange(coId, `po${i + 1}`, e.target.value);
-                            }
-                          }}
-                          className="w-full p-2 border border-gray-300 rounded text-center"
-                          placeholder="0"
-                          disabled={!matrix.courseOutcome}
-                        />
-                      </td>
-                    ))}
-                    <td className="border px-4 py-2 text-sm text-gray-600">
-                      <input
-                        type="number"
-                        min="0"
-                        max="3"
-                        value={matrix.pso1 || ''}
-                        onChange={(e) => {
-                          const coId = matrix.courseOutcome ?
-                            (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
-                              matrix.courseOutcome._id : matrix.courseOutcome) :
-                            null;
-
-                          if (coId) {
-                            handlePOChange(coId, 'pso1', e.target.value);
-                          }
-                        }}
-                        className="w-full p-2 border border-gray-300 rounded text-center"
-                        placeholder="0"
-                        disabled={!matrix.courseOutcome}
-                      />
-                    </td>
-                    <td className="border px-4 py-2 text-sm text-gray-600">
-                      <input
-                        type="number"
-                        min="0"
-                        max="3"
-                        value={matrix.pso2 || ''}
-                        onChange={(e) => {
-                          const coId = matrix.courseOutcome ?
-                            (typeof matrix.courseOutcome === 'object' && matrix.courseOutcome !== null ?
-                              matrix.courseOutcome._id : matrix.courseOutcome) :
-                            null;
-
-                          if (coId) {
-                            handlePOChange(coId, 'pso2', e.target.value);
-                          }
-                        }}
-                        className="w-full p-2 border border-gray-300 rounded text-center"
-                        placeholder="0"
-                        disabled={!matrix.courseOutcome}
-                      />
-                    </td>
-                  </tr>
-                ))}
-                {/* Average Row */}
-                <tr className="bg-gray-100 font-medium">
-                  <td className="border px-4 py-2 text-sm text-gray-800 font-bold">AVERAGE</td>
-                  {Object.entries(calculateAverages()).map(([key, avg], idx) => (
-                    <td key={idx} className="border px-4 py-2 text-sm text-gray-800 text-center">
-                      {avg}
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-
-            </table>
-
-            <div className="mt-4 flex justify-between items-center">
-              <div className="space-x-4">
-                <button
-                  onClick={exportToPDF}
-                  className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-700"
-                >
-                  Export to PDF
-                </button>
-                <button
-                  onClick={handleResetTables}
-                  className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                >
-                  Reset Table
-                </button>
-              </div>
-              <button
-                onClick={handleSave}
-                className={`px-6 py-2 ${saveDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-lg transition-colors duration-200 shadow-sm`}
-                disabled={saveDisabled}
-              >
-                {saveDisabled ? 'Saved' : 'Save'}
-              </button>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
-
-      {/* Add Loader component here, conditionally rendered based on loading state */}
-      {loading && <Loader />}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Loader />
+        </div>
+      )}
     </div>
   );
 };
