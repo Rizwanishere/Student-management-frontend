@@ -11,6 +11,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { FaFilePdf } from 'react-icons/fa';
 
 ChartJS.register(
   CategoryScale,
@@ -211,49 +214,119 @@ const OverallCOAttainmentReport = () => {
     }
   };
 
+  // Export data to PDF
+  const exportToPDF = async () => {
+    try {
+      // Create a new PDF document
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Get the elements we want to capture (only the content, not the dropdowns and buttons)
+      const contentElement = document.querySelector(".flex.flex-col.gap-6");
+      
+      if (!contentElement) {
+        throw new Error("Content not found. Please ensure all data is loaded.");
+      }
+
+      // Function to capture an element as canvas
+      const captureElement = async (element) => {
+        if (!element) return null;
+        
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+          scrollX: 0,
+          scrollY: 0,
+          backgroundColor: "#ffffff",
+        });
+        return canvas;
+      };
+
+      // Capture the content
+      const contentCanvas = await captureElement(contentElement);
+      if (!contentCanvas) {
+        throw new Error("Failed to capture content");
+      }
+
+      const contentImgData = contentCanvas.toDataURL("image/jpeg", 1.0);
+      const contentWidth = pdf.internal.pageSize.getWidth() - 20;
+      const contentHeight = (contentCanvas.height * contentWidth) / contentCanvas.width;
+      
+      // Add content to PDF
+      pdf.addImage(contentImgData, "JPEG", 10, 10, contentWidth, contentHeight);
+
+      // Save the PDF
+      pdf.save("Overall_CO_Attainment_Report.pdf");
+
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert(`Error generating PDF: ${error.message}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
+          <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-white">
+              OVERALL CO ATTAINMENT
+            </h1>
+            {showTable && (
+              <button
+                onClick={exportToPDF}
+                className="inline-flex items-center px-6 py-3 bg-white text-primary rounded-lg font-semibold shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
+              >
+                <FaFilePdf className="mr-2 text-xl" />
+                Export to PDF
+              </button>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Year
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
               >
                 <option value="">Select Year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Semester
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedSemester}
                 onChange={(e) => setSelectedSemester(e.target.value)}
               >
                 <option value="">Select Semester</option>
-                <option value="1">1st Semester</option>
-                <option value="2">2nd Semester</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Subject
               </label>
               <select
-                className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 disabled={loading || subjectOptions.length === 0}
@@ -271,7 +344,7 @@ const OverallCOAttainmentReport = () => {
           <div className="flex justify-center mb-6">
             <button
               onClick={handleSubmit}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="bg-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
             >
               Submit
             </button>
@@ -414,7 +487,7 @@ const OverallCOAttainmentReport = () => {
             <div className="flex justify-center mt-6">
               <button
                 onClick={handleSubmitAttainments}
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                className="bg-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
               >
                 Submit Attainments
               </button>

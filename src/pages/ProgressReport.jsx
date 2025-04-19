@@ -5,6 +5,7 @@ import html2canvas from "html2canvas";
 import moment from "moment";
 import html2pdf from "html2pdf.js";
 import Loader from "../utils/Loader";
+import { FaSearch, FaDownload } from 'react-icons/fa';
 
 const ProgressReport = () => {
   const [rollNo, setRollNo] = useState("");
@@ -264,8 +265,9 @@ const ProgressReport = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white font-semibold rounded-lg p-2 hover:bg-blue-600 transition"
+          className="w-full bg-primary text-white font-semibold rounded-lg px-6 py-3 hover:bg-blue-600 transition-all duration-300 hover:shadow-lg transform hover:scale-105 flex items-center justify-center"
         >
+          <FaSearch className="mr-2" />
           Generate Report
         </button>
       </form>
@@ -300,7 +302,7 @@ const ProgressReport = () => {
                   Estd.2003
                 </p>
                 <p className="text-md text-center">
-                  Accredited with ‘A’ grade by NAAC | Accredited by NBA
+                  Accredited with 'A' grade by NAAC | Accredited by NBA
                 </p>
                 <p className="text-lg font-bold text-red-500 text-center">
                   Department of Computer Science and Engineering
@@ -517,8 +519,9 @@ const ProgressReport = () => {
       {reportData && (
         <button
           onClick={captureAndGeneratePDF}
-          className="bg-blue-500 text-white p-2 rounded mt-4"
+          className="bg-primary text-white font-semibold rounded-lg px-6 py-3 hover:bg-blue-600 transition-all duration-300 hover:shadow-lg transform hover:scale-105 flex items-center justify-center mt-4"
         >
+          <FaDownload className="mr-2" />
           Download PDF
         </button>
       )}

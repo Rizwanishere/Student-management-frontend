@@ -1,18 +1,24 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { FaSearch, FaUserGraduate } from 'react-icons/fa';
+import Loader from "../utils/Loader";
 
 const VerifyStudent = () => {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchStudentMarks = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_URI}/api/students/getall/${rollNo}`
       );
       setStudentData(response.data);
     } catch (error) {
       console.error("Error fetching student data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,10 +40,9 @@ const VerifyStudent = () => {
 
   const renderTable = () => {
     if (!studentData || !studentData.marks) {
-      return <p>No data available</p>;
+      return <p className="text-gray-500 text-center mt-4">No data available</p>;
     }
 
-    // Extract subjects dynamically
     const subjects = Object.keys(studentData.marks);
     const testTypes = [
       "AT-1",
@@ -52,37 +57,31 @@ const VerifyStudent = () => {
 
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-gray-300">
-          <thead>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="border border-gray-300 px-4 py-2">Subjects</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subjects</th>
               {testTypes.map((testType, index) => (
-                <th key={index} className="border border-gray-300 px-4 py-2">
+                <th key={index} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {testType}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {subjects.map((subject, index) => (
-              <tr key={index}>
-                <td className="border border-gray-300 px-4 py-2 font-semibold text-left">
+              <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {subject}
                 </td>
                 {testTypes.map((testType, i) => {
-                  // Find the backend key that corresponds to the current table header (testType)
                   const backendExamType = Object.keys(mapExamTypes).find(
                     (key) => mapExamTypes[key] === testType
                   );
 
                   return (
-                    <td
-                      key={i}
-                      className="border border-gray-300 px-4 py-2 text-center"
-                    >
-                      {/* Access marks for the backend exam type */}
-                      {studentData.marks[subject][backendExamType]?.marks ||
-                        "N/A"}
+                    <td key={i} className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                      {studentData.marks[subject][backendExamType]?.marks || "-"}
                     </td>
                   );
                 })}
@@ -95,45 +94,66 @@ const VerifyStudent = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center">
-      {/* First div: Centered Roll No Input */}
-      <div className="bg-white shadow-md rounded-lg mb-1 p-6 mb-8 w-full max-w-xl mt-16">
-        <div>
-          <h2 className="text-xl text-primary font-bold mb-4 text-center">
-            Student marks verification
-          </h2>
-          <div className="flex flex-col items-center">
-            <input
-              type="text"
-              value={rollNo}
-              onChange={(e) => setRollNo(e.target.value)}
-              className="border border-gray-300 rounded px-8 py-2 mb-2"
-              placeholder="Roll No"
-            />
-            <button
-              onClick={handleGenerateTable}
-              className="bg-blue-500 mt-4 text-white items-left px-3 py-2 ml-36 rounded hover:bg-blue-600"
-            >
-              Submit
-            </button>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Student Marks Verification</h1>
+            </div>
+
+            <div className="max-w-xl mx-auto">
+              <div className="flex flex-col space-y-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUserGraduate className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={rollNo}
+                    onChange={(e) => setRollNo(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    placeholder="Enter Roll Number"
+                  />
+                </div>
+
+                <button
+                  onClick={handleGenerateTable}
+                  className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  <FaSearch className="mr-2" />
+                  Verify Marks
+                </button>
+              </div>
+            </div>
+
+            {loading && (
+              <div className="flex justify-center mt-8">
+                <Loader />
+              </div>
+            )}
+
+            {studentData && (
+              <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      Student Details
+                    </h2>
+                    <p className="text-gray-600">
+                      Name: <span className="font-semibold">{studentData.student}</span>
+                    </p>
+                    <p className="text-gray-600">
+                      Roll No: <span className="font-semibold">{studentData.rollNo}</span>
+                    </p>
+                  </div>
+                  {renderTable()}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Second div: Table rendered below the input */}
-      {studentData ? (
-        <div className="w-full bg-white shadow-xl rounded-lg mb-18 p-6 mb-8 w-full max-w-5xl">
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4 text-center">
-              Marks for Student, {studentData.student} with Roll No:{" "}
-              {studentData.rollNo}
-            </h3>
-            {renderTable()}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-grow"></div> // Ensures footer stays at the bottom when no table is rendered
-      )}
     </div>
   );
 };

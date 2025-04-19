@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import Loader from "../utils/Loader";
+import { FaSearch, FaSave, FaFileExcel, FaCalendarAlt, FaUserGraduate, FaBook, FaClock } from "react-icons/fa";
 
 const Attendance = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -365,209 +366,272 @@ const Attendance = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      {
-        isLoading && <Loader />
-      }
-      <form
-        className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl"
-        onSubmit={handleSubmit}
-      >
-        <h2 className="text-2xl font-semibold mb-4">Attendance Entry</h2>
-
-        {/* Dropdowns */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <select
-            className="border p-2 rounded"
-            value={filters.year}
-            onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-          >
-            <option value="">Select Year</option>
-            <option value="1">1st Year</option>
-            <option value="2">2nd Year</option>
-            <option value="3">3rd Year</option>
-            <option value="4">4th Year</option>
-          </select>
-
-          <select
-            className="border p-2 rounded"
-            value={filters.semester}
-            onChange={(e) => setFilters({ ...filters, semester: e.target.value })}
-          >
-            <option value="">Select Semester</option>
-            <option value="1">1st Semester</option>
-            <option value="2">2nd Semester</option>
-          </select>
-
-          <select
-            className="border p-2 rounded"
-            value={filters.section}
-            onChange={(e) => setFilters({ ...filters, section: e.target.value })}
-          >
-            <option value="">Select Section</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
-
-          <select
-            className="border p-2 rounded"
-            value={filters.subject}
-            onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-          >
-            <option value="">Select Subject</option>
-            {subjects.map((subject) => (
-              <option key={subject._id} value={subject._id}>{subject.name}</option>
-            ))}
-          </select>
-
-          <select
-            className="border p-2 rounded"
-            value={filters.month}
-            onChange={(e) => setFilters({ ...filters, month: e.target.value })}
-          >
-            <option value="">Select Month</option>
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>
-                {new Date(0, i).toLocaleString('default', { month: 'long' })}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filters.period}
-            onChange={(e) => setFilters({ ...filters, period: e.target.value })}
-            className="border p-2 rounded"
-          >
-            <option value="">Select Period</option>
-            <option value="15th">Up to 15th</option>
-            <option value="30th">Up to 30th</option>
-          </select>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance Management</h1>
+          <p className="text-gray-600">Record and manage student attendance efficiently</p>
         </div>
 
-        <input
-          type="number"
-          placeholder="Total Classes Taken"
-          className="border p-2 rounded w-full mt-4"
-          value={totalClasses}
-          onChange={(e) => setTotalClasses(e.target.value)}
-          required
-        />
-
-        <button
-          type="submit"
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Enter
-        </button>
-      </form>
-
-      {submitted && students.length > 0 && (
-        <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-6xl">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-xl font-semibold">Attendance Table</h3>
-              <div>
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleExcelImport}
-                  className="hidden"
-                  id="excel-upload"
-                />
-                <label
-                  htmlFor="excel-upload"
-                  className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Import from Excel
-                </label>
-              </div>
-            </div>
-
-            {importStatus.message && (
-              <div className={`p-4 rounded ${importStatus.type === 'success' ? 'bg-green-100 text-green-700' :
-                  importStatus.type === 'error' ? 'bg-red-100 text-red-700' :
-                    'bg-yellow-100 text-yellow-700'
-                }`}>
-                {importStatus.message}
-              </div>
-            )}
-
-            {importErrors.length > 0 && (
-              <div className="bg-red-100 text-red-700 p-4 rounded">
-                <h4 className="font-semibold">Errors:</h4>
-                <ul className="list-disc list-inside">
-                  {importErrors.map((error, i) => (
-                    <li key={i}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {importWarnings.length > 0 && (
-              <div className="bg-yellow-100 text-yellow-700 p-4 rounded">
-                <h4 className="font-semibold">Warnings:</h4>
-                <ul className="list-disc list-inside">
-                  {importWarnings.map((warning, i) => (
-                    <li key={i}>{warning}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <table className="table-auto w-full border">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2">S No</th>
-                  <th className="border px-4 py-2">Roll No</th>
-                  <th className="border px-4 py-2">Student Name</th>
-                  <th className="border px-4 py-2">Classes Attended</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map((student, index) => {
-                  const record = attendanceData.find(
-                    r => r.student === student._id && r.subject === filters.subject
-                  );
-                  return (
-                    <tr key={student._id}>
-                      <td className="border px-4 py-2">{index + 1}</td>
-                      <td className="border px-4 py-2">{student.rollNo}</td>
-                      <td className="border px-4 py-2">{student.name}</td>
-                      <td className="border px-4 py-2">
-                        <input
-                          type="number"
-                          className="border p-2 rounded w-full text-center"
-                          value={record?.classesAttended || ""}
-                          onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <button
-              onClick={handleSave}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Year</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaUserGraduate className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={filters.year}
+                      onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+                    >
+                      <option value="">Select Year</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
                 </div>
-              ) : (
-                "Save Attendance"
-              )}
-            </button>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaBook className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={filters.semester}
+                      onChange={(e) => setFilters({ ...filters, semester: e.target.value })}
+                    >
+                      <option value="">Select Semester</option>
+                      <option value="1">1st Semester</option>
+                      <option value="2">2nd Semester</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Section</label>
+                  <select
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={filters.section}
+                    onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                  >
+                    <option value="">Select Section</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Subject</label>
+                  <select
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={filters.subject}
+                    onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
+                  >
+                    <option value="">Select Subject</option>
+                    {subjects.map((subject) => (
+                      <option key={subject._id} value={subject._id}>
+                        {subject.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Month</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaCalendarAlt className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={filters.month}
+                      onChange={(e) => setFilters({ ...filters, month: e.target.value })}
+                    >
+                      <option value="">Select Month</option>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Period</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaClock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={filters.period}
+                      onChange={(e) => setFilters({ ...filters, period: e.target.value })}
+                    >
+                      <option value="">Select Period</option>
+                      <option value="15th">Up to 15th</option>
+                      <option value="30th">Up to 30th</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Total Classes Taken</label>
+                <input
+                  type="number"
+                  placeholder="Enter total classes taken"
+                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={totalClasses}
+                  onChange={(e) => setTotalClasses(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="bg-primary text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary flex items-center space-x-2"
+                >
+                  <FaSearch />
+                  <span>Search Students</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      )}
+
+        {isLoading && (
+          <div className="mt-8 flex justify-center">
+            <Loader />
+          </div>
+        )}
+
+        {submitted && students.length > 0 && (
+          <div className="mt-8 bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Attendance Records</h2>
+                  <p className="text-gray-600 mt-1">
+                    Course: {subjects.find(subject => subject._id === filters.subject)?.name}
+                  </p>
+                </div>
+                <div className="mt-4 sm:mt-0 flex space-x-4">
+                  <label
+                    htmlFor="excel-upload"
+                    className="bg-secondary text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 cursor-pointer flex items-center space-x-2"
+                  >
+                    <FaFileExcel />
+                    <span>Import Excel</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleExcelImport}
+                    className="hidden"
+                    id="excel-upload"
+                  />
+                  <button
+                    onClick={handleSave}
+                    className="bg-primary text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                    disabled={isSaving}
+                  >
+                    <FaSave />
+                    <span>{isSaving ? "Saving..." : "Save Attendance"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {isSaving && (
+                <div className="mt-4 flex justify-center">
+                  <Loader />
+                </div>
+              )}
+
+              {importStatus.message && (
+                <div
+                  className={`p-4 rounded-lg mb-4 ${
+                    importStatus.type === "success"
+                      ? "bg-green-100 text-green-700"
+                      : importStatus.type === "error"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {importStatus.message}
+                </div>
+              )}
+
+              {importErrors.length > 0 && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-4">
+                  <h4 className="font-semibold text-red-700">Errors:</h4>
+                  <ul className="list-disc list-inside text-red-600">
+                    {importErrors.map((error, i) => (
+                      <li key={i}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {importWarnings.length > 0 && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg mb-4">
+                  <h4 className="font-semibold text-yellow-700">Warnings:</h4>
+                  <ul className="list-disc list-inside text-yellow-600">
+                    {importWarnings.map((warning, i) => (
+                      <li key={i}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S No</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes Attended</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {students.map((student, index) => {
+                      const record = attendanceData.find(
+                        r => r.student === student._id && r.subject === filters.subject
+                      );
+                      return (
+                        <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-200">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.rollNo}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input
+                              type="number"
+                              className="w-24 border border-gray-200 rounded-lg px-3 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                              value={record?.classesAttended || ""}
+                              onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
