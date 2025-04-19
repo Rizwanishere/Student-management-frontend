@@ -14,7 +14,7 @@ const Header = () => {
 
   return (
     <div className="flex items-center shadow-lg">
-      <div className="border-8 border-white h-20 flex items-center mx-4 sm:mx-0 w-1/2 sm:w-auto bg-white">
+      <div className="border-8 border-white h-20 flex items-center mx-4 sm:mx-0 w-1/2 sm:w-auto bg-white rounded-r-lg">
         <img
           src="https://www.lords.ac.in/wp-content/uploads/2023/04/Website-Logo.png"
           alt="Lords Institute Logo"

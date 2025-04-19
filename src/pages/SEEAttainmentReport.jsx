@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaGraduationCap, FaBook, FaChalkboardTeacher } from 'react-icons/fa';
-import Loader from "../utils/Loader";
+import { FaGraduationCap, FaBook, FaChalkboardTeacher, FaSave } from 'react-icons/fa';
 
 const SEEAttainmentReport = () => {
   const selectedBranch = localStorage.getItem("selectedBranch");
@@ -10,9 +9,8 @@ const SEEAttainmentReport = () => {
   const [subjects, setSubjects] = useState([]);
   const [subjectId, setSubjectId] = useState("");
   const [marksData, setMarksData] = useState([]);
-
-  // Add new state for CO numbers
   const [coNumbers, setCoNumbers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const yearOptions = [1, 2, 3, 4];
   const semesterOptions = [1, 2];
@@ -32,7 +30,6 @@ const SEEAttainmentReport = () => {
       const marksUrl = `${process.env.REACT_APP_BACKEND_URI}/api/marks/${id}/SEE`;
       const res = await axios.get(marksUrl);
       
-      // Process the marks data to add grades
       const processedData = res.data.map(entry => {
         const percent = (entry.marks / entry.maxMarks) * 100;
         let gradePoint = 0;
@@ -54,54 +51,63 @@ const SEEAttainmentReport = () => {
 
       setMarksData(processedData);
       
-      // Only fetch CIE data and post attainment if we have marks data
       if (processedData.length > 0) {
-        // Calculate attainment level here before passing to fetchCIEAttainment
-        const attempted = processedData.length;
-        const securedAboveThreshold = processedData.filter((entry) =>
-          ["S", "A", "B", "C", "D", "E"].includes(entry.finalGrade)
-        ).length;
-
-        const percentSecured = attempted ? (securedAboveThreshold / attempted) : 0;
-        const calculatedAttainmentLevel = percentSecured >= 0.7 ? 3 
-          : percentSecured >= 0.5 ? 2 
-          : percentSecured >= 0.1 ? 1 
-          : 0;
-
-        await fetchCIEAttainment(id, calculatedAttainmentLevel);
+        await fetchCIEAttainment(id);
       }
     } catch (err) {
       console.error("Failed to fetch marks:", err);
     }
   };
 
-  const fetchCIEAttainment = async (id, calculatedAttainmentLevel) => {
+  const fetchCIEAttainment = async (id) => {
     try {
       const [cie1Response, cie2Response] = await Promise.all([
         axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-1`),
         axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-2`)
       ]);
 
-      // Extract unique CO numbers from both CIE-1 and CIE-2
       const cie1COs = cie1Response.data[0]?.attainmentData?.map(item => item.coNo) || [];
       const cie2COs = cie2Response.data[0]?.attainmentData?.map(item => item.coNo) || [];
       
-      // Combine and remove duplicates
       const uniqueCOs = [...new Set([...cie1COs, ...cie2COs])].sort();
       setCoNumbers(uniqueCOs);
+    } catch (err) {
+      console.error("Failed to fetch CIE data:", err);
+    }
+  };
 
-      // Post the CO numbers for SEE attainment with the passed attainment level
+  const postAttainmentData = async () => {
+    if (!subjectId || !marksData.length) return;
+
+    setLoading(true);
+    try {
+      const attempted = marksData.length;
+      const securedAboveThreshold = marksData.filter((entry) =>
+        ["S", "A", "B", "C", "D", "E"].includes(entry.finalGrade)
+      ).length;
+
+      const percentSecured = attempted ? (securedAboveThreshold / attempted) : 0;
+      const calculatedAttainmentLevel = percentSecured >= 0.7 ? 3 
+        : percentSecured >= 0.5 ? 2 
+        : percentSecured >= 0.1 ? 1 
+        : 0;
+
       await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, {
-        subject: id,
-        attainmentData: uniqueCOs.map(coNo => ({ 
+        subject: subjectId,
+        attainmentData: coNumbers.map(coNo => ({ 
           coNo,
-          attainmentLevel: calculatedAttainmentLevel // Use the passed attainment level
+          attainmentLevel: calculatedAttainmentLevel
         })),
         attainmentType: "direct",
         examType: "SEE"
       });
+
+      alert("Attainment data submitted successfully!");
     } catch (err) {
-      console.error("Failed to fetch CIE data or post SEE attainment:", err);
+      console.error("Failed to post SEE attainment:", err);
+      alert("Failed to submit attainment data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -280,6 +286,27 @@ const SEEAttainmentReport = () => {
                       </tbody>
                     </table>
                   </div>
+                </div>
+
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={postAttainmentData}
+                    disabled={loading}
+                    className={`px-8 py-3 text-white rounded-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 ${
+                      loading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary'
+                    }`}
+                  >
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin mr-2 h-5 w-5 border-t-2 border-b-2 border-white rounded-full"></div>
+                        Submitting...
+                      </div>
+                    ) : (
+                      'Submit Attainments'
+                    )}
+                  </button>
                 </div>
               </div>
             )}
