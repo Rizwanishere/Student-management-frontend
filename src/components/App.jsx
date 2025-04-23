@@ -12,6 +12,7 @@ import ScrollToTop from "../utils/ScrollToTop";
 import Attendance from "../pages/Attendance";
 import Marks from "../pages/Marks";
 import PostStudent from "../pages/PostStudent";
+import PostSubjects from "../pages/PostSubjects";
 import ReportsPage from "../pages/ReportsPage";
 import MarksReport from "../pages/MarksReport"
 import AttendanceReport from "../pages/AttendanceReport";
@@ -57,6 +58,7 @@ const App = () => {
         <Route path="/progressreport" element={<ProgressReport />} />
 
         <Route path="/poststudent" element={<PostStudent />} />
+        <Route path="/postsubjects" element={<PostSubjects />} />
         <Route path="/verify" element={<VerifyStudent />} />
 
         <Route path="/internalmarks" element={<InternalMarks />} />

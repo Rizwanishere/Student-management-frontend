@@ -55,6 +55,7 @@ function PostStudent() {
             {
             'rollNo': '123',
             'name': 'John',
+            'fartherName': 'Doe',
             'branch': 'CSE',
             'currentYear': 4,
             'currentSemester': 1,
@@ -63,6 +64,7 @@ function PostStudent() {
             { 
             'rollNo': '123',
             'name': 'John',
+            'fartherName': 'Doe',
             'branch': 'CSE',
             'currentYear': 4,
             'currentSemester': 1,
