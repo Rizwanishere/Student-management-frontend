@@ -16,7 +16,10 @@ const Attendance = () => {
     subject: "",
     month: "",
     period: "",
+    regulation: "",
   });
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
   const selectedBranch = localStorage.getItem("selectedBranch");
   const [attendanceData, setAttendanceData] = useState([]);
   const [importStatus, setImportStatus] = useState({
@@ -28,6 +31,25 @@ const Attendance = () => {
   const [importWarnings, setImportWarnings] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setFilters({ ...filters, regulation: value });
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setFilters({ ...filters, regulation: value });
+    }
+  };
 
   // Fetch attendance from the backend
   const fetchAttendance = async () => {
@@ -47,10 +69,11 @@ const Attendance = () => {
 
   // Fetch subjects from backend
   const fetchSubjects = async () => {
-    if (filters.year && filters.semester) {
+    if (filters.year && filters.semester && filters.regulation) {
       try {
+        const regulationValue = showCustomRegulation ? customRegulation : filters.regulation;
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${filters.year}/semester/${filters.semester}`
+          `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${filters.year}/semester/${filters.semester}/regulation/${regulationValue}`
         );
         setSubjects(response.data.length > 0 ? response.data : []);
       } catch (error) {
@@ -76,11 +99,11 @@ const Attendance = () => {
   };
 
   useEffect(() => {
-    if (filters.year && filters.semester) {
+    if (filters.year && filters.semester && filters.regulation) {
       fetchSubjects();
     }
     fetchAttendance();
-  }, [filters.year, filters.semester, filters.month, filters.period]);
+  }, [filters.year, filters.semester, filters.month, filters.period, filters.regulation, customRegulation]);
 
   useEffect(() => {
     if (submitted) fetchStudents();
@@ -413,6 +436,30 @@ const Attendance = () => {
                       <option value="2">2nd Semester</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <select
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={filters.regulation}
+                    onChange={handleRegulationChange}
+                  >
+                    <option value="">Select Regulation</option>
+                    {regulations.map((reg) => (
+                      <option key={reg} value={reg}>{reg}</option>
+                    ))}
+                  </select>
+                  {showCustomRegulation && (
+                    <input
+                      type="text"
+                      className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      placeholder="Enter Regulation Code"
+                      value={customRegulation}
+                      onChange={handleCustomRegulationChange}
+                      pattern="[A-Z0-9]*"
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">

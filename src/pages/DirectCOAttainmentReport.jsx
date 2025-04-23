@@ -17,24 +17,49 @@ const DirectCOAttainmentReport = () => {
     const [loading, setLoading] = useState(false);
     const [showTable, setShowTable] = useState(false);
     const [error, setError] = useState(null);
+    const [selectedRegulation, setSelectedRegulation] = useState("");
+    const [customRegulation, setCustomRegulation] = useState("");
+    const [showCustomRegulation, setShowCustomRegulation] = useState(false);
 
     const selectedBranch = localStorage.getItem("selectedBranch");
 
     // Years and semesters for dropdowns
     const years = ["1", "2", "3", "4"];
     const semesters = ["1", "2"];
+    const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+    // Handle regulation change
+    const handleRegulationChange = (e) => {
+        const value = e.target.value;
+        setSelectedRegulation(value);
+        setShowCustomRegulation(value === "Other");
+        if (value !== "Other") {
+        setCustomRegulation("");
+        }
+    };
+
+    // Handle custom regulation input
+    const handleCustomRegulationChange = (e) => {
+        const value = e.target.value.toUpperCase();
+        if (/^[A-Z0-9]*$/.test(value)) {
+        setCustomRegulation(value);
+        setSelectedRegulation(value);
+        }
+    };
 
     // Fetch subjects when year and semester are selected
     useEffect(() => {
         const fetchSubjects = async () => {
-            if (!selectedYear || !selectedSemester || !selectedBranch) return;
+            if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
 
             setLoading(true);
             setError(null);
 
             try {
+                const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+
                 const response = await axios.get(
-                    `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+                    `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
                 );
                 if (response.data && Array.isArray(response.data) && response.data.length > 0) {
                     setSubjectOptions(response.data);
@@ -50,7 +75,7 @@ const DirectCOAttainmentReport = () => {
             }
         };
         fetchSubjects();
-    }, [selectedYear, selectedSemester, selectedBranch]);
+    }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
     // Handle year change
     const handleYearChange = (e) => {
@@ -402,6 +427,30 @@ const DirectCOAttainmentReport = () => {
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                                <select
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                                value={selectedRegulation}
+                                onChange={handleRegulationChange}
+                                >
+                                <option value="">Select Regulation</option>
+                                {regulations.map((reg) => (
+                                    <option key={reg} value={reg}>{reg}</option>
+                                ))}
+                                </select>
+                                {showCustomRegulation && (
+                                <input
+                                    type="text"
+                                    className="w-full mt-2 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                                    placeholder="Enter Regulation Code"
+                                    value={customRegulation}
+                                    onChange={handleCustomRegulationChange}
+                                    pattern="[A-Z0-9]*"
+                                />
+                                )}
                             </div>
 
                             {/* Subject Dropdown */}

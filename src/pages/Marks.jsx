@@ -12,6 +12,8 @@ const Marks = () => {
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [students, setStudents] = useState([]);
@@ -27,33 +29,50 @@ const Marks = () => {
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
+
   // Fetch subjects based on selected year, semester, and section
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (selectedYear && selectedSemester) {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
-          );
-          if (
-            response.data &&
-            Array.isArray(response.data) &&
-            response.data.length > 0
-          ) {
-            setSubjectOptions(response.data);
-          } else {
-            setSubjectOptions([]);
-          }
-        } catch (error) {
-          console.error("Error fetching subjects:", error);
+      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      try {
+        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
+        );
+        if (
+          response.data &&
+          Array.isArray(response.data) &&
+          response.data.length > 0
+        ) {
+          setSubjectOptions(response.data);
+        } else {
           setSubjectOptions([]);
         }
-      } else {
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
         setSubjectOptions([]);
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch]);
+  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   // Fetch students and marks based on selected criteria
   useEffect(() => {
@@ -573,13 +592,23 @@ const Marks = () => {
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedRegulation}
-                    onChange={(e) => setSelectedRegulation(e.target.value)}
+                    onChange={handleRegulationChange}
                   >
                     <option value="">Select Regulation</option>
-                    <option value="LR21">LR21</option>
-                    <option value="LR22">LR22</option>
-                    <option value="LR23">LR23</option>
+                    {regulations.map((reg) => (
+                      <option key={reg} value={reg}>{reg}</option>
+                    ))}
                   </select>
+                  {showCustomRegulation && (
+                    <input
+                      type="text"
+                      className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      placeholder="Enter Regulation Code"
+                      value={customRegulation}
+                      onChange={handleCustomRegulationChange}
+                      pattern="[A-Z0-9]*"
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">

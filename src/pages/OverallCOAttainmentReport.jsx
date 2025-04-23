@@ -35,6 +35,29 @@ const OverallCOAttainmentReport = () => {
   const [showTable, setShowTable] = useState(false);
   const [actionPlans, setActionPlans] = useState({});
 
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
+
   const handleSubmit = () => {
     setShowTable(true);
   };
@@ -43,19 +66,27 @@ const OverallCOAttainmentReport = () => {
     if (selectedYear && selectedSemester) {
       try {
         setLoading(true);
+        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
         const response = await axios.get(
           `${
             process.env.REACT_APP_BACKEND_URI
           }/api/subjects/branch/${localStorage.getItem(
             "selectedBranch"
-          )}/year/${selectedYear}/semester/${selectedSemester}`
+          )}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
         );
-        setSubjectOptions(response.data);
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          setSubjectOptions(response.data);
+        } else {
+          setSubjectOptions([]);
+        }
       } catch (error) {
         console.error("Error fetching subjects:", error);
+        setSubjectOptions([]);
       } finally {
         setLoading(false);
       }
+    } else {
+      setSubjectOptions([]);
     }
   };
 
@@ -91,7 +122,7 @@ const OverallCOAttainmentReport = () => {
 
   useEffect(() => {
     fetchSubjects();
-  }, [selectedYear, selectedSemester]);
+  }, [selectedYear, selectedSemester, selectedRegulation, customRegulation, showCustomRegulation]);
 
   useEffect(() => {
     fetchAttainments();
@@ -319,6 +350,32 @@ const OverallCOAttainmentReport = () => {
                 <option value="1">Semester 1</option>
                 <option value="2">Semester 2</option>
               </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Regulation
+              </label>
+              <select
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                value={selectedRegulation}
+                onChange={handleRegulationChange}
+              >
+                <option value="">Select Regulation</option>
+                {regulations.map((reg) => (
+                  <option key={reg} value={reg}>{reg}</option>
+                ))}
+              </select>
+              {showCustomRegulation && (
+                <input
+                  type="text"
+                  className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  placeholder="Enter Custom Regulation"
+                  value={customRegulation}
+                  onChange={handleCustomRegulationChange}
+                  pattern="[A-Z0-9]*"
+                />
+              )}
             </div>
 
             <div className="space-y-2">

@@ -12,6 +12,29 @@ const SEEAttainmentReport = () => {
   const [coNumbers, setCoNumbers] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
+
   const yearOptions = [1, 2, 3, 4];
   const semesterOptions = [1, 2];
 
@@ -113,18 +136,19 @@ const SEEAttainmentReport = () => {
 
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (year && semester) {
-        const subjectsUrl = `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${year}/semester/${semester}`;
-        try {
-          const res = await axios.get(subjectsUrl);
-          setSubjects(res.data);
-        } catch (err) {
-          console.error("Failed to fetch subjects:", err);
-        }
+      if (!year || !semester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      try {
+        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const subjectsUrl = `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${year}/semester/${semester}/regulation/${regulationValue}`;
+        const res = await axios.get(subjectsUrl);
+        setSubjects(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch subjects:", err);
+        setSubjects([]);
       }
     };
     fetchSubjects();
-  }, [year, semester, selectedBranch]);
+  }, [year, semester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -176,6 +200,32 @@ const SEEAttainmentReport = () => {
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                <div className="relative">
+                  <select
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={selectedRegulation}
+                    onChange={handleRegulationChange}
+                  >
+                    <option value="">Select Regulation</option>
+                    {regulations.map((reg) => (
+                      <option key={reg} value={reg}>{reg}</option>
+                    ))}
+                  </select>
+                </div>
+                {showCustomRegulation && (
+                  <input
+                    type="text"
+                    className="w-full mt-2 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    placeholder="Enter Regulation Code"
+                    value={customRegulation}
+                    onChange={handleCustomRegulationChange}
+                    pattern="[A-Z0-9]*"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">

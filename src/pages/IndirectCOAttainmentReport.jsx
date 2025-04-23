@@ -33,6 +33,28 @@ const IndirectCOAttainmentReport = () => {
   const [subjectName, setSubjectName] = useState("");
   const [loading, setLoading] = useState(false);
   const [coHeaders, setCOHeaders] = useState([]);
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -42,8 +64,9 @@ const IndirectCOAttainmentReport = () => {
       if (selectedYear && selectedSemester) {
         try {
           setLoading(true);
+          const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
           const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
           );
           if (
             response.data &&
@@ -65,7 +88,7 @@ const IndirectCOAttainmentReport = () => {
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch]);
+  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   // Fetch CO headers from attainment API
   useEffect(() => {
@@ -394,6 +417,33 @@ const IndirectCOAttainmentReport = () => {
                 <option value="1">Semester 1</option>
                 <option value="2">Semester 2</option>
               </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Regulation
+              </label>
+              <select
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                value={selectedRegulation}
+                onChange={handleRegulationChange}
+              >
+                <option value="">Select Regulation</option>
+                {regulations.map((regulation) => (
+                  <option key={regulation} value={regulation}>
+                    {regulation}
+                  </option>
+                ))}
+              </select>
+              {showCustomRegulation && (
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 mt-2"
+                  placeholder="Enter Custom Regulation"
+                  value={customRegulation}
+                  onChange={handleCustomRegulationChange}
+                />
+              )}
             </div>
 
             <div className="space-y-2">

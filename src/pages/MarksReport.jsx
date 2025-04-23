@@ -16,6 +16,29 @@ const MarksReport = () => {
   const [showTable, setShowTable] = useState(false); // State to control table rendering
   const tableRef = useRef(); // Reference to the table for generating PDF
 
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
+
   const selectedBranch = localStorage.getItem("selectedBranch");
 
   // Fetch subjects based on selected year, semester, and section
@@ -23,8 +46,9 @@ const MarksReport = () => {
     const fetchSubjects = async () => {
       if (selectedYear && selectedSemester) {
         try {
+          const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
           const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
           );
           // Check if API response contains subjects or a message
           if (
@@ -45,7 +69,7 @@ const MarksReport = () => {
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch]);
+  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   // Fetch marks for the selected branch, year, section, and examType
   const fetchMarks = async () => {
@@ -157,6 +181,32 @@ const MarksReport = () => {
                       <option value="2">2nd Semester</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <div className="relative">
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedRegulation}
+                      onChange={handleRegulationChange}
+                    >
+                      <option value="">Select Regulation</option>
+                      {regulations.map((reg) => (
+                        <option key={reg} value={reg}>{reg}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {showCustomRegulation && (
+                    <input
+                      type="text"
+                      className="w-full mt-2 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      placeholder="Enter Regulation Code"
+                      value={customRegulation}
+                      onChange={handleCustomRegulationChange}
+                      pattern="[A-Z0-9]*"
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">

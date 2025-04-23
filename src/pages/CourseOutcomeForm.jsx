@@ -14,16 +14,41 @@ const CourseOutcome = () => {
   const [coPOMatrix, setCOPOMatrix] = useState([]);
   const [showTables, setShowTables] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
   const selectedBranch = localStorage.getItem('selectedBranch') || '';
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
+
+  // Handle regulation change
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  // Handle custom regulation input
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
 
   // Fetch subjects when year or semester changes
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (selectedYear && selectedSemester && selectedBranch) {
+      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
         setLoading(true);
         try {
+          const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
           const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
+            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
           );
           setSubjectOptions(response.data || []);
         } catch (error) {
@@ -31,8 +56,7 @@ const CourseOutcome = () => {
           setSubjectOptions([]);
         }
         setLoading(false);
-      }
-    };
+      };
 
     fetchSubjects();
     // Reset selections when year/semester changes
@@ -40,7 +64,7 @@ const CourseOutcome = () => {
     setCourseOutcomes([]);
     setCOPOMatrix([]);
     setShowTables(false);
-  }, [selectedYear, selectedSemester, selectedBranch]);
+  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   // Fetch course outcomes and CO-PO matrix when subject changes
   useEffect(() => {
@@ -636,6 +660,30 @@ const CourseOutcome = () => {
                   <option value="1">1st Semester</option>
                   <option value="2">2nd Semester</option>
                 </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedRegulation}
+                  onChange={handleRegulationChange}
+                >
+                  <option value="">Select Regulation</option>
+                  {regulations.map((reg) => (
+                    <option key={reg} value={reg}>{reg}</option>
+                  ))}
+                </select>
+                {showCustomRegulation && (
+                  <input
+                    type="text"
+                    className="w-full mt-2 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    placeholder="Enter Regulation Code"
+                    value={customRegulation}
+                    onChange={handleCustomRegulationChange}
+                    pattern="[A-Z0-9]*"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">

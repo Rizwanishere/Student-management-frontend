@@ -12,36 +12,47 @@ const InternalMarks = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [students, setStudents] = useState([]);
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
+
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
+
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (selectedYear && selectedSemester) {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`
-          );
-          // Check if API response contains subjects or a message
-          if (
-            response.data &&
-            Array.isArray(response.data) &&
-            response.data.length > 0
-          ) {
-            setSubjectOptions(response.data);
-          } else {
-            setSubjectOptions([]); // Clear the dropdown if no subjects are found
-          }
-        } catch (error) {
-          console.error("Error fetching subjects:", error);
-          setSubjectOptions([]); // Ensure dropdown is cleared on error
-        }
-      } else {
-        setSubjectOptions([]); // Reset when year/semester is deselected
+      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      try {
+        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
+        );
+        setSubjectOptions(response.data || []);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+        setSubjectOptions([]);
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch]);
+  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -191,6 +202,35 @@ const InternalMarks = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <select
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={selectedRegulation}
+                    onChange={handleRegulationChange}
+                  >
+                    <option value="">Select Regulation</option>
+                    {regulations.map((regulation) => (
+                      <option key={regulation} value={regulation}>
+                        {regulation}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {showCustomRegulation && (
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Custom Regulation</label>
+                    <input
+                      type="text"
+                      className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={customRegulation}
+                      onChange={handleCustomRegulationChange}
+                      placeholder="Enter Regulation Code"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Section</label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
@@ -210,7 +250,7 @@ const InternalMarks = () => {
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
-                    disabled={!selectedYear || !selectedSemester}
+                    disabled={!selectedYear || !selectedSemester || !selectedRegulation || (showCustomRegulation && !customRegulation)}
                   >
                     <option value="">Select Subject</option>
                     {subjectOptions.map((subject) => (

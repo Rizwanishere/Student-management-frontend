@@ -8,6 +8,9 @@ import { FaFileExcel, FaFilePdf, FaSave } from 'react-icons/fa';
 const AttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedRegulation, setSelectedRegulation] = useState("");
+  const [customRegulation, setCustomRegulation] = useState("");
+  const [showCustomRegulation, setShowCustomRegulation] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [examTypes] = useState(["CIE-1", "CIE-2"]); // Limited to just CIE-1 and CIE-2
@@ -23,18 +26,39 @@ const AttainmentReport = () => {
   // Years and semesters for dropdowns
   const years = ["1", "2", "3", "4"];
   const semesters = ["1", "2"];
+  const regulations = ["LR21", "LR22", "LR23", "Other"];
 
-  // Fetch subjects when year and semester are selected
+  // Handle regulation change
+  const handleRegulationChange = (e) => {
+    const value = e.target.value;
+    setSelectedRegulation(value);
+    setShowCustomRegulation(value === "Other");
+    if (value !== "Other") {
+      setCustomRegulation("");
+    }
+  };
+
+  // Handle custom regulation input
+  const handleCustomRegulationChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    if (/^[A-Z0-9]*$/.test(value)) {
+      setCustomRegulation(value);
+      setSelectedRegulation(value);
+    }
+  };
+
+  // Fetch subjects when year, semester, and regulation are selected
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!selectedYear || !selectedSemester || !selectedBranch) return;
+      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
 
       setLoading(true);
       setError(null);
 
       try {
-        // Make API call to fetch subjects
-        const subjectsUrl = `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}`;
+        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        // Make API call to fetch subjects with regulation
+        const subjectsUrl = `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`;
         console.log("Fetching subjects from:", subjectsUrl);
 
         const response = await fetch(subjectsUrl);
@@ -65,7 +89,7 @@ const AttainmentReport = () => {
     };
 
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch]);
+  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
 
   // Fetch marks data when subject and exam type are selected
   useEffect(() => {
@@ -98,10 +122,6 @@ const AttainmentReport = () => {
 
         const attResponse = await fetch(attainmentUrl);
 
-        // if (
-        //   !attResponse.attainmentData ||
-        //   attResponse.attainmentData.some((co) => co.attainmentLevel == null)
-        // ) {
         if (!attResponse.ok) {
           console.log("Attainment data not available, using calculated values");
           setAttainmentData([]);
@@ -295,7 +315,6 @@ const AttainmentReport = () => {
     const q1Level = calculateStats("Q1").level;
     const q2Level = calculateStats("Q2").level;
     const q3Level = calculateStats("Q3").level;
-    // const saqLevel = calculateStats("saqs").level;
     const surpriseLevel = calculateStats("surprise").level;
     const assignmentLevel = calculateStats("assignment").level;
 
@@ -960,7 +979,7 @@ const AttainmentReport = () => {
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Year</label>
                 <select
@@ -988,6 +1007,30 @@ const AttainmentReport = () => {
                     <option key={sem} value={sem}>{sem}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedRegulation}
+                  onChange={handleRegulationChange}
+                >
+                  <option value="">Select Regulation</option>
+                  {regulations.map((reg) => (
+                    <option key={reg} value={reg}>{reg}</option>
+                  ))}
+                </select>
+                {showCustomRegulation && (
+                  <input
+                    type="text"
+                    className="w-full mt-2 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    placeholder="Enter Regulation Code"
+                    value={customRegulation}
+                    onChange={handleCustomRegulationChange}
+                    pattern="[A-Z0-9]*"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
