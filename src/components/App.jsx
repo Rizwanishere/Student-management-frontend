@@ -27,6 +27,7 @@ import IndirectCOAttainmentReport from "../pages/IndirectCOAttainmentReport";
 import OverallCOAttainmentReport from "../pages/OverallCOAttainmentReport";
 import POAttainmentReport from "../pages/POAttainmentReport";
 import AboutUs from "./AboutUs";
+import CreateStudent from "../pages/CreateStudent";
 
 const App = () => {
   const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
@@ -57,6 +58,9 @@ const App = () => {
         <Route path="/progressreport" element={<ProgressReport />} />
 
         <Route path="/poststudent" element={<PostStudent />} />
+        {/* Route for single student  */}
+        <Route path="/createStudent" element={<CreateStudent />} />
+
         <Route path="/verify" element={<VerifyStudent />} />
 
         <Route path="/internalmarks" element={<InternalMarks />} />
@@ -72,8 +76,10 @@ const App = () => {
         <Route path="/attainment/po" element={<POAttainmentReport />} />
 
         <Route path="/attainment/entry" element={<IndirectAttainment />} />
+        
 
         {/* Redirect any unknown path to the root (Branch Selection) */}
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <Footer />
