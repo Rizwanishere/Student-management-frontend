@@ -123,7 +123,7 @@ const AttainmentReport = () => {
         const attResponse = await fetch(attainmentUrl);
 
         if (!attResponse.ok) {
-          console.log("Attainment data not available, using calculated values");
+          console.log("CoNo data not available");
           setAttainmentData([]);
         } else {
           const attData = await attResponse.json();
@@ -870,19 +870,12 @@ const AttainmentReport = () => {
 
   // Get attainment value from API data or calculated values
   const getAttainmentValue = (coNumber, index) => {
-    // First check if we have this CO in the API data
-    if (attainmentData && attainmentData.length > 0) {
-      const coData = attainmentData.find((item) => item.coNo === coNumber);
-      if (coData && coData.attainmentLevel !== undefined) {
-        return coData.attainmentLevel;
-      }
-    }
-
-    // Fall back to calculated values if API data is not available
+   
+    // Always calculate attainmentLevel values
     const coAverages = calculateCOAverages();
-    console.log("Calculated CO Averages for fallback:", coAverages);
+    console.log("Calculating Attainment Levels:", coAverages);
 
-    // For fallback calculation, we need to determine which CO we're dealing with
+    // For calculation, we need to determine which CO we're dealing with
     const coMapping = {
       "CIE-1": {
         0: "co1",
