@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaGraduationCap, FaClipboardList, FaChartBar, FaUserCheck, FaBook, FaChartLine } from 'react-icons/fa';
+import { RiUserAddFill } from 'react-icons/ri';
 
 const Home = () => {
   const menuItems = [
@@ -23,6 +24,13 @@ const Home = () => {
       description: "Record student attendance for different subjects and dates.",
       icon: <FaUserCheck className="text-4xl" />,
       link: "/attendance",
+      color: "from-primary to-secondary"
+    },
+    {
+      title: "Students Entry",
+      description: "Easily view, enter, and manage comprehensive student details within the system.",
+      icon:<RiUserAddFill className="text-4xl" />,
+      link: "/poststudent",
       color: "from-primary to-secondary"
     },
     {
