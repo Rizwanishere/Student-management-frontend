@@ -8,6 +8,10 @@ import Footer from "./Footer";
 import Contact from "./Contact";
 import BranchSelection from '../pages/BranchSelection';
 import Login from '../pages/Login';
+import AdminLogin from '../pages/AdminLogin';
+import AdminDashboard from '../pages/AdminDashboard';
+import AddFaculty from '../pages/AddFaculty';
+import ManageFaculty from '../pages/ManageFaculty';
 import ScrollToTop from "../utils/ScrollToTop";
 import Attendance from "../pages/Attendance";
 import Marks from "../pages/Marks";
@@ -31,11 +35,24 @@ import AboutUs from "./AboutUs";
 import CreateStudent from "../pages/CreateStudent";
 
 const App = () => {
-  const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
+  const selectedBranch = localStorage.getItem('selectedBranch');
+  
+  // Auth guard for admin routes
+  const AdminRoute = ({ element }) => {
+    const userRole = localStorage.getItem('userRole');
+    return userRole === 'admin' ? element : <Navigate to="/admin-login" />;
+  };
+
   return (
     <Router>
       <Header />
       <Routes>
+        {/* Admin Management Routes */}
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={<AdminRoute element={<AdminDashboard />} />} />
+        <Route path="/add-faculty" element={<AdminRoute element={<AddFaculty />} />} />
+        <Route path="/manage-faculty" element={<AdminRoute element={<ManageFaculty />} />} />
+
         {/* If no branch selected, show BranchSelection as the default route */}
         <Route path="/" element={selectedBranch ? <Navigate to="/login" /> : <BranchSelection />} />
 
@@ -70,7 +87,7 @@ const App = () => {
         <Route path="/course-outcome" element={<CourseOutcomeForm />} />
 
         <Route path="/attainment" element={<AttainmentReport />} />
-        <Route path="/attainment/see" element={<SEEAttainmentReport />} /> 
+        <Route path="/attainment/see" element={<SEEAttainmentReport />} />
 
         <Route path="/attainment/direct" element={<DirectCOAttainmentReport />} />
         <Route path="/attainment/indirect" element={<IndirectCOAttainmentReport />} />

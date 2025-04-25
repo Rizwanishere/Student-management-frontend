@@ -1,39 +1,58 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Loader from "../utils/Loader";
 import { FaUser, FaLock } from "react-icons/fa";
+import Loader from "../utils/Loader";
 
-const Login = () => {
-  const [formData, setFormData] = useState({ username: "", password: "" });
-  const [error, setError] = useState(false);
+const AdminLogin = () => {
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onInputChange = (e) => {
+  const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onLogin = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(false);
+    setError("");
 
-    const { username, password } = formData;
-    const branchName = localStorage.getItem("selectedBranch");
+    try {
+      const response = await fetch("http://localhost:3000/api/users/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    setTimeout(() => {
-      if (username === branchName && password === branchName) {
-        localStorage.setItem("isLoggedIn", "true");
-        navigate("/home");
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("facultyToken", data.token);
+
+        // Decode token to get user information
+        const tokenData = JSON.parse(atob(data.token.split(".")[1]));
+        localStorage.setItem("userRole", tokenData.role);
+        localStorage.setItem("userId", tokenData.userId);
+
+        if (tokenData.role === "admin") {
+          navigate("/admin-dashboard");
+        } else {
+          setError("Access denied. Admin privileges required.");
+          localStorage.removeItem("facultyToken");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("userId");
+        }
       } else {
-        setError(true);
+        setError(data.message || "Invalid credentials");
       }
+    } catch (err) {
+      setError("Failed to connect to server");
+    } finally {
       setLoading(false);
-    }, 1000);
-  };
-
-  const handleAdminSwitch = () => {
-    navigate("/admin-login");
+    }
   };
 
   return (
@@ -42,22 +61,24 @@ const Login = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8 transform transition-all duration-300 hover:scale-[1.02] border border-gray-100">
           <div className="text-center mb-8">
             <div className="mb-6">
-              <img 
+              <img
                 src="https://www.lords.ac.in/wp-content/uploads/2023/04/Website-Logo.png"
                 alt="Lords Institute Logo"
                 className="h-20 mx-auto"
               />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Faculty Login</h2>
-            <p className="text-gray-600">Sign in to your account</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              Admin Login
+            </h2>
+            <p className="text-gray-600">Sign in to your admin account</p>
           </div>
 
           {loading && <Loader />}
-          
-          <form className="space-y-6" onSubmit={onLogin}>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                <p className="text-red-700 font-medium">Invalid Username or Password</p>
+                <p className="text-red-700 font-medium">{error}</p>
               </div>
             )}
 
@@ -67,14 +88,12 @@ const Login = () => {
                   <FaUser className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
+                  type="email"
+                  name="email"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                  placeholder="Username"
-                  onChange={onInputChange}
+                  placeholder="Email"
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -83,34 +102,30 @@ const Login = () => {
                   <FaLock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="password"
-                  name="password"
                   type="password"
-                  autoComplete="current-password"
+                  name="password"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   placeholder="Password"
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                 />
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                Sign in
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            >
+              Sign in
+            </button>
 
             <div className="text-center mt-6">
               <p className="text-gray-600">
-                <a 
-                  onClick={handleAdminSwitch}
+                <a
+                  onClick={() => navigate("/")}
                   className="text-primary font-semibold hover:text-secondary transition-colors duration-300 cursor-pointer"
                 >
-                  Switch to Admin Login
+                  Back to Faculty Login
                 </a>
               </p>
             </div>
@@ -121,4 +136,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;
