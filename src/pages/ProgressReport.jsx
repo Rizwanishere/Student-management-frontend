@@ -242,6 +242,7 @@ const ProgressReport = () => {
         scale: 4,
         logging: true,
         useCORS: true,
+        scrollY: 0,
       },
       jsPDF: {
         unit: "mm",
@@ -263,9 +264,7 @@ const ProgressReport = () => {
         className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-2xl font-semibold mb-4">
-          Progress Reports Generator
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4">Progress Reports</h2>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-gray-700 font-medium mb-2">
@@ -350,12 +349,28 @@ const ProgressReport = () => {
       )}
 
       {/* All Reports Container */}
-      <div id="allReportsContainer" className="print:block">
+      <div
+        id="allReportsContainer"
+        className="print:block"
+        style={{ margin: 0, padding: 0 }}
+      >
         {reportsData.map((reportData, reportIndex) => (
           <div
             key={reportData.rollNo}
-            className="w-[210mm] h-[297mm] mx-auto p-10 bg-white mb-8 page-break-after-always"
-            style={{ fontFamily: "Times New Roman, serif" }}
+            className="bg-white pdf-page"
+            style={{
+              width: "210mm",
+              height: "297mm",
+              padding: "10mm",
+              margin: "0 auto",
+              fontFamily: "Times New Roman, serif",
+              pageBreakInside: "avoid",
+              pageBreakBefore: "auto",
+              pageBreakAfter: "auto",
+              boxSizing: "border-box",
+              overflow: "hidden",
+              position: "relative",
+            }}
           >
             {/* Header */}
             <div className="flex justify-between items-center">
@@ -584,48 +599,6 @@ const ProgressReport = () => {
           </div>
         ))}
       </div>
-
-      {/* Visible Reports Preview */}
-      {reportsData.length > 0 && (
-        <div className="w-full max-w-4xl">
-          <h2 className="text-2xl font-semibold mb-4 text-center">
-            Report Previews
-          </h2>
-          <div className="space-y-8">
-            {reportsData.slice(0, 3).map((reportData, index) => (
-              <div
-                key={reportData.rollNo}
-                className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
-              >
-                <h3 className="text-lg font-semibold mb-2">
-                  Report {index + 1}: {reportData.studentName} (Roll No:{" "}
-                  {reportData.rollNo})
-                </h3>
-                <p>Total Classes: {calculateTotals(reportData).totalClasses}</p>
-                <p>
-                  Classes Attended:{" "}
-                  {calculateTotals(reportData).classesAttended}
-                </p>
-                <p>
-                  Attendance: {calculateTotals(reportData).attendancePercentage}
-                  %
-                </p>
-                <p>Total Marks: {calculateTotals(reportData).totalMarks}</p>
-                <p>
-                  Marks Percentage:{" "}
-                  {calculateTotals(reportData).marksPercentage}%
-                </p>
-              </div>
-            ))}
-            {reportsData.length > 3 && (
-              <p className="text-center text-gray-500">
-                + {reportsData.length - 3} more reports (all will be included in
-                the PDF)
-              </p>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
