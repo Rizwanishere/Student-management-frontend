@@ -420,46 +420,61 @@ function PostStudent() {
   }, [importStatus.message]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl">
-        <h2 className="text-2xl font-semibold mb-4">Student Records Input</h2>
-        <textarea
-          rows="19"
-          cols="80"
-          value={studentData}
-          onChange={handleInputChange}
-          placeholder="Enter student records in JSON array format e.g: 
-          [
-            {
-            'rollNo': '123',
-            'name': 'John',
-            'fartherName': 'Doe',
-            'branch': 'CSE',
-            'currentYear': 4,
-            'currentSemester': 1,
-            'section': 'B'
-            },
-            { 
-            'rollNo': '123',
-            'name': 'John',
-            'fartherName': 'Doe',
-            'branch': 'CSE',
-            'currentYear': 4,
-            'currentSemester': 1,
-            'section': 'B' 
-            }
-          ]"
-          className="border p-2 rounded w-full"
-        />
-        <button
-          onClick={handleSubmit}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Submit Students
-        </button>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 ">
+            Students Records Input
+          </h1>
+          <p className="text-gray-600">
+            Enter and manage student records efficiently
+          </p>
+        </div>
 
-        {errorMessage && (
-          <div className="mt-4 text-red-500">{errorMessage}</div>
+        <div className="max-w-7xl flex justify-center">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-1/2 ">
+            <div className="p-6 sm:p-8">
+              <div className="flex justify-center gap-x-24 items-center mb-4">
+                <Link to="/createStudent">
+                  <button
+                    type="submit"
+                    className="bg-primary text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary flex items-center space-x-2"
+                  >
+                    <FaUserPlus />
+                    <span>Create Student</span>
+                  </button>
+                </Link>
+                <label
+                  htmlFor="excel-upload"
+                  className="bg-secondary text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary flex items-center space-x-2"
+                >
+                  <FaFileExcel />
+                  <span>Import Excel</span>
+                </label>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                  id="excel-upload"
+                  onChange={handleExcelImport}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {importStatus.message && (
+          <div
+            className={`p-4 rounded-lg mb-4 ${
+              importStatus.type === "success"
+                ? "bg-green-100 text-green-700"
+                : importStatus.type === "error"
+                ? "bg-red-100 text-red-700"
+                : "bg-yellow-100 text-yellow-700"
+            }`}
+          >
+            {importStatus.message}
+          </div>
         )}
 
         {importErrors.length > 0 && (
