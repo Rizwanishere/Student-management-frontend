@@ -1,22 +1,20 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "../utils/UserContext";
 
 const Header = () => {
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-  const onLogoutButton = () => {
-    localStorage.removeItem("isLoggedIn"); // Clear login state
-    navigate("/login");
-  };
+  const { user, logout } = useUser();
+  const isLoggedIn = !!user;
 
   const handleLogoClick = (e) => {
     e.preventDefault();
-    if (isLoggedIn) {
-      navigate("/home");
-    } else {
-      navigate("/login");
-    }
+    navigate(isLoggedIn ? "/home" : "/");
+  };
+
+  const onLogoutButton = () => {
+    logout();
+    navigate("/login");
   };
 
   return (

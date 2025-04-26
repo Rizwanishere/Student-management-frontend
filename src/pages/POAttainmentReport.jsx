@@ -4,9 +4,11 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import Loader from "../utils/Loader";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { FaFilePdf } from 'react-icons/fa';
+import { FaFilePdf, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const POAttainmentReport = () => {
+  const navigate = useNavigate();
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -41,16 +43,30 @@ const POAttainmentReport = () => {
   };
 
   const fetchSubjects = async () => {
-    if (!selectedYear || !selectedSemester || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+    if (
+      !selectedYear ||
+      !selectedSemester ||
+      !selectedRegulation ||
+      (showCustomRegulation && !customRegulation)
+    )
+      return;
     try {
       setLoading(true);
-      const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+      const regulationValue = showCustomRegulation
+        ? customRegulation
+        : selectedRegulation;
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${localStorage.getItem(
+        `${
+          process.env.REACT_APP_BACKEND_URI
+        }/api/subjects/branch/${localStorage.getItem(
           "selectedBranch"
         )}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
       );
-      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+      if (
+        response.data &&
+        Array.isArray(response.data) &&
+        response.data.length > 0
+      ) {
         setSubjectOptions(response.data);
       } else {
         setSubjectOptions([]);
@@ -126,8 +142,10 @@ const POAttainmentReport = () => {
 
       // Get the main content and action report elements separately
       const mainContentElement = document.querySelector("#main-content");
-      const actionReportElement = document.querySelector("#action-report-content");
-      
+      const actionReportElement = document.querySelector(
+        "#action-report-content"
+      );
+
       if (!mainContentElement || !actionReportElement) {
         throw new Error("Content not found. Please ensure all data is loaded.");
       }
@@ -135,7 +153,7 @@ const POAttainmentReport = () => {
       // Function to capture an element as canvas
       const captureElement = async (element) => {
         if (!element) return null;
-        
+
         const canvas = await html2canvas(element, {
           scale: 2,
           logging: false,
@@ -172,7 +190,14 @@ const POAttainmentReport = () => {
       while (heightLeft > 0) {
         position = 10;
         pdf.addPage();
-        pdf.addImage(mainImgData, "JPEG", 10, position - (page * pageHeight), imgWidth, mainImgHeight);
+        pdf.addImage(
+          mainImgData,
+          "JPEG",
+          10,
+          position - page * pageHeight,
+          imgWidth,
+          mainImgHeight
+        );
         heightLeft -= pageHeight;
         page++;
       }
@@ -187,27 +212,41 @@ const POAttainmentReport = () => {
       }
 
       const actionImgData = actionCanvas.toDataURL("image/jpeg", 1.0);
-      const actionImgHeight = (actionCanvas.height * imgWidth) / actionCanvas.width;
+      const actionImgHeight =
+        (actionCanvas.height * imgWidth) / actionCanvas.width;
 
       heightLeft = actionImgHeight;
       position = 10;
       page = 1;
 
       // Add action report content
-      pdf.addImage(actionImgData, "JPEG", 10, position, imgWidth, actionImgHeight);
+      pdf.addImage(
+        actionImgData,
+        "JPEG",
+        10,
+        position,
+        imgWidth,
+        actionImgHeight
+      );
       heightLeft -= pageHeight;
 
       while (heightLeft > 0) {
         position = 10;
         pdf.addPage();
-        pdf.addImage(actionImgData, "JPEG", 10, position - (page * pageHeight), imgWidth, actionImgHeight);
+        pdf.addImage(
+          actionImgData,
+          "JPEG",
+          10,
+          position - page * pageHeight,
+          imgWidth,
+          actionImgHeight
+        );
         heightLeft -= pageHeight;
         page++;
       }
 
       // Save the PDF
       pdf.save("PO_Attainment_Report.pdf");
-
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert(`Error generating PDF: ${error.message}`);
@@ -216,16 +255,29 @@ const POAttainmentReport = () => {
 
   useEffect(() => {
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">
-              PO & PSO ATTAINMENT REPORT
-            </h1>
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-white">
+              PO Attainment Report
+            </h2>
             {showTable && (
               <button
                 onClick={exportToPDF}
@@ -237,7 +289,7 @@ const POAttainmentReport = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6 p-6 px-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
                 Year
@@ -281,7 +333,9 @@ const POAttainmentReport = () => {
               >
                 <option value="">Select Regulation</option>
                 {regulations.map((reg) => (
-                  <option key={reg} value={reg}>{reg}</option>
+                  <option key={reg} value={reg}>
+                    {reg}
+                  </option>
                 ))}
               </select>
               {showCustomRegulation && (
@@ -350,7 +404,9 @@ const POAttainmentReport = () => {
                 <table className="w-full border-collapse border border-gray-800">
                   <thead>
                     <tr>
-                      <th className="border border-gray-800 px-4 py-2">Course</th>
+                      <th className="border border-gray-800 px-4 py-2">
+                        Course
+                      </th>
                       {poData.map((po) => (
                         <th
                           key={po.po}
@@ -433,8 +489,8 @@ const POAttainmentReport = () => {
                   Programme Specific Outcomes (PSOs) Attainment
                 </h1>
                 <p className="text-lg font-semibold text-center mb-6">
-                  PSO = (Weighted Average value of PSO * CO Attainment Average) /
-                  3
+                  PSO = (Weighted Average value of PSO * CO Attainment Average)
+                  / 3
                 </p>
                 <hr className="border-t-2 border-black mb-6" />
 
@@ -526,7 +582,8 @@ const POAttainmentReport = () => {
                             value:
                               Number(
                                 (
-                                  (poResponse?.data?.pso1_avg * coAttainmentAvg) /
+                                  (poResponse?.data?.pso1_avg *
+                                    coAttainmentAvg) /
                                   3
                                 ).toFixed(2)
                               ) || 0,
@@ -536,7 +593,8 @@ const POAttainmentReport = () => {
                             value:
                               Number(
                                 (
-                                  (poResponse?.data?.pso2_avg * coAttainmentAvg) /
+                                  (poResponse?.data?.pso2_avg *
+                                    coAttainmentAvg) /
                                   3
                                 ).toFixed(2)
                               ) || 0,

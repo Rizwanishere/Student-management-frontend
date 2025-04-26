@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  FaUserGraduate,
+  FaBook,
+  FaCalendarAlt,
+  FaClock,
+  FaSearch,
+  FaSave,
+  FaFileExcel,
+  FaArrowLeft,
+} from "react-icons/fa";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import Loader from "../utils/Loader";
-import { FaSearch, FaSave, FaFileExcel, FaCalendarAlt, FaUserGraduate, FaBook, FaClock } from "react-icons/fa";
 
 const Attendance = () => {
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [totalClasses, setTotalClasses] = useState("");
   const [students, setStudents] = useState([]);
@@ -25,7 +36,7 @@ const Attendance = () => {
   const [importStatus, setImportStatus] = useState({
     isProcessing: false,
     message: "",
-    type: ""
+    type: "",
   });
   const [importErrors, setImportErrors] = useState([]);
   const [importWarnings, setImportWarnings] = useState([]);
@@ -71,7 +82,9 @@ const Attendance = () => {
   const fetchSubjects = async () => {
     if (filters.year && filters.semester && filters.regulation) {
       try {
-        const regulationValue = showCustomRegulation ? customRegulation : filters.regulation;
+        const regulationValue = showCustomRegulation
+          ? customRegulation
+          : filters.regulation;
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${filters.year}/semester/${filters.semester}/regulation/${regulationValue}`
         );
@@ -103,7 +116,14 @@ const Attendance = () => {
       fetchSubjects();
     }
     fetchAttendance();
-  }, [filters.year, filters.semester, filters.month, filters.period, filters.regulation, customRegulation]);
+  }, [
+    filters.year,
+    filters.semester,
+    filters.month,
+    filters.period,
+    filters.regulation,
+    customRegulation,
+  ]);
 
   useEffect(() => {
     if (submitted) fetchStudents();
@@ -117,9 +137,10 @@ const Attendance = () => {
   };
 
   const handleAttendanceChange = (studentId, value) => {
-    setAttendanceData(prevData => {
+    setAttendanceData((prevData) => {
       const existingIndex = prevData.findIndex(
-        record => record.student === studentId && record.subject === filters.subject
+        (record) =>
+          record.student === studentId && record.subject === filters.subject
       );
 
       const newData = [...prevData];
@@ -127,13 +148,13 @@ const Attendance = () => {
       if (existingIndex !== -1) {
         newData[existingIndex] = {
           ...newData[existingIndex],
-          classesAttended: value
+          classesAttended: value,
         };
       } else {
         newData.push({
           student: studentId,
           subject: filters.subject,
-          classesAttended: value
+          classesAttended: value,
         });
       }
 
@@ -219,15 +240,23 @@ const Attendance = () => {
 
             // Check each cell for our column indicators
             for (let j = 0; j < row.length; j++) {
-              const cellValue = String(row[j] || '').toLowerCase();
+              const cellValue = String(row[j] || "").toLowerCase();
 
-              if (cellValue.includes('roll') || cellValue.includes('rno') || cellValue.includes('reg')) {
+              if (
+                cellValue.includes("roll") ||
+                cellValue.includes("rno") ||
+                cellValue.includes("reg")
+              ) {
                 rollNumberIndex = j;
               }
-              if (cellValue.includes('name') || cellValue.includes('student')) {
+              if (cellValue.includes("name") || cellValue.includes("student")) {
                 nameIndex = j;
               }
-              if (cellValue.includes('class') || cellValue.includes('attend') || cellValue.includes('total')) {
+              if (
+                cellValue.includes("class") ||
+                cellValue.includes("attend") ||
+                cellValue.includes("total")
+              ) {
                 classesIndex = j;
               }
             }
@@ -240,7 +269,9 @@ const Attendance = () => {
           }
 
           if (headerRowIndex === -1) {
-            throw new Error("Could not find valid header row with required columns");
+            throw new Error(
+              "Could not find valid header row with required columns"
+            );
           }
 
           // Process data rows
@@ -249,9 +280,14 @@ const Attendance = () => {
             const row = rawRows[i];
             if (!row) continue;
 
-            const rollNumber = rollNumberIndex !== -1 ? String(row[rollNumberIndex] || '').trim() : '';
-            const studentName = nameIndex !== -1 ? String(row[nameIndex] || '').trim() : '';
-            const classesAttended = classesIndex !== -1 ? row[classesIndex] : '';
+            const rollNumber =
+              rollNumberIndex !== -1
+                ? String(row[rollNumberIndex] || "").trim()
+                : "";
+            const studentName =
+              nameIndex !== -1 ? String(row[nameIndex] || "").trim() : "";
+            const classesAttended =
+              classesIndex !== -1 ? row[classesIndex] : "";
 
             // Skip rows with empty roll numbers
             if (!rollNumber) continue;
@@ -259,7 +295,7 @@ const Attendance = () => {
             processedData.push({
               "Roll Number": rollNumber,
               "Student Name": studentName,
-              "Classes Attended": classesAttended
+              "Classes Attended": classesAttended,
             });
           }
 
@@ -295,17 +331,21 @@ const Attendance = () => {
         warnings.push(`Row ${index + 1}: Missing Roll Number - skipped`);
       }
 
-      if (classes === undefined || classes === null || classes === '') {
-        warnings.push(`Row ${index + 1}: Missing Classes Attended for ${rollNo}`);
+      if (classes === undefined || classes === null || classes === "") {
+        warnings.push(
+          `Row ${index + 1}: Missing Classes Attended for ${rollNo}`
+        );
       } else if (isNaN(Number(classes))) {
-        errors.push(`Row ${index + 1}: Invalid Classes Attended value for ${rollNo}`);
+        errors.push(
+          `Row ${index + 1}: Invalid Classes Attended value for ${rollNo}`
+        );
       }
     });
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   };
 
@@ -319,7 +359,7 @@ const Attendance = () => {
     setImportStatus({
       isProcessing: true,
       message: "Processing Excel file...",
-      type: "info"
+      type: "info",
     });
 
     try {
@@ -337,28 +377,33 @@ const Attendance = () => {
 
       // Match Excel data with students
       const unmatchedRollNumbers = [];
-      const newAttendanceData = students.map(student => {
+      const newAttendanceData = students.map((student) => {
         // Case-insensitive comparison
-        const excelRow = data.find(row =>
-          row["Roll Number"].toLowerCase() === student.rollNo.toLowerCase()
+        const excelRow = data.find(
+          (row) =>
+            row["Roll Number"].toLowerCase() === student.rollNo.toLowerCase()
         );
 
         if (excelRow) {
           return {
             student: student._id,
             subject: filters.subject,
-            classesAttended: excelRow["Classes Attended"]?.toString() || "0"
+            classesAttended: excelRow["Classes Attended"]?.toString() || "0",
           };
         } else {
           unmatchedRollNumbers.push(student.rollNo);
           const existingRecord = attendanceData.find(
-            record => record.student === student._id && record.subject === filters.subject
+            (record) =>
+              record.student === student._id &&
+              record.subject === filters.subject
           );
-          return existingRecord || {
-            student: student._id,
-            subject: filters.subject,
-            classesAttended: "0"
-          };
+          return (
+            existingRecord || {
+              student: student._id,
+              subject: filters.subject,
+              classesAttended: "0",
+            }
+          );
         }
       });
 
@@ -375,15 +420,14 @@ const Attendance = () => {
       setImportStatus({
         isProcessing: false,
         message: statusMessage,
-        type: statusType
+        type: statusType,
       });
-
     } catch (error) {
       console.error("Import failed:", error);
       setImportStatus({
         isProcessing: false,
         message: error.message || "Failed to import Excel file",
-        type: "error"
+        type: "error",
       });
     }
   };
@@ -391,9 +435,21 @@ const Attendance = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/home")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Dashboard
+        </button>
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance Management</h1>
-          <p className="text-gray-600">Record and manage student attendance efficiently</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Attendance Management
+          </h1>
+          <p className="text-gray-600">
+            Record and manage student attendance efficiently
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -401,7 +457,9 @@ const Attendance = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Year</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaUserGraduate className="h-5 w-5 text-gray-400" />
@@ -409,7 +467,9 @@ const Attendance = () => {
                     <select
                       className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                       value={filters.year}
-                      onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, year: e.target.value })
+                      }
                     >
                       <option value="">Select Year</option>
                       <option value="1">1st Year</option>
@@ -421,7 +481,9 @@ const Attendance = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Semester
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaBook className="h-5 w-5 text-gray-400" />
@@ -429,7 +491,9 @@ const Attendance = () => {
                     <select
                       className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                       value={filters.semester}
-                      onChange={(e) => setFilters({ ...filters, semester: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, semester: e.target.value })
+                      }
                     >
                       <option value="">Select Semester</option>
                       <option value="1">1st Semester</option>
@@ -439,7 +503,9 @@ const Attendance = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Regulation
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={filters.regulation}
@@ -447,7 +513,9 @@ const Attendance = () => {
                   >
                     <option value="">Select Regulation</option>
                     {regulations.map((reg) => (
-                      <option key={reg} value={reg}>{reg}</option>
+                      <option key={reg} value={reg}>
+                        {reg}
+                      </option>
                     ))}
                   </select>
                   {showCustomRegulation && (
@@ -463,11 +531,15 @@ const Attendance = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Section</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Section
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={filters.section}
-                    onChange={(e) => setFilters({ ...filters, section: e.target.value })}
+                    onChange={(e) =>
+                      setFilters({ ...filters, section: e.target.value })
+                    }
                   >
                     <option value="">Select Section</option>
                     <option value="A">A</option>
@@ -477,11 +549,15 @@ const Attendance = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Subject</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Subject
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={filters.subject}
-                    onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
+                    onChange={(e) =>
+                      setFilters({ ...filters, subject: e.target.value })
+                    }
                   >
                     <option value="">Select Subject</option>
                     {subjects.map((subject) => (
@@ -493,7 +569,9 @@ const Attendance = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Month</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Month
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaCalendarAlt className="h-5 w-5 text-gray-400" />
@@ -501,12 +579,16 @@ const Attendance = () => {
                     <select
                       className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                       value={filters.month}
-                      onChange={(e) => setFilters({ ...filters, month: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, month: e.target.value })
+                      }
                     >
                       <option value="">Select Month</option>
                       {Array.from({ length: 12 }, (_, i) => (
                         <option key={i + 1} value={i + 1}>
-                          {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                          {new Date(0, i).toLocaleString("default", {
+                            month: "long",
+                          })}
                         </option>
                       ))}
                     </select>
@@ -514,7 +596,9 @@ const Attendance = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Period</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Period
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaClock className="h-5 w-5 text-gray-400" />
@@ -522,7 +606,9 @@ const Attendance = () => {
                     <select
                       className="w-full pl-10 border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                       value={filters.period}
-                      onChange={(e) => setFilters({ ...filters, period: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, period: e.target.value })
+                      }
                     >
                       <option value="">Select Period</option>
                       <option value="15th">Up to 15th</option>
@@ -533,7 +619,9 @@ const Attendance = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Total Classes Taken</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Total Classes Taken
+                </label>
                 <input
                   type="number"
                   placeholder="Enter total classes taken"
@@ -568,9 +656,16 @@ const Attendance = () => {
             <div className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Attendance Records</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Attendance Records
+                  </h2>
                   <p className="text-gray-600 mt-1">
-                    Course: {subjects.find(subject => subject._id === filters.subject)?.name}
+                    Course:{" "}
+                    {
+                      subjects.find(
+                        (subject) => subject._id === filters.subject
+                      )?.name
+                    }
                   </p>
                 </div>
                 <div className="mt-4 sm:mt-0 flex space-x-4">
@@ -645,28 +740,52 @@ const Attendance = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S No</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classes Attended</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        S No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Roll No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Student Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Classes Attended
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {students.map((student, index) => {
                       const record = attendanceData.find(
-                        r => r.student === student._id && r.subject === filters.subject
+                        (r) =>
+                          r.student === student._id &&
+                          r.subject === filters.subject
                       );
                       return (
-                        <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-200">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.rollNo}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.name}</td>
+                        <tr
+                          key={student._id}
+                          className="hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {student.rollNo}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {student.name}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input
                               type="number"
                               className="w-24 border border-gray-200 rounded-lg px-3 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                               value={record?.classesAttended || ""}
-                              onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
+                              onChange={(e) =>
+                                handleAttendanceChange(
+                                  student._id,
+                                  e.target.value
+                                )
+                              }
                             />
                           </td>
                         </tr>

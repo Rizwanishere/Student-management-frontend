@@ -1,8 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { FaChartBar, FaClipboardList, FaUserCheck, FaGraduationCap, FaChartLine, FaFileAlt, FaCheckCircle, FaChartPie } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaChartBar,
+  FaClipboardList,
+  FaUserCheck,
+  FaGraduationCap,
+  FaChartLine,
+  FaFileAlt,
+  FaCheckCircle,
+  FaChartPie,
+  FaArrowLeft,
+} from "react-icons/fa";
 
 function ReportsPage() {
+  const navigate = useNavigate();
+
   const reportCategories = {
     "Academic Reports": {
       gradient: "from-blue-600 to-blue-400",
@@ -94,49 +106,75 @@ function ReportsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
-            Reports Dashboard
-          </h1>
-          <p className="text-gray-600 mt-2">Access and generate various academic reports</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
+              Reports Dashboard
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Access and generate various academic reports
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/home")}
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+          >
+            <FaArrowLeft className="mr-2" />
+            Back to Dashboard
+          </button>
         </div>
 
         <div className="space-y-8">
-          {Object.entries(reportCategories).map(([category, { gradient, reports }]) => (
-            <div key={category} className="overflow-hidden rounded-xl shadow-lg">
-              <div className={`bg-gradient-to-r ${gradient} px-6 py-4`}>
-                <h2 className="text-xl font-semibold text-white">{category}</h2>
-              </div>
-              <div className="bg-white divide-y divide-gray-100">
-                {reports.map((report, index) => (
-                  <Link
-                    to={report.link}
-                    key={index}
-                    className="block transition-all duration-300 hover:bg-blue-50"
-                  >
-                    <div className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${report.gradient} flex items-center justify-center text-white shadow-md`}>
-                            {report.icon}
+          {Object.entries(reportCategories).map(
+            ([category, { gradient, reports }]) => (
+              <div
+                key={category}
+                className="overflow-hidden rounded-xl shadow-lg"
+              >
+                <div className={`bg-gradient-to-r ${gradient} px-6 py-4`}>
+                  <h2 className="text-xl font-semibold text-white">
+                    {category}
+                  </h2>
+                </div>
+                <div className="bg-white divide-y divide-gray-100">
+                  {reports.map((report, index) => (
+                    <Link
+                      to={report.link}
+                      key={index}
+                      className="block transition-all duration-300 hover:bg-blue-50"
+                    >
+                      <div className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <div
+                              className={`w-12 h-12 rounded-lg bg-gradient-to-r ${report.gradient} flex items-center justify-center text-white shadow-md`}
+                            >
+                              {report.icon}
+                            </div>
                           </div>
-                        </div>
-                        <div className="ml-4 flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-medium text-gray-900">{report.title}</h3>
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${report.gradient} text-white shadow-sm`}>
-                              View Report
-                            </span>
+                          <div className="ml-4 flex-1">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-medium text-gray-900">
+                                {report.title}
+                              </h3>
+                              <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${report.gradient} text-white shadow-sm`}
+                              >
+                                View Report
+                              </span>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-600">
+                              {report.description}
+                            </p>
                           </div>
-                          <p className="mt-1 text-sm text-gray-600">{report.description}</p>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
     </div>

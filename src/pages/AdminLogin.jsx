@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Loader from "../utils/Loader";
 import { FaUser, FaLock } from "react-icons/fa";
+import Loader from "../utils/Loader";
 import { useUser } from "../utils/UserContext";
 
-const Login = () => {
+const AdminLogin = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useUser();
 
-  const onInputChange = (e) => {
+  const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -37,10 +37,10 @@ const Login = () => {
     }
   };
 
-  const onLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(false);
+    setError("");
 
     try {
       const response = await fetch(
@@ -60,38 +60,26 @@ const Login = () => {
         const decodedToken = decodeToken(data.token);
 
         if (!decodedToken) {
-          setError(true);
+          setError("Invalid token received");
           return;
         }
 
-        if (decodedToken.role === "faculty") {
+        if (decodedToken.role === "admin") {
           login(data.token, decodedToken);
-          localStorage.setItem("isLoggedIn", "true");
-          navigate("/home");
+          navigate("/admin-dashboard");
         } else {
-          setError(true);
+          setError("You are not authorized as an admin");
         }
       } else {
-        setError(true);
+        setError(data.message || "Invalid credentials");
       }
     } catch (err) {
-      setError(true);
+      setError("Invalid credentials. Please try again.");
       console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  const handleAdminSwitch = () => {
-    navigate("/admin-login");
-  };
-
-  useEffect(() => {
-    const selectedBranch = localStorage.getItem("selectedBranch");
-    if (!selectedBranch) {
-      navigate("/");
-    }
-  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
@@ -106,19 +94,17 @@ const Login = () => {
               />
             </div>
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              Faculty Login
+              Admin Login
             </h2>
-            <p className="text-gray-600">Sign in to your account</p>
+            <p className="text-gray-600">Sign in to your admin account</p>
           </div>
 
           {loading && <Loader />}
 
-          <form className="space-y-6" onSubmit={onLogin}>
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                <p className="text-red-700 font-medium">
-                  Invalid Email or Password
-                </p>
+                <p className="text-red-700 font-medium">{error}</p>
               </div>
             )}
 
@@ -128,14 +114,12 @@ const Login = () => {
                   <FaUser className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email"
-                  name="email"
                   type="email"
-                  autoComplete="email"
+                  name="email"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   placeholder="Email"
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -144,34 +128,30 @@ const Login = () => {
                   <FaLock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="password"
-                  name="password"
                   type="password"
-                  autoComplete="current-password"
+                  name="password"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   placeholder="Password"
-                  onChange={onInputChange}
+                  onChange={handleInputChange}
                 />
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              >
-                Sign in
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            >
+              Sign in
+            </button>
 
             <div className="text-center mt-6">
               <p className="text-gray-600">
                 <a
-                  onClick={handleAdminSwitch}
+                  onClick={() => navigate("/")}
                   className="text-primary font-semibold hover:text-secondary transition-colors duration-300 cursor-pointer"
                 >
-                  Switch to Admin Login
+                  Back to Faculty Login
                 </a>
               </p>
             </div>
@@ -182,4 +162,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;

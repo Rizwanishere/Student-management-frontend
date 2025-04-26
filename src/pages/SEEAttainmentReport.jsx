@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaGraduationCap, FaBook, FaChalkboardTeacher} from 'react-icons/fa';
+import {
+  FaGraduationCap,
+  FaBook,
+  FaChalkboardTeacher,
+  FaArrowLeft,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const SEEAttainmentReport = () => {
+  const navigate = useNavigate();
   const selectedBranch = localStorage.getItem("selectedBranch");
   const [year, setYear] = useState("");
   const [semester, setSemester] = useState("");
@@ -52,8 +59,8 @@ const SEEAttainmentReport = () => {
     try {
       const marksUrl = `${process.env.REACT_APP_BACKEND_URI}/api/marks/${id}/SEE`;
       const res = await axios.get(marksUrl);
-      
-      const processedData = res.data.map(entry => {
+
+      const processedData = res.data.map((entry) => {
         const percent = (entry.marks / entry.maxMarks) * 100;
         let gradePoint = 0;
 
@@ -68,12 +75,12 @@ const SEEAttainmentReport = () => {
         return {
           ...entry,
           gradePoint,
-          finalGrade: gradeMapper[gradePoint]
+          finalGrade: gradeMapper[gradePoint],
         };
       });
 
       setMarksData(processedData);
-      
+
       if (processedData.length > 0) {
         await fetchCIEAttainment(id);
       }
@@ -85,13 +92,19 @@ const SEEAttainmentReport = () => {
   const fetchCIEAttainment = async (id) => {
     try {
       const [cie1Response, cie2Response] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-1`),
-        axios.get(`${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-2`)
+        axios.get(
+          `${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-1`
+        ),
+        axios.get(
+          `${process.env.REACT_APP_BACKEND_URI}/api/attainment/subject/${id}/examType/CIE-2`
+        ),
       ]);
 
-      const cie1COs = cie1Response.data[0]?.attainmentData?.map(item => item.coNo) || [];
-      const cie2COs = cie2Response.data[0]?.attainmentData?.map(item => item.coNo) || [];
-      
+      const cie1COs =
+        cie1Response.data[0]?.attainmentData?.map((item) => item.coNo) || [];
+      const cie2COs =
+        cie2Response.data[0]?.attainmentData?.map((item) => item.coNo) || [];
+
       const uniqueCOs = [...new Set([...cie1COs, ...cie2COs])].sort();
       setCoNumbers(uniqueCOs);
     } catch (err) {
@@ -109,20 +122,24 @@ const SEEAttainmentReport = () => {
         ["S", "A", "B", "C", "D", "E"].includes(entry.finalGrade)
       ).length;
 
-      const percentSecured = attempted ? (securedAboveThreshold / attempted) : 0;
-      const calculatedAttainmentLevel = percentSecured >= 0.7 ? 3 
-        : percentSecured >= 0.5 ? 2 
-        : percentSecured >= 0.1 ? 1 
-        : 0;
+      const percentSecured = attempted ? securedAboveThreshold / attempted : 0;
+      const calculatedAttainmentLevel =
+        percentSecured >= 0.7
+          ? 3
+          : percentSecured >= 0.5
+          ? 2
+          : percentSecured >= 0.1
+          ? 1
+          : 0;
 
       await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/attainment`, {
         subject: subjectId,
-        attainmentData: coNumbers.map(coNo => ({ 
+        attainmentData: coNumbers.map((coNo) => ({
           coNo,
-          attainmentLevel: calculatedAttainmentLevel
+          attainmentLevel: calculatedAttainmentLevel,
         })),
         attainmentType: "direct",
-        examType: "SEE"
+        examType: "SEE",
       });
 
       alert("Attainment data submitted successfully!");
@@ -136,9 +153,18 @@ const SEEAttainmentReport = () => {
 
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!year || !semester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      if (
+        !year ||
+        !semester ||
+        !selectedBranch ||
+        !selectedRegulation ||
+        (showCustomRegulation && !customRegulation)
+      )
+        return;
       try {
-        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const regulationValue = showCustomRegulation
+          ? customRegulation
+          : selectedRegulation;
         const subjectsUrl = `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${year}/semester/${semester}/regulation/${regulationValue}`;
         const res = await axios.get(subjectsUrl);
         setSubjects(res.data || []);
@@ -148,11 +174,25 @@ const SEEAttainmentReport = () => {
       }
     };
     fetchSubjects();
-  }, [year, semester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    year,
+    semester,
+    selectedBranch,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 sm:p-8">
             {/* Header */}
@@ -165,7 +205,9 @@ const SEEAttainmentReport = () => {
             {/* Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Year</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Year
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaGraduationCap className="h-5 w-5 text-gray-400" />
@@ -177,14 +219,18 @@ const SEEAttainmentReport = () => {
                   >
                     <option value="">Select Year</option>
                     {yearOptions.map((y) => (
-                      <option key={y} value={y}>{y}</option>
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Semester
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaBook className="h-5 w-5 text-gray-400" />
@@ -196,14 +242,18 @@ const SEEAttainmentReport = () => {
                   >
                     <option value="">Select Semester</option>
                     {semesterOptions.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Regulation
+                </label>
                 <div className="relative">
                   <select
                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
@@ -212,7 +262,9 @@ const SEEAttainmentReport = () => {
                   >
                     <option value="">Select Regulation</option>
                     {regulations.map((reg) => (
-                      <option key={reg} value={reg}>{reg}</option>
+                      <option key={reg} value={reg}>
+                        {reg}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -229,7 +281,9 @@ const SEEAttainmentReport = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Subject</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Subject
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaChalkboardTeacher className="h-5 w-5 text-gray-400" />
@@ -261,19 +315,38 @@ const SEEAttainmentReport = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr className="bg-gray-50">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S No</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Final Grade Point</th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Grade Value</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            S No
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Roll No
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Final Grade Point
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Grade Value
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {marksData.map((entry, index) => (
-                          <tr key={entry._id || index} className="hover:bg-gray-50 transition-colors duration-200">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.student?.rollNo}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">{entry.gradePoint}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">{entry.finalGrade}</td>
+                          <tr
+                            key={entry._id || index}
+                            className="hover:bg-gray-50 transition-colors duration-200"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {index + 1}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {entry.student?.rollNo}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">
+                              {entry.gradePoint}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">
+                              {entry.finalGrade}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -287,15 +360,22 @@ const SEEAttainmentReport = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr className="bg-gray-50">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Metric
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Value
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
                         {(() => {
                           const attempted = marksData.length;
-                          const securedAboveThreshold = marksData.filter((entry) =>
-                            ["S", "A", "B", "C", "D", "E"].includes(entry.finalGrade)
+                          const securedAboveThreshold = marksData.filter(
+                            (entry) =>
+                              ["S", "A", "B", "C", "D", "E"].includes(
+                                entry.finalGrade
+                              )
                           ).length;
 
                           const percentSecured = attempted
@@ -303,32 +383,55 @@ const SEEAttainmentReport = () => {
                             : 0;
 
                           const attainmentLevel =
-                            percentSecured >= 0.7 ? 3
-                            : percentSecured >= 0.5 ? 2
-                            : percentSecured >= 0.1 ? 1
-                            : 0;
+                            percentSecured >= 0.7
+                              ? 3
+                              : percentSecured >= 0.5
+                              ? 2
+                              : percentSecured >= 0.1
+                              ? 1
+                              : 0;
 
                           return (
                             <>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900">No. of Students Attempted</td>
-                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{attempted}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">
+                                  No. of Students Attempted
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                  {attempted}
+                                </td>
                               </tr>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900">No. of Students secured &gt; Threshold</td>
-                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{securedAboveThreshold}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">
+                                  No. of Students secured &gt; Threshold
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                  {securedAboveThreshold}
+                                </td>
                               </tr>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900">% of Students secured &gt; Threshold marks</td>
-                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{(percentSecured * 100).toFixed(2)}%</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">
+                                  % of Students secured &gt; Threshold marks
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                  {(percentSecured * 100).toFixed(2)}%
+                                </td>
                               </tr>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900">Attainment Level</td>
-                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{attainmentLevel}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900">
+                                  Attainment Level
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                                  {attainmentLevel}
+                                </td>
                               </tr>
                               <tr className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm text-gray-900 font-medium">CO SEE ATTAINMENT</td>
-                                <td className="px-6 py-4 text-sm text-gray-900 font-bold">{attainmentLevel}</td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                                  CO SEE ATTAINMENT
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-900 font-bold">
+                                  {attainmentLevel}
+                                </td>
                               </tr>
                             </>
                           );
@@ -343,9 +446,9 @@ const SEEAttainmentReport = () => {
                     onClick={postAttainmentData}
                     disabled={loading}
                     className={`px-8 py-3 text-white rounded-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 ${
-                      loading 
-                        ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary'
+                      loading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary"
                     }`}
                   >
                     {loading ? (
@@ -354,7 +457,7 @@ const SEEAttainmentReport = () => {
                         Submitting...
                       </div>
                     ) : (
-                      'Submit Attainments'
+                      "Submit Attainments"
                     )}
                   </button>
                 </div>

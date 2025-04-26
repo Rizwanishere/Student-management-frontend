@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaSearch, FaSave, FaFileExcel, FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import Loader from "../utils/Loader";
-import { FaFileExcel, FaSave, FaSearch, FaUpload } from "react-icons/fa";
 
 const Marks = () => {
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [examType, setExamType] = useState("");
   const [maxMarks, setMaxMarks] = useState(0);
@@ -25,7 +27,7 @@ const Marks = () => {
   });
   const [importErrors, setImportErrors] = useState([]);
   const [importWarnings, setImportWarnings] = useState([]);
-  const [loading,setloading] = useState(false);
+  const [loading, setloading] = useState(false);
 
   const selectedBranch = localStorage.getItem("selectedBranch");
 
@@ -51,9 +53,18 @@ const Marks = () => {
   // Fetch subjects based on selected year, semester, and section
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      if (
+        !selectedYear ||
+        !selectedSemester ||
+        !selectedBranch ||
+        !selectedRegulation ||
+        (showCustomRegulation && !customRegulation)
+      )
+        return;
       try {
-        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const regulationValue = showCustomRegulation
+          ? customRegulation
+          : selectedRegulation;
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
         );
@@ -72,7 +83,14 @@ const Marks = () => {
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedBranch,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   // Fetch students and marks based on selected criteria
   useEffect(() => {
@@ -513,12 +531,10 @@ const Marks = () => {
         }
       }
       alert("Marks saved successfully");
-      
     } catch (error) {
       console.error("Error saving marks:", error);
       alert("Failed to save marks");
-    }
-    finally{
+    } finally {
       setloading(false);
     }
   };
@@ -526,7 +542,7 @@ const Marks = () => {
   useEffect(() => {
     if (importStatus.message) {
       const timer = setTimeout(() => {
-        setImportStatus(prev => ({ ...prev, message: "" }));
+        setImportStatus((prev) => ({ ...prev, message: "" }));
       }, 5000); // 5 seconds
 
       return () => clearTimeout(timer); // Cleanup on unmount
@@ -536,9 +552,21 @@ const Marks = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/home")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Dashboard
+        </button>
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Marks Entry System</h1>
-          <p className="text-gray-600">Enter and manage student marks efficiently</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Marks Entry System
+          </h1>
+          <p className="text-gray-600">
+            Enter and manage student marks efficiently
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -546,7 +574,9 @@ const Marks = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Year</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedYear}
@@ -561,7 +591,9 @@ const Marks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Semester
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSemester}
@@ -574,7 +606,9 @@ const Marks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Section</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Section
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSection}
@@ -588,7 +622,9 @@ const Marks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Regulation
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedRegulation}
@@ -596,7 +632,9 @@ const Marks = () => {
                   >
                     <option value="">Select Regulation</option>
                     {regulations.map((reg) => (
-                      <option key={reg} value={reg}>{reg}</option>
+                      <option key={reg} value={reg}>
+                        {reg}
+                      </option>
                     ))}
                   </select>
                   {showCustomRegulation && (
@@ -612,7 +650,9 @@ const Marks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Subject</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Subject
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSubject}
@@ -628,7 +668,9 @@ const Marks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Test Type</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Test Type
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={examType}
@@ -673,7 +715,9 @@ const Marks = () => {
           <div className="mt-8 bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Student Marks</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">
+                  Student Marks
+                </h2>
                 <div className="flex space-x-4">
                   <label
                     htmlFor="excel-upload"
@@ -739,24 +783,43 @@ const Marks = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S No</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        S No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Roll No
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Student Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Marks
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {students.map((student, index) => (
-                      <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-200">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.rollNo}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.name}</td>
+                      <tr
+                        key={student._id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {student.rollNo}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {student.name}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="number"
                             className="w-24 border border-gray-200 rounded-lg px-3 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                             value={student.marks || ""}
-                            onChange={(e) => handleMarksChange(student._id, e.target.value)}
+                            onChange={(e) =>
+                              handleMarksChange(student._id, e.target.value)
+                            }
                             min="0"
                             max={maxMarks}
                           />

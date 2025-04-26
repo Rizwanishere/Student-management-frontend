@@ -1,5 +1,6 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { UserProvider, useUser } from "../utils/UserContext";
 
 /* Import Components */
 import Home from "./Home";
@@ -8,6 +9,10 @@ import Footer from "./Footer";
 import Contact from "./Contact";
 import BranchSelection from '../pages/BranchSelection';
 import Login from '../pages/Login';
+import AdminLogin from '../pages/AdminLogin';
+import AdminDashboard from '../pages/AdminDashboard';
+import AddFaculty from '../pages/AddFaculty';
+import ManageFaculty from '../pages/ManageFaculty';
 import ScrollToTop from "../utils/ScrollToTop";
 import Attendance from "../pages/Attendance";
 import Marks from "../pages/Marks";
@@ -30,12 +35,31 @@ import POAttainmentReport from "../pages/POAttainmentReport";
 import AboutUs from "./AboutUs";
 import CreateStudent from "../pages/CreateStudent";
 
-const App = () => {
-  const selectedBranch = localStorage.getItem('selectedBranch'); // Check if branch is selected
+const AdminRoute = ({ element }) => {
+  const { user, isAdmin } = useUser();
+  
+  if (!user || !isAdmin()) {
+    return <Navigate to="/admin-login" replace />;
+  }
+  return element;
+};
+
+const selectedBranch = localStorage.getItem('selectedBranch');
+
+const AppContent = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Header />
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+
+        {/* Admin Management Routes */}
+        <Route path="/admin-dashboard" element={<AdminRoute element={<AdminDashboard />} />} />
+        <Route path="/add-faculty" element={<AdminRoute element={<AddFaculty />} />} />
+        <Route path="/manage-faculty" element={<AdminRoute element={<ManageFaculty />} />} />
+
         {/* If no branch selected, show BranchSelection as the default route */}
         <Route path="/" element={selectedBranch ? <Navigate to="/login" /> : <BranchSelection />} />
 
@@ -70,7 +94,7 @@ const App = () => {
         <Route path="/course-outcome" element={<CourseOutcomeForm />} />
 
         <Route path="/attainment" element={<AttainmentReport />} />
-        <Route path="/attainment/see" element={<SEEAttainmentReport />} /> 
+        <Route path="/attainment/see" element={<SEEAttainmentReport />} />
 
         <Route path="/attainment/direct" element={<DirectCOAttainmentReport />} />
         <Route path="/attainment/indirect" element={<IndirectCOAttainmentReport />} />
@@ -80,13 +104,20 @@ const App = () => {
         <Route path="/attainment/entry" element={<IndirectAttainment />} />
         
 
-        {/* Redirect any unknown path to the root (Branch Selection) */}
+        {/* Redirect any unknown path to login */}
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
       <Footer />
-      <ScrollToTop />
     </Router>
+  );
+};
+
+const App = () => {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 };
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaSearch, FaSave, FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
-import { FaSearch, FaSave } from "react-icons/fa";
 
 const InternalMarks = () => {
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [examType, setExamType] = useState("");
   const [maxMarks, setMaxMarks] = useState(0);
@@ -39,20 +41,36 @@ const InternalMarks = () => {
 
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      if (
+        !selectedYear ||
+        !selectedSemester ||
+        !selectedBranch ||
+        !selectedRegulation ||
+        (showCustomRegulation && !customRegulation)
+      )
+        return;
       try {
-        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const regulationValue = showCustomRegulation
+          ? customRegulation
+          : selectedRegulation;
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
         );
         setSubjectOptions(response.data || []);
       } catch (error) {
-        console.error('Error fetching subjects:', error);
+        console.error("Error fetching subjects:", error);
         setSubjectOptions([]);
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedBranch,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -136,15 +154,18 @@ const InternalMarks = () => {
             );
           } else {
             // Create a new marks entry (POST request)
-            await axios.post(`${process.env.REACT_APP_BACKEND_URI}/api/internalmarks`, {
-              student: _id,
-              subject: selectedSubject,
-              examType,
-              marks, // Directly include the marks
-              year: selectedYear,
-              semester: selectedSemester,
-              section: selectedSection,
-            });
+            await axios.post(
+              `${process.env.REACT_APP_BACKEND_URI}/api/internalmarks`,
+              {
+                student: _id,
+                subject: selectedSubject,
+                examType,
+                marks, // Directly include the marks
+                year: selectedYear,
+                semester: selectedSemester,
+                section: selectedSection,
+              }
+            );
           }
         }
       }
@@ -164,9 +185,21 @@ const InternalMarks = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/home")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Dashboard
+        </button>
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Internal Marks Entry</h1>
-          <p className="text-gray-600">Enter and manage internal marks for students</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Internal Marks Entry
+          </h1>
+          <p className="text-gray-600">
+            Enter and manage internal marks for students
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -174,7 +207,9 @@ const InternalMarks = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Year</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedYear}
@@ -189,7 +224,9 @@ const InternalMarks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Semester
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSemester}
@@ -202,7 +239,9 @@ const InternalMarks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Regulation
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedRegulation}
@@ -219,7 +258,9 @@ const InternalMarks = () => {
 
                 {showCustomRegulation && (
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Custom Regulation</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Custom Regulation
+                    </label>
                     <input
                       type="text"
                       className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
@@ -231,7 +272,9 @@ const InternalMarks = () => {
                 )}
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Section</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Section
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSection}
@@ -245,12 +288,19 @@ const InternalMarks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Subject</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Subject
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
-                    disabled={!selectedYear || !selectedSemester || !selectedRegulation || (showCustomRegulation && !customRegulation)}
+                    disabled={
+                      !selectedYear ||
+                      !selectedSemester ||
+                      !selectedRegulation ||
+                      (showCustomRegulation && !customRegulation)
+                    }
                   >
                     <option value="">Select Subject</option>
                     {subjectOptions.map((subject) => (
@@ -262,7 +312,9 @@ const InternalMarks = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Test Type</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Test Type
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                     value={examType}
@@ -293,9 +345,16 @@ const InternalMarks = () => {
             <div className="p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Student Internal Marks</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Student Internal Marks
+                  </h2>
                   <p className="text-gray-600 mt-1">
-                    Course: {subjectOptions.find(subject => subject._id === selectedSubject)?.name}
+                    Course:{" "}
+                    {
+                      subjectOptions.find(
+                        (subject) => subject._id === selectedSubject
+                      )?.name
+                    }
                   </p>
                 </div>
                 <div className="mt-4 sm:mt-0">
@@ -313,27 +372,73 @@ const InternalMarks = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">S.No</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Roll No</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan="3">Q1 (6)</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan="2">Q2 (7)</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan="2">Q3 (7)</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan="2">Q4 (7)</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Total</th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        S.No
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                        Roll No
+                      </th>
+                      <th
+                        className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        colSpan="3"
+                      >
+                        Q1 (6)
+                      </th>
+                      <th
+                        className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        colSpan="2"
+                      >
+                        Q2 (7)
+                      </th>
+                      <th
+                        className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        colSpan="2"
+                      >
+                        Q3 (7)
+                      </th>
+                      <th
+                        className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        colSpan="2"
+                      >
+                        Q4 (7)
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                        Total
+                      </th>
                     </tr>
                     <tr>
                       <th className="px-2 py-2"></th>
                       <th className="px-2 py-2"></th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">a</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">b</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">c</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">a</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">b</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">a</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">b</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">a</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">b</th>
-                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">(20)</th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        a
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        b
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        c
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        a
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        b
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        a
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        b
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        a
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                        b
+                      </th>
+                      <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                        (20)
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -350,17 +455,31 @@ const InternalMarks = () => {
                         (student.marks?.Q4?.b || 0);
 
                       return (
-                        <tr key={student._id} className="hover:bg-gray-50 transition-colors duration-200">
-                          <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 text-center">{index + 1}</td>
-                          <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 text-center">{student.rollNo}</td>
-                          
+                        <tr
+                          key={student._id}
+                          className="hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                            {index + 1}
+                          </td>
+                          <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                            {student.rollNo}
+                          </td>
+
                           {/* Q1 Marks */}
                           <td className="px-2 py-2 whitespace-nowrap">
                             <input
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q1?.a || ""}
-                              onChange={(e) => handleMarksChange(index, "Q1", "a", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q1",
+                                  "a",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="2"
                             />
@@ -370,7 +489,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q1?.b || ""}
-                              onChange={(e) => handleMarksChange(index, "Q1", "b", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q1",
+                                  "b",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="2"
                             />
@@ -380,7 +506,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q1?.c || ""}
-                              onChange={(e) => handleMarksChange(index, "Q1", "c", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q1",
+                                  "c",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="2"
                             />
@@ -392,7 +525,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q2?.a || ""}
-                              onChange={(e) => handleMarksChange(index, "Q2", "a", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q2",
+                                  "a",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="3.5"
                             />
@@ -402,7 +542,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q2?.b || ""}
-                              onChange={(e) => handleMarksChange(index, "Q2", "b", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q2",
+                                  "b",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="3.5"
                             />
@@ -414,7 +561,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q3?.a || ""}
-                              onChange={(e) => handleMarksChange(index, "Q3", "a", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q3",
+                                  "a",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="3.5"
                             />
@@ -424,7 +578,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q3?.b || ""}
-                              onChange={(e) => handleMarksChange(index, "Q3", "b", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q3",
+                                  "b",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="3.5"
                             />
@@ -436,7 +597,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q4?.a || ""}
-                              onChange={(e) => handleMarksChange(index, "Q4", "a", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q4",
+                                  "a",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="3.5"
                             />
@@ -446,7 +614,14 @@ const InternalMarks = () => {
                               type="number"
                               className="w-12 border border-gray-200 rounded-lg px-1 py-1 focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 text-center text-sm"
                               value={student.marks?.Q4?.b || ""}
-                              onChange={(e) => handleMarksChange(index, "Q4", "b", e.target.value)}
+                              onChange={(e) =>
+                                handleMarksChange(
+                                  index,
+                                  "Q4",
+                                  "b",
+                                  e.target.value
+                                )
+                              }
                               min="0"
                               max="3.5"
                             />
@@ -454,7 +629,13 @@ const InternalMarks = () => {
 
                           {/* Total Marks */}
                           <td className="px-2 py-2 whitespace-nowrap text-center">
-                            <span className={`font-semibold text-sm ${totalMarks > 20 ? 'text-red-600' : 'text-gray-900'}`}>
+                            <span
+                              className={`font-semibold text-sm ${
+                                totalMarks > 20
+                                  ? "text-red-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
                               {totalMarks}
                             </span>
                           </td>
