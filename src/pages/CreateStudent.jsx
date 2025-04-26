@@ -1,8 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
-import { FaSave } from "react-icons/fa";
+import { FaSave, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateStudent() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     rollNo: "",
     name: "",
@@ -152,6 +154,14 @@ export default function CreateStudent() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/admin")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Admin Dashboard
+        </button>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Students Record Input

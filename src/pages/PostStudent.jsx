@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
-import { FaFileExcel, FaSave, FaUserPlus } from "react-icons/fa";
+import { FaFileExcel, FaSave, FaUserPlus, FaArrowLeft } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import Loader from "../utils/Loader";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function PostStudent() {
   const [students, setStudents] = useState([]);
@@ -16,6 +15,7 @@ function PostStudent() {
   const [importErrors, setImportErrors] = useState([]);
   const [importWarnings, setImportWarnings] = useState([]);
   const [loading, setloading] = useState(false);
+  const navigate = useNavigate();
 
   const readExcel = (file) => {
     return new Promise((resolve, reject) => {
@@ -422,6 +422,14 @@ function PostStudent() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/home")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Dashboard
+        </button>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 ">
             Students Records Input

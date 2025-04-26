@@ -3,7 +3,8 @@ import axios from "axios";
 import moment from "moment";
 import html2pdf from "html2pdf.js";
 import Loader from "../utils/Loader";
-import { FaSearch, FaDownload } from "react-icons/fa";
+import { FaSearch, FaDownload, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const ProgressReport = () => {
   const [startRollNo, setStartRollNo] = useState("");
@@ -14,6 +15,7 @@ const ProgressReport = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const printRef = useRef();
+  const navigate = useNavigate();
 
   const calculateSemester = (year, semester) => (year - 1) * 2 + semester;
   const convertToRoman = (num) => {
@@ -260,6 +262,13 @@ const ProgressReport = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 sm:p-8">
             <div className="flex items-center justify-between mb-8">

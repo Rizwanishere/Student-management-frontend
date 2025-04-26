@@ -3,7 +3,16 @@ import axios from "axios";
 import Loader from "../utils/Loader";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
-import { FaSearch, FaDownload, FaGraduationCap, FaBook, FaUsers, FaPencilAlt } from 'react-icons/fa';
+import {
+  FaSearch,
+  FaDownload,
+  FaGraduationCap,
+  FaBook,
+  FaUsers,
+  FaPencilAlt,
+  FaArrowLeft,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const MarksReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -46,7 +55,9 @@ const MarksReport = () => {
     const fetchSubjects = async () => {
       if (selectedYear && selectedSemester) {
         try {
-          const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+          const regulationValue = showCustomRegulation
+            ? customRegulation
+            : selectedRegulation;
           const response = await axios.get(
             `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
           );
@@ -69,7 +80,14 @@ const MarksReport = () => {
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedBranch,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   // Fetch marks for the selected branch, year, section, and examType
   const fetchMarks = async () => {
@@ -118,22 +136,31 @@ const MarksReport = () => {
 
   const downloadPDF = () => {
     const input = tableRef.current;
-  
+
     // Lower the scale and adjust quality for compression
     html2canvas(input, { scale: 1.5 }).then((canvas) => {
       const imgData = canvas.toDataURL("image/jpeg", 0.8); // Use JPEG with quality 0.8
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
+
       pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
       pdf.save("MarksReport.pdf");
     });
-  };  
+  };
+
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 sm:p-8">
             <div className="flex items-center justify-between mb-8">
@@ -146,7 +173,9 @@ const MarksReport = () => {
             <form onSubmit={handleSubmit} className="mb-8">
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Year</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaGraduationCap className="h-5 w-5 text-gray-400" />
@@ -166,7 +195,9 @@ const MarksReport = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Semester
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaBook className="h-5 w-5 text-gray-400" />
@@ -184,7 +215,9 @@ const MarksReport = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Regulation
+                  </label>
                   <div className="relative">
                     <select
                       className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
@@ -193,7 +226,9 @@ const MarksReport = () => {
                     >
                       <option value="">Select Regulation</option>
                       {regulations.map((reg) => (
-                        <option key={reg} value={reg}>{reg}</option>
+                        <option key={reg} value={reg}>
+                          {reg}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -210,7 +245,9 @@ const MarksReport = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Section</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Section
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaUsers className="h-5 w-5 text-gray-400" />
@@ -229,7 +266,9 @@ const MarksReport = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Exam Type</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Exam Type
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaPencilAlt className="h-5 w-5 text-gray-400" />
@@ -268,7 +307,9 @@ const MarksReport = () => {
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Marks Report</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Marks Report
+                    </h2>
                     <button
                       onClick={downloadPDF}
                       className="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg font-semibold shadow-md hover:bg-green-600 transition-all duration-200"
@@ -282,16 +323,29 @@ const MarksReport = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roll No</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            S.No
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Roll No
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
                           {subjectOptions.map((subject) => (
-                            <th key={subject._id} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                              key={subject._id}
+                              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                               {subject.name}
                             </th>
                           ))}
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Marks</th>
-                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Marks
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Percentage
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -306,22 +360,41 @@ const MarksReport = () => {
                             }
                           });
 
-                          const percentage = totalMaxMarks > 0
-                            ? ((totalMarks / totalMaxMarks) * 100).toFixed(2)
-                            : "-";
+                          const percentage =
+                            totalMaxMarks > 0
+                              ? ((totalMarks / totalMaxMarks) * 100).toFixed(2)
+                              : "-";
 
                           return (
-                            <tr key={record.student._id} className="hover:bg-gray-50 transition-colors duration-200">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.student.rollNo}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.student.name}</td>
+                            <tr
+                              key={record.student._id}
+                              className="hover:bg-gray-50 transition-colors duration-200"
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {index + 1}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {record.student.rollNo}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {record.student.name}
+                              </td>
                               {subjectOptions.map((subject) => (
-                                <td key={subject._id} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                  {record.marks[subject._id] !== undefined ? record.marks[subject._id] : "0"}
+                                <td
+                                  key={subject._id}
+                                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center"
+                                >
+                                  {record.marks[subject._id] !== undefined
+                                    ? record.marks[subject._id]
+                                    : "0"}
                                 </td>
                               ))}
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">{totalMarks}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">{percentage}%</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">
+                                {totalMarks}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center font-semibold">
+                                {percentage}%
+                              </td>
                             </tr>
                           );
                         })}

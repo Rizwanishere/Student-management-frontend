@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Loader from "../utils/Loader";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaArrowLeft } from "react-icons/fa";
 import { useUser } from "../utils/UserContext";
 
 const ManageFaculty = () => {
@@ -13,17 +13,22 @@ const ManageFaculty = () => {
 
   const fetchFaculties = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/all`, {
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URI}/api/users/all`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
         // Filter out admin users and current user
         const facultyMembers = data.filter(
-          (faculty) => faculty.role !== "admin" && faculty._id !== localStorage.getItem("userId")
+          (faculty) =>
+            faculty.role !== "admin" &&
+            faculty._id !== localStorage.getItem("userId")
         );
         setFaculties(facultyMembers);
       } else {
@@ -38,7 +43,9 @@ const ManageFaculty = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this faculty member?")) {
+    if (
+      window.confirm("Are you sure you want to delete this faculty member?")
+    ) {
       try {
         const response = await fetch(
           `${process.env.REACT_APP_BACKEND_URI}/api/users/${id}`,
@@ -78,9 +85,10 @@ const ManageFaculty = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
           onClick={() => navigate("/admin-dashboard")}
-          className="mb-6 text-blue-600 hover:text-blue-800 transition-colors duration-300 flex items-center"
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
         >
-          ← Back to Dashboard
+          <FaArrowLeft className="mr-2" />
+          Back to Admin Dashboard
         </button>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">

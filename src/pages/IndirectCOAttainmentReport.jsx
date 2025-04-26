@@ -12,7 +12,8 @@ import {
 } from "chart.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { FaFilePdf } from 'react-icons/fa';
+import { FaFilePdf, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
   CategoryScale,
@@ -38,6 +39,7 @@ const IndirectCOAttainmentReport = () => {
   const [showCustomRegulation, setShowCustomRegulation] = useState(false);
 
   const regulations = ["LR21", "LR22", "LR23", "Other"];
+  const navigate = useNavigate();
 
   const handleRegulationChange = (e) => {
     const value = e.target.value;
@@ -64,7 +66,9 @@ const IndirectCOAttainmentReport = () => {
       if (selectedYear && selectedSemester) {
         try {
           setLoading(true);
-          const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+          const regulationValue = showCustomRegulation
+            ? customRegulation
+            : selectedRegulation;
           const response = await axios.get(
             `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
           );
@@ -88,7 +92,14 @@ const IndirectCOAttainmentReport = () => {
       }
     };
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedBranch,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   // Fetch CO headers from attainment API
   useEffect(() => {
@@ -291,18 +302,26 @@ const IndirectCOAttainmentReport = () => {
       });
 
       // Get the elements we want to capture
-      const firstTableElement = document.querySelector(".bg-white.shadow-lg.rounded-lg.p-6.mb-8 table"); // Student response table
-      const secondTableElement = document.querySelectorAll(".bg-white.shadow-lg.rounded-lg.p-6 table")[1]; // CO attainment table
-      const graphElement = document.querySelector(".bg-white.shadow-lg.rounded-lg.p-6.mb-8.mt-6"); // Graph container
+      const firstTableElement = document.querySelector(
+        ".bg-white.shadow-lg.rounded-lg.p-6.mb-8 table"
+      ); // Student response table
+      const secondTableElement = document.querySelectorAll(
+        ".bg-white.shadow-lg.rounded-lg.p-6 table"
+      )[1]; // CO attainment table
+      const graphElement = document.querySelector(
+        ".bg-white.shadow-lg.rounded-lg.p-6.mb-8.mt-6"
+      ); // Graph container
 
       if (!firstTableElement || !secondTableElement || !graphElement) {
-        throw new Error("Required elements not found. Please ensure all data is loaded.");
+        throw new Error(
+          "Required elements not found. Please ensure all data is loaded."
+        );
       }
 
       // Function to capture an element as canvas
       const captureElement = async (element) => {
         if (!element) return null;
-        
+
         const canvas = await html2canvas(element, {
           scale: 2,
           logging: false,
@@ -323,13 +342,21 @@ const IndirectCOAttainmentReport = () => {
 
       const firstTableImgData = firstTableCanvas.toDataURL("image/jpeg", 1.0);
       const firstTableWidth = pdf.internal.pageSize.getWidth() - 20;
-      const firstTableHeight = (firstTableCanvas.height * firstTableWidth) / firstTableCanvas.width;
-      
-      pdf.addImage(firstTableImgData, "JPEG", 10, 20, firstTableWidth, firstTableHeight);
+      const firstTableHeight =
+        (firstTableCanvas.height * firstTableWidth) / firstTableCanvas.width;
+
+      pdf.addImage(
+        firstTableImgData,
+        "JPEG",
+        10,
+        20,
+        firstTableWidth,
+        firstTableHeight
+      );
 
       // Add second table and graph on the same page
       pdf.addPage();
-      
+
       // Capture and add second table
       const secondTableCanvas = await captureElement(secondTableElement);
       if (!secondTableCanvas) {
@@ -338,10 +365,18 @@ const IndirectCOAttainmentReport = () => {
 
       const secondTableImgData = secondTableCanvas.toDataURL("image/jpeg", 1.0);
       const secondTableWidth = pdf.internal.pageSize.getWidth() - 20;
-      const secondTableHeight = (secondTableCanvas.height * secondTableWidth) / secondTableCanvas.width;
-      
+      const secondTableHeight =
+        (secondTableCanvas.height * secondTableWidth) / secondTableCanvas.width;
+
       // Add second table at the top of the page
-      pdf.addImage(secondTableImgData, "JPEG", 10, 20, secondTableWidth, secondTableHeight);
+      pdf.addImage(
+        secondTableImgData,
+        "JPEG",
+        10,
+        20,
+        secondTableWidth,
+        secondTableHeight
+      );
 
       // Capture and add graph below the second table
       const graphCanvas = await captureElement(graphElement);
@@ -352,15 +387,21 @@ const IndirectCOAttainmentReport = () => {
       const graphImgData = graphCanvas.toDataURL("image/jpeg", 1.0);
       const graphWidth = pdf.internal.pageSize.getWidth() - 40;
       const graphHeight = (graphCanvas.height * graphWidth) / graphCanvas.width;
-      
+
       // Calculate position for graph (below the second table)
       const graphYPosition = 20 + secondTableHeight + 10; // 10mm gap between table and graph
-      
-      pdf.addImage(graphImgData, "JPEG", 20, graphYPosition, graphWidth, graphHeight);
+
+      pdf.addImage(
+        graphImgData,
+        "JPEG",
+        20,
+        graphYPosition,
+        graphWidth,
+        graphHeight
+      );
 
       // Save the PDF
       pdf.save("Indirect_CO_Attainment_Report.pdf");
-
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert(`Error generating PDF: ${error.message}`);
@@ -370,11 +411,18 @@ const IndirectCOAttainmentReport = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
           <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-white">
               CO ATTAINMENT (INDIRECT METHOD)
-            </h1>
+            </h2>
             {summaryData && (
               <button
                 onClick={exportToPDF}
@@ -386,99 +434,102 @@ const IndirectCOAttainmentReport = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6 mt-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Year
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-              >
-                <option value="">Select Year</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-                <option value="4">Year 4</option>
-              </select>
-            </div>
+          {/* Filters with added margin */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6 px-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Year
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="">Select Year</option>
+                  <option value="1">Year 1</option>
+                  <option value="2">Year 2</option>
+                  <option value="3">Year 3</option>
+                  <option value="4">Year 4</option>
+                </select>
+              </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Semester
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedSemester}
-                onChange={(e) => setSelectedSemester(e.target.value)}
-              >
-                <option value="">Select Semester</option>
-                <option value="1">Semester 1</option>
-                <option value="2">Semester 2</option>
-              </select>
-            </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Semester
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                >
+                  <option value="">Select Semester</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                </select>
+              </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Regulation
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedRegulation}
-                onChange={handleRegulationChange}
-              >
-                <option value="">Select Regulation</option>
-                {regulations.map((regulation) => (
-                  <option key={regulation} value={regulation}>
-                    {regulation}
-                  </option>
-                ))}
-              </select>
-              {showCustomRegulation && (
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 mt-2"
-                  placeholder="Enter Custom Regulation"
-                  value={customRegulation}
-                  onChange={handleCustomRegulationChange}
-                />
-              )}
-            </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Regulation
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedRegulation}
+                  onChange={handleRegulationChange}
+                >
+                  <option value="">Select Regulation</option>
+                  {regulations.map((regulation) => (
+                    <option key={regulation} value={regulation}>
+                      {regulation}
+                    </option>
+                  ))}
+                </select>
+                {showCustomRegulation && (
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 mt-2"
+                    placeholder="Enter Custom Regulation"
+                    value={customRegulation}
+                    onChange={handleCustomRegulationChange}
+                  />
+                )}
+              </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Section
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedSection}
-                onChange={(e) => setSelectedSection(e.target.value)}
-              >
-                <option value="">Select Section</option>
-                <option value="A">Section A</option>
-                <option value="B">Section B</option>
-                <option value="C">Section C</option>
-              </select>
-            </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Section
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSection}
+                  onChange={(e) => setSelectedSection(e.target.value)}
+                >
+                  <option value="">Select Section</option>
+                  <option value="A">Section A</option>
+                  <option value="B">Section B</option>
+                  <option value="C">Section C</option>
+                </select>
+              </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Subject
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                disabled={loading || subjectOptions.length === 0}
-              >
-                <option value="">Select Subject</option>
-                {subjectOptions.map((subject) => (
-                  <option key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Subject
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  disabled={loading || subjectOptions.length === 0}
+                >
+                  <option value="">Select Subject</option>
+                  {subjectOptions.map((subject) => (
+                    <option key={subject._id} value={subject._id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>

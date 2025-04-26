@@ -13,7 +13,8 @@ import {
 } from "chart.js";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { FaFilePdf } from 'react-icons/fa';
+import { FaFilePdf, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
   CategoryScale,
@@ -25,6 +26,7 @@ ChartJS.register(
 );
 
 const OverallCOAttainmentReport = () => {
+  const navigate = useNavigate();
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -66,7 +68,9 @@ const OverallCOAttainmentReport = () => {
     if (selectedYear && selectedSemester) {
       try {
         setLoading(true);
-        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const regulationValue = showCustomRegulation
+          ? customRegulation
+          : selectedRegulation;
         const response = await axios.get(
           `${
             process.env.REACT_APP_BACKEND_URI
@@ -74,7 +78,11 @@ const OverallCOAttainmentReport = () => {
             "selectedBranch"
           )}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`
         );
-        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        if (
+          response.data &&
+          Array.isArray(response.data) &&
+          response.data.length > 0
+        ) {
           setSubjectOptions(response.data);
         } else {
           setSubjectOptions([]);
@@ -122,7 +130,13 @@ const OverallCOAttainmentReport = () => {
 
   useEffect(() => {
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   useEffect(() => {
     fetchAttainments();
@@ -257,7 +271,7 @@ const OverallCOAttainmentReport = () => {
 
       // Get the elements we want to capture (only the content, not the dropdowns and buttons)
       const contentElement = document.querySelector(".flex.flex-col.gap-6");
-      
+
       if (!contentElement) {
         throw new Error("Content not found. Please ensure all data is loaded.");
       }
@@ -265,7 +279,7 @@ const OverallCOAttainmentReport = () => {
       // Function to capture an element as canvas
       const captureElement = async (element) => {
         if (!element) return null;
-        
+
         const canvas = await html2canvas(element, {
           scale: 2,
           logging: false,
@@ -286,14 +300,14 @@ const OverallCOAttainmentReport = () => {
 
       const contentImgData = contentCanvas.toDataURL("image/jpeg", 1.0);
       const contentWidth = pdf.internal.pageSize.getWidth() - 20;
-      const contentHeight = (contentCanvas.height * contentWidth) / contentCanvas.width;
-      
+      const contentHeight =
+        (contentCanvas.height * contentWidth) / contentCanvas.width;
+
       // Add content to PDF
       pdf.addImage(contentImgData, "JPEG", 10, 10, contentWidth, contentHeight);
 
       // Save the PDF
       pdf.save("Overall_CO_Attainment_Report.pdf");
-
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert(`Error generating PDF: ${error.message}`);
@@ -303,11 +317,18 @@ const OverallCOAttainmentReport = () => {
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-white">
-              OVERALL CO ATTAINMENT
-            </h1>
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-primary to-blue-600 p-6 flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-white">
+              Overall CO Attainment
+            </h2>
             {showTable && (
               <button
                 onClick={exportToPDF}
@@ -319,92 +340,97 @@ const OverallCOAttainmentReport = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Year
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-              >
-                <option value="">Select Year</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-                <option value="4">Year 4</option>
-              </select>
+          {/* Filters with added margin */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6 px-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Year
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="">Select Year</option>
+                  <option value="1">Year 1</option>
+                  <option value="2">Year 2</option>
+                  <option value="3">Year 3</option>
+                  <option value="4">Year 4</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Semester
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                >
+                  <option value="">Select Semester</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Regulation
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedRegulation}
+                  onChange={handleRegulationChange}
+                >
+                  <option value="">Select Regulation</option>
+                  {regulations.map((reg) => (
+                    <option key={reg} value={reg}>
+                      {reg}
+                    </option>
+                  ))}
+                </select>
+                {showCustomRegulation && (
+                  <input
+                    type="text"
+                    className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    placeholder="Enter Custom Regulation"
+                    value={customRegulation}
+                    onChange={handleCustomRegulationChange}
+                    pattern="[A-Z0-9]*"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Subject
+                </label>
+                <select
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  disabled={loading || subjectOptions.length === 0}
+                >
+                  <option value="">Select Subject</option>
+                  {subjectOptions.map((subject) => (
+                    <option key={subject._id} value={subject._id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Semester
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedSemester}
-                onChange={(e) => setSelectedSemester(e.target.value)}
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={handleSubmit}
+                className="bg-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
               >
-                <option value="">Select Semester</option>
-                <option value="1">Semester 1</option>
-                <option value="2">Semester 2</option>
-              </select>
+                Submit
+              </button>
             </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Regulation
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedRegulation}
-                onChange={handleRegulationChange}
-              >
-                <option value="">Select Regulation</option>
-                {regulations.map((reg) => (
-                  <option key={reg} value={reg}>{reg}</option>
-                ))}
-              </select>
-              {showCustomRegulation && (
-                <input
-                  type="text"
-                  className="w-full mt-2 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                  placeholder="Enter Custom Regulation"
-                  value={customRegulation}
-                  onChange={handleCustomRegulationChange}
-                  pattern="[A-Z0-9]*"
-                />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Subject
-              </label>
-              <select
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                disabled={loading || subjectOptions.length === 0}
-              >
-                <option value="">Select Subject</option>
-                {subjectOptions.map((subject) => (
-                  <option key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="flex justify-center mb-6">
-            <button
-              onClick={handleSubmit}
-              className="bg-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-primary-dark transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
-            >
-              Submit
-            </button>
           </div>
         </div>
 

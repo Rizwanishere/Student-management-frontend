@@ -3,7 +3,8 @@ import Loader from "../utils/Loader";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { FaFileExcel, FaFilePdf, FaSave } from 'react-icons/fa';
+import { FaFileExcel, FaFilePdf, FaSave, FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const AttainmentReport = () => {
   const [selectedYear, setSelectedYear] = useState("");
@@ -50,13 +51,22 @@ const AttainmentReport = () => {
   // Fetch subjects when year, semester, and regulation are selected
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!selectedYear || !selectedSemester || !selectedBranch || !selectedRegulation || (showCustomRegulation && !customRegulation)) return;
+      if (
+        !selectedYear ||
+        !selectedSemester ||
+        !selectedBranch ||
+        !selectedRegulation ||
+        (showCustomRegulation && !customRegulation)
+      )
+        return;
 
       setLoading(true);
       setError(null);
 
       try {
-        const regulationValue = showCustomRegulation ? customRegulation : selectedRegulation;
+        const regulationValue = showCustomRegulation
+          ? customRegulation
+          : selectedRegulation;
         // Make API call to fetch subjects with regulation
         const subjectsUrl = `${process.env.REACT_APP_BACKEND_URI}/api/subjects/branch/${selectedBranch}/year/${selectedYear}/semester/${selectedSemester}/regulation/${regulationValue}`;
         console.log("Fetching subjects from:", subjectsUrl);
@@ -89,7 +99,14 @@ const AttainmentReport = () => {
     };
 
     fetchSubjects();
-  }, [selectedYear, selectedSemester, selectedBranch, selectedRegulation, customRegulation, showCustomRegulation]);
+  }, [
+    selectedYear,
+    selectedSemester,
+    selectedBranch,
+    selectedRegulation,
+    customRegulation,
+    showCustomRegulation,
+  ]);
 
   // Fetch marks data when subject and exam type are selected
   useEffect(() => {
@@ -870,7 +887,6 @@ const AttainmentReport = () => {
 
   // Get attainment value from API data or calculated values
   const getAttainmentValue = (coNumber, index) => {
-   
     // Always calculate attainmentLevel values
     const coAverages = calculateCOAverages();
     console.log("Calculating Attainment Levels:", coAverages);
@@ -958,23 +974,38 @@ const AttainmentReport = () => {
     }
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate("/reports")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Reports
+        </button>
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 sm:p-8">
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-blue-600 -mx-8 -mt-8 px-8 py-6 mb-8">
-              <h2 className="text-2xl font-bold text-white text-center">CO Attainment</h2>
+              <h2 className="text-2xl font-bold text-white text-center">
+                CO Attainment
+              </h2>
               {selectedExamType && (
-                <div className="text-center font-semibold text-white mt-2">{getExamTitle()}</div>
+                <div className="text-center font-semibold text-white mt-2">
+                  {getExamTitle()}
+                </div>
               )}
             </div>
 
             {/* Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Year</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Year
+                </label>
                 <select
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   value={selectedYear}
@@ -982,13 +1013,17 @@ const AttainmentReport = () => {
                 >
                   <option value="">Select Year</option>
                   {years.map((year) => (
-                    <option key={year} value={year}>{year}</option>
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Semester
+                </label>
                 <select
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   value={selectedSemester}
@@ -997,13 +1032,17 @@ const AttainmentReport = () => {
                 >
                   <option value="">Select Semester</option>
                   {semesters.map((sem) => (
-                    <option key={sem} value={sem}>{sem}</option>
+                    <option key={sem} value={sem}>
+                      {sem}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Regulation</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Regulation
+                </label>
                 <select
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   value={selectedRegulation}
@@ -1011,7 +1050,9 @@ const AttainmentReport = () => {
                 >
                   <option value="">Select Regulation</option>
                   {regulations.map((reg) => (
-                    <option key={reg} value={reg}>{reg}</option>
+                    <option key={reg} value={reg}>
+                      {reg}
+                    </option>
                   ))}
                 </select>
                 {showCustomRegulation && (
@@ -1027,7 +1068,9 @@ const AttainmentReport = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Subject</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Subject
+                </label>
                 <select
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   value={selectedSubject}
@@ -1049,7 +1092,9 @@ const AttainmentReport = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Exam Type</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Exam Type
+                </label>
                 <select
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
                   value={selectedExamType}
@@ -1079,8 +1124,16 @@ const AttainmentReport = () => {
               <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div className="ml-3">
@@ -1111,37 +1164,70 @@ const AttainmentReport = () => {
 
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table id="attainment-table" className="w-full border-collapse">
+                    <table
+                      id="attainment-table"
+                      className="w-full border-collapse"
+                    >
                       <thead>
                         <tr className="bg-slate-50">
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             S.No
                           </th>
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             Roll. No
                           </th>
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             Name
                           </th>
-                          <th colSpan="3" className="border px-2 py-1 text-center">
+                          <th
+                            colSpan="3"
+                            className="border px-2 py-1 text-center"
+                          >
                             Q1 (7)
                           </th>
-                          <th colSpan="3" className="border px-2 py-1 text-center">
+                          <th
+                            colSpan="3"
+                            className="border px-2 py-1 text-center"
+                          >
                             Q2 (7)
                           </th>
-                          <th colSpan="3" className="border px-2 py-1 text-center">
+                          <th
+                            colSpan="3"
+                            className="border px-2 py-1 text-center"
+                          >
                             Q3 (7)
                           </th>
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             Short Answer (6)
                           </th>
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             Surprise Test (10)
                           </th>
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             Assignment (10)
                           </th>
-                          <th rowSpan="2" className="border px-2 py-1 text-center">
+                          <th
+                            rowSpan="2"
+                            className="border px-2 py-1 text-center"
+                          >
                             {selectedExamType} (40)
                           </th>
                         </tr>
@@ -1183,8 +1269,10 @@ const AttainmentReport = () => {
                             const q2Score = student.internalMarks?.Q2 || 0;
                             const q3Score = student.internalMarks?.Q3 || 0;
                             const saqScore = student.internalMarks?.saqs || 0;
-                            const surpriseScore = student.surpriseTestAverage || 0;
-                            const assignmentScore = student.assignmentAverage || 0;
+                            const surpriseScore =
+                              student.surpriseTestAverage || 0;
+                            const assignmentScore =
+                              student.assignmentAverage || 0;
 
                             const totalScore =
                               q1Score +
@@ -1247,7 +1335,10 @@ const AttainmentReport = () => {
                           })
                         ) : (
                           <tr>
-                            <td colSpan="17" className="border px-4 py-4 text-center">
+                            <td
+                              colSpan="17"
+                              className="border px-4 py-4 text-center"
+                            >
                               {selectedYear &&
                               selectedSemester &&
                               selectedSubject &&

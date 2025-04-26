@@ -17,17 +17,22 @@ const Login = () => {
 
   const decodeToken = (token) => {
     try {
-      const base64Url = token.split('.')[1];
-      if (!base64Url) throw new Error('Invalid token structure');
-      
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+      const base64Url = token.split(".")[1];
+      if (!base64Url) throw new Error("Invalid token structure");
+
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
 
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('Token decode error:', error);
+      console.error("Token decode error:", error);
       return null;
     }
   };
@@ -38,19 +43,22 @@ const Login = () => {
     setError(false);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URI}/api/users/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok && data.token) {
         const decodedToken = decodeToken(data.token);
-        
+
         if (!decodedToken) {
           setError(true);
           return;
@@ -68,7 +76,7 @@ const Login = () => {
       }
     } catch (err) {
       setError(true);
-      console.error('Login error:', err);
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
@@ -79,9 +87,9 @@ const Login = () => {
   };
 
   useEffect(() => {
-    const selectedBranch = localStorage.getItem('selectedBranch');
+    const selectedBranch = localStorage.getItem("selectedBranch");
     if (!selectedBranch) {
-      navigate('/');
+      navigate("/");
     }
   }, [navigate]);
 
@@ -91,22 +99,26 @@ const Login = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8 transform transition-all duration-300 hover:scale-[1.02] border border-gray-100">
           <div className="text-center mb-8">
             <div className="mb-6">
-              <img 
+              <img
                 src="https://www.lords.ac.in/wp-content/uploads/2023/04/Website-Logo.png"
                 alt="Lords Institute Logo"
                 className="h-20 mx-auto"
               />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Faculty Login</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              Faculty Login
+            </h2>
             <p className="text-gray-600">Sign in to your account</p>
           </div>
 
           {loading && <Loader />}
-          
+
           <form className="space-y-6" onSubmit={onLogin}>
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                <p className="text-red-700 font-medium">Invalid Email or Password</p>
+                <p className="text-red-700 font-medium">
+                  Invalid Email or Password
+                </p>
               </div>
             )}
 
@@ -155,7 +167,7 @@ const Login = () => {
 
             <div className="text-center mt-6">
               <p className="text-gray-600">
-                <a 
+                <a
                   onClick={handleAdminSwitch}
                   className="text-primary font-semibold hover:text-secondary transition-colors duration-300 cursor-pointer"
                 >

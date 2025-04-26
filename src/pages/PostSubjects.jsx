@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function PostSubjects() {
   const [subjectData, setSubjectData] = useState("");
   const [submittedRecords, setSubmittedRecords] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleInputChange = (event) => {
     setSubjectData(event.target.value);
@@ -45,15 +48,24 @@ function PostSubjects() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8 w-full max-w-2xl">
-        <h2 className="text-2xl font-semibold mb-4">Subject Records Input</h2>
-        <textarea
-          rows="19"
-          cols="80"
-          value={subjectData}
-          onChange={handleInputChange}
-          placeholder="Enter subject records in JSON array format e.g: 
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/home")}
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Dashboard
+        </button>
+
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Subject Records Input</h2>
+          <textarea
+            rows="19"
+            cols="80"
+            value={subjectData}
+            onChange={handleInputChange}
+            placeholder="Enter subject records in JSON array format e.g: 
           [
             {
               'name': 'Software Engineering',
@@ -72,34 +84,35 @@ function PostSubjects() {
               'courseCode': 'CS302'
             }
           ]"
-          className="border p-2 rounded w-full"
-        />
-        <button
-          onClick={handleSubmit}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Submit All Subjects
-        </button>
+            className="border p-2 rounded w-full"
+          />
+          <button
+            onClick={handleSubmit}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Submit All Subjects
+          </button>
 
-        {errorMessage && (
-          <div className="mt-4 text-red-500">{errorMessage}</div>
-        )}
+          {errorMessage && (
+            <div className="mt-4 text-red-500">{errorMessage}</div>
+          )}
 
-        {submittedRecords.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">
-              Successfully submitted {submittedRecords.length} subjects:
-            </h3>
-            <ul className="space-y-2">
-              {submittedRecords.map((record, index) => (
-                <li key={index} className="border-b py-2">
-                  {record.name} ({record.courseCode}) - Year {record.year}, Sem{" "}
-                  {record.semester}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {submittedRecords.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold mb-2">
+                Successfully submitted {submittedRecords.length} subjects:
+              </h3>
+              <ul className="space-y-2">
+                {submittedRecords.map((record, index) => (
+                  <li key={index} className="border-b py-2">
+                    {record.name} ({record.courseCode}) - Year {record.year},
+                    Sem {record.semester}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

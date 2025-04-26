@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaArrowLeft } from "react-icons/fa";
 import Loader from "../utils/Loader";
 import { useUser } from "../utils/UserContext";
 
@@ -10,7 +10,7 @@ const AddFaculty = () => {
     lastName: "",
     email: "",
     password: "",
-    role: "faculty"
+    role: "faculty",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,14 +36,17 @@ const AddFaculty = () => {
     setSuccess("");
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URI}/api/users/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
@@ -54,7 +57,7 @@ const AddFaculty = () => {
           lastName: "",
           email: "",
           password: "",
-          role: "faculty"
+          role: "faculty",
         });
       } else {
         setError(data.message || "Failed to add faculty member");
@@ -72,9 +75,10 @@ const AddFaculty = () => {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
           onClick={() => navigate("/admin-dashboard")}
-          className="mb-6 text-blue-600 hover:text-blue-800 transition-colors duration-300 flex items-center"
+          className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
         >
-          ← Back to Dashboard
+          <FaArrowLeft className="mr-2" />
+          Back to Admin Dashboard
         </button>
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">

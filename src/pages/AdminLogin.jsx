@@ -17,17 +17,22 @@ const AdminLogin = () => {
 
   const decodeToken = (token) => {
     try {
-      const base64Url = token.split('.')[1];
-      if (!base64Url) throw new Error('Invalid token structure');
-      
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+      const base64Url = token.split(".")[1];
+      if (!base64Url) throw new Error("Invalid token structure");
+
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
 
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('Token decode error:', error);
+      console.error("Token decode error:", error);
       return null;
     }
   };
@@ -38,19 +43,22 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URI}/api/users/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok && data.token) {
         const decodedToken = decodeToken(data.token);
-        
+
         if (!decodedToken) {
           setError("Invalid token received");
           return;
@@ -141,7 +149,6 @@ const AdminLogin = () => {
               <p className="text-gray-600">
                 <a
                   onClick={() => navigate("/")}
-
                   className="text-primary font-semibold hover:text-secondary transition-colors duration-300 cursor-pointer"
                 >
                   Back to Faculty Login
