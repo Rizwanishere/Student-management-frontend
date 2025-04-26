@@ -2,20 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Loader from "../utils/Loader";
 import { FaTrash } from "react-icons/fa";
+import { useUser } from "../utils/UserContext";
 
 const ManageFaculty = () => {
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const fetchFaculties = async () => {
     try {
-      const token = localStorage.getItem("facultyToken");
-      const currentUserId = localStorage.getItem("userId");
-      const response = await fetch("http://localhost:3000/api/users/all", {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/all`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
 
@@ -23,63 +23,55 @@ const ManageFaculty = () => {
         const data = await response.json();
         // Filter out admin users and current user
         const facultyMembers = data.filter(
-          (user) => user.role !== "admin" && user._id !== currentUserId
+          (faculty) => faculty.role !== "admin" && faculty._id !== localStorage.getItem("userId")
         );
         setFaculties(facultyMembers);
       } else {
-        if (response.status === 401 || response.status === 403) {
-          navigate("/admin-login");
-        }
-        setError("Failed to fetch faculties");
+        setError("Failed to fetch faculty members");
       }
     } catch (err) {
-      setError("Failed to connect to server");
+      setError("An error occurred while fetching faculty members");
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this faculty member?")) {
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_URI}/api/users/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${user?.token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          setFaculties((prevFaculties) =>
+            prevFaculties.filter((faculty) => faculty._id !== id)
+          );
+        } else {
+          setError("Failed to delete faculty member");
+        }
+      } catch (err) {
+        setError("An error occurred while deleting faculty member");
+        console.error("Error:", err);
+      }
+    }
+  };
+
   useEffect(() => {
-    // Check for admin privileges
     const userRole = localStorage.getItem("userRole");
     if (userRole !== "admin") {
       navigate("/admin-login");
-      return;
+    } else {
+      fetchFaculties();
     }
-    fetchFaculties();
-  }, [navigate]);
-
-  const handleDelete = async (id) => {
-    if (
-      !window.confirm("Are you sure you want to delete this faculty member?")
-    ) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("facultyToken");
-      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        await fetchFaculties();
-      } else {
-        if (response.status === 401 || response.status === 403) {
-          navigate("/admin-login");
-        }
-        setError("Failed to delete faculty member");
-        setLoading(false);
-      }
-    } catch (err) {
-      setError("Failed to connect to server");
-      setLoading(false);
-    }
-  };
+  }, [navigate, user?.token]); // Add token to dependencies to refetch when token changes
 
   return (
     <div className="min-h-screen bg-gray-50">

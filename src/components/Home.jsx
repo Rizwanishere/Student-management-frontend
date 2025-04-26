@@ -27,13 +27,6 @@ const Home = () => {
       color: "from-primary to-secondary"
     },
     {
-      title: "Students Entry",
-      description: "Easily view, enter, and manage comprehensive student details within the system.",
-      icon:<RiUserAddFill className="text-4xl" />,
-      link: "/poststudent",
-      color: "from-primary to-secondary"
-    },
-    {
       title: "Reports",
       description: "View and generate reports for marks and attendance.",
       icon: <FaChartBar className="text-4xl" />,
@@ -53,13 +46,20 @@ const Home = () => {
       icon: <FaChartLine className="text-4xl" />,
       link: "/attainment/entry",
       color: "from-secondary to-primary"
+    },
+    {
+      title: "Students Entry",
+      description: "Easily view, enter, and manage comprehensive student details within the system.",
+      icon:<RiUserAddFill className="text-4xl" />,
+      link: "/poststudent",
+      color: "from-primary to-secondary"
     }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12 overflow-hidden py-4">
+        <div className="text-center mb-5 overflow-hidden py-4">
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] animate-gradient">
             Student Management Dashboard
           </h1>

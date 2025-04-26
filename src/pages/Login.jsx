@@ -1,40 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Loader from "../utils/Loader";
 import { FaUser, FaLock } from "react-icons/fa";
+import { useUser } from "../utils/UserContext";
 
 const Login = () => {
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useUser();
 
   const onInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onLogin = (e) => {
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      if (!base64Url) throw new Error('Invalid token structure');
+      
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Token decode error:', error);
+      return null;
+    }
+  };
+
+  const onLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(false);
 
-    const { username, password } = formData;
-    const branchName = localStorage.getItem("selectedBranch");
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    setTimeout(() => {
-      if (username === branchName && password === branchName) {
-        localStorage.setItem("isLoggedIn", "true");
-        navigate("/home");
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        const decodedToken = decodeToken(data.token);
+        
+        if (!decodedToken) {
+          setError(true);
+          return;
+        }
+
+        if (decodedToken.role === "faculty") {
+          login(data.token, decodedToken);
+          localStorage.setItem("isLoggedIn", "true");
+          navigate("/home");
+        } else {
+          setError(true);
+        }
       } else {
         setError(true);
       }
+    } catch (err) {
+      setError(true);
+      console.error('Login error:', err);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleAdminSwitch = () => {
     navigate("/admin-login");
   };
+
+  useEffect(() => {
+    const selectedBranch = localStorage.getItem('selectedBranch');
+    if (!selectedBranch) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
@@ -57,7 +106,7 @@ const Login = () => {
           <form className="space-y-6" onSubmit={onLogin}>
             {error && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                <p className="text-red-700 font-medium">Invalid Username or Password</p>
+                <p className="text-red-700 font-medium">Invalid Email or Password</p>
               </div>
             )}
 
@@ -67,13 +116,13 @@ const Login = () => {
                   <FaUser className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                  placeholder="Username"
+                  placeholder="Email"
                   onChange={onInputChange}
                 />
               </div>

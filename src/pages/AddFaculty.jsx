@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
 import Loader from "../utils/Loader";
+import { useUser } from "../utils/UserContext";
 
 const AddFaculty = () => {
   const [formData, setFormData] = useState({
@@ -8,12 +10,13 @@ const AddFaculty = () => {
     lastName: "",
     email: "",
     password: "",
-    role: "user",
+    role: "faculty"
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { user } = useUser();
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
@@ -33,12 +36,11 @@ const AddFaculty = () => {
     setSuccess("");
 
     try {
-      const token = localStorage.getItem("facultyToken");
-      const response = await fetch("http://localhost:3000/api/users/signup", {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${user?.token}`,
         },
         body: JSON.stringify(formData),
       });
@@ -52,16 +54,14 @@ const AddFaculty = () => {
           lastName: "",
           email: "",
           password: "",
-          role: "user",
+          role: "faculty"
         });
       } else {
         setError(data.message || "Failed to add faculty member");
-        if (response.status === 401 || response.status === 403) {
-          navigate("/admin-login");
-        }
       }
     } catch (err) {
-      setError("Failed to connect to server");
+      setError("An error occurred. Please try again.");
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -100,15 +100,11 @@ const AddFaculty = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     First Name
                   </label>
                   <input
                     type="text"
-                    id="firstName"
                     name="firstName"
                     required
                     value={formData.firstName}
@@ -118,15 +114,11 @@ const AddFaculty = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Last Name
                   </label>
                   <input
                     type="text"
-                    id="lastName"
                     name="lastName"
                     required
                     value={formData.lastName}
@@ -137,15 +129,11 @@ const AddFaculty = () => {
               </div>
 
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email
                 </label>
                 <input
                   type="email"
-                  id="email"
                   name="email"
                   required
                   value={formData.email}
@@ -155,15 +143,11 @@ const AddFaculty = () => {
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Password
                 </label>
                 <input
                   type="password"
-                  id="password"
                   name="password"
                   required
                   value={formData.password}

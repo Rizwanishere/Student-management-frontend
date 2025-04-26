@@ -1,5 +1,6 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { UserProvider, useUser } from "../utils/UserContext";
 
 /* Import Components */
 import Home from "./Home";
@@ -34,21 +35,27 @@ import POAttainmentReport from "../pages/POAttainmentReport";
 import AboutUs from "./AboutUs";
 import CreateStudent from "../pages/CreateStudent";
 
-const App = () => {
-  const selectedBranch = localStorage.getItem('selectedBranch');
+const AdminRoute = ({ element }) => {
+  const { user, isAdmin } = useUser();
   
-  // Auth guard for admin routes
-  const AdminRoute = ({ element }) => {
-    const userRole = localStorage.getItem('userRole');
-    return userRole === 'admin' ? element : <Navigate to="/admin-login" />;
-  };
+  if (!user || !isAdmin()) {
+    return <Navigate to="/admin-login" replace />;
+  }
+  return element;
+};
 
+const selectedBranch = localStorage.getItem('selectedBranch');
+
+const AppContent = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Header />
       <Routes>
-        {/* Admin Management Routes */}
+        <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+
+        {/* Admin Management Routes */}
         <Route path="/admin-dashboard" element={<AdminRoute element={<AdminDashboard />} />} />
         <Route path="/add-faculty" element={<AdminRoute element={<AddFaculty />} />} />
         <Route path="/manage-faculty" element={<AdminRoute element={<ManageFaculty />} />} />
@@ -97,13 +104,20 @@ const App = () => {
         <Route path="/attainment/entry" element={<IndirectAttainment />} />
         
 
-        {/* Redirect any unknown path to the root (Branch Selection) */}
+        {/* Redirect any unknown path to login */}
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
       <Footer />
-      <ScrollToTop />
     </Router>
+  );
+};
+
+const App = () => {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 };
 

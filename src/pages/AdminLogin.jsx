@@ -2,15 +2,34 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
 import Loader from "../utils/Loader";
+import { useUser } from "../utils/UserContext";
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useUser();
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      if (!base64Url) throw new Error('Invalid token structure');
+      
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Token decode error:', error);
+      return null;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -19,7 +38,7 @@ const AdminLogin = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/users/signin", {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URI}/api/users/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,27 +48,26 @@ const AdminLogin = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem("facultyToken", data.token);
+      if (response.ok && data.token) {
+        const decodedToken = decodeToken(data.token);
+        
+        if (!decodedToken) {
+          setError("Invalid token received");
+          return;
+        }
 
-        // Decode token to get user information
-        const tokenData = JSON.parse(atob(data.token.split(".")[1]));
-        localStorage.setItem("userRole", tokenData.role);
-        localStorage.setItem("userId", tokenData.userId);
-
-        if (tokenData.role === "admin") {
+        if (decodedToken.role === "admin") {
+          login(data.token, decodedToken);
           navigate("/admin-dashboard");
         } else {
-          setError("Access denied. Admin privileges required.");
-          localStorage.removeItem("facultyToken");
-          localStorage.removeItem("userRole");
-          localStorage.removeItem("userId");
+          setError("You are not authorized as an admin");
         }
       } else {
         setError(data.message || "Invalid credentials");
       }
     } catch (err) {
-      setError("Failed to connect to server");
+      setError("Invalid credentials. Please try again.");
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }
@@ -123,6 +141,7 @@ const AdminLogin = () => {
               <p className="text-gray-600">
                 <a
                   onClick={() => navigate("/")}
+
                   className="text-primary font-semibold hover:text-secondary transition-colors duration-300 cursor-pointer"
                 >
                   Back to Faculty Login
