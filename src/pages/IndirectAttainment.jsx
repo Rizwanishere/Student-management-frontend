@@ -206,233 +206,242 @@ const IndirectAttainment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+      <button
           onClick={() => navigate("/home")}
           className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
         >
           <FaArrowLeft className="mr-2" />
           Back to Dashboard
         </button>
-
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Indirect Attainment
-          </h1>
-          <div className="text-sm text-gray-500">
-            {selectedBranch && `Branch: ${selectedBranch}`}
-          </div>
-        </div>
-
-        <form onSubmit={handleDropdownSubmit} className="mb-8">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Year
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaGraduationCap className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                >
-                  <option value="">Select Year</option>
-                  <option value="1">1st Year</option>
-                  <option value="2">2nd Year</option>
-                  <option value="3">3rd Year</option>
-                  <option value="4">4th Year</option>
-                </select>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">
+                Indirect Attainment
+              </h1>
+              <div className="text-sm text-gray-500">
+                {selectedBranch && `Branch: ${selectedBranch}`}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Semester
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaBook className="h-5 w-5 text-gray-400" />
+            <form onSubmit={handleDropdownSubmit} className="mb-8">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaGraduationCap className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                    >
+                      <option value="">Select Year</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
                 </div>
-                <select
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                  value={selectedSemester}
-                  onChange={(e) => setSelectedSemester(e.target.value)}
-                >
-                  <option value="">Select Semester</option>
-                  <option value="1">1st Semester</option>
-                  <option value="2">2nd Semester</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Regulation
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedRegulation}
-                onChange={handleRegulationChange}
-              >
-                <option value="">Select Regulation</option>
-                {regulations.map((regulation) => (
-                  <option key={regulation} value={regulation}>
-                    {regulation}
-                  </option>
-                ))}
-              </select>
-              {showCustomRegulation && (
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 mt-2"
-                  placeholder="Enter Custom Regulation"
-                  value={customRegulation}
-                  onChange={handleCustomRegulationChange}
-                />
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Section
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUsers className="h-5 w-5 text-gray-400" />
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Semester
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaBook className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedSemester}
+                      onChange={(e) => setSelectedSemester(e.target.value)}
+                    >
+                      <option value="">Select Semester</option>
+                      <option value="1">1st Semester</option>
+                      <option value="2">2nd Semester</option>
+                    </select>
+                  </div>
                 </div>
-                <select
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                  value={selectedSection}
-                  onChange={(e) => setSelectedSection(e.target.value)}
-                >
-                  <option value="">Select Section</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Subject
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-              >
-                <option value="">Select Subject</option>
-                {subjectOptions.length > 0 ? (
-                  subjectOptions.map((subject) => (
-                    <option key={subject.id} value={subject._id}>
-                      {subject.name}
-                    </option>
-                  ))
-                ) : (
-                  <option value="" disabled>
-                    No subjects available
-                  </option>
-                )}
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-center">
-            <button
-              type="submit"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-            >
-              <FaSearch className="mr-2" />
-              Search Students
-            </button>
-          </div>
-        </form>
-
-        {submitted && students.length > 0 && (
-          <div className="bg-white rounded-xl shadow-md overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Feedback Attainment Data
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        S.No
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Roll No
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CO1
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CO2
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CO3
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CO4
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        CO5
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {students.map((student, index) => (
-                      <tr
-                        key={student._id}
-                        className="hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {student.rollNo}
-                        </td>
-                        {["CO1", "CO2", "CO3", "CO4", "CO5"].map((coKey) => (
-                          <td
-                            className="px-6 py-4 whitespace-nowrap text-center"
-                            key={coKey}
-                          >
-                            <input
-                              type="number"
-                              className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-center"
-                              value={student[coKey]}
-                              onChange={(e) =>
-                                handleCOChange(index, coKey, e.target.value)
-                              }
-                              max={3}
-                              min={0}
-                            />
-                          </td>
-                        ))}
-                      </tr>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Regulation
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={selectedRegulation}
+                    onChange={handleRegulationChange}
+                  >
+                    <option value="">Select Regulation</option>
+                    {regulations.map((regulation) => (
+                      <option key={regulation} value={regulation}>
+                        {regulation}
+                      </option>
                     ))}
-                  </tbody>
-                </table>
+                  </select>
+                  {showCustomRegulation && (
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50 mt-2"
+                      placeholder="Enter Custom Regulation"
+                      value={customRegulation}
+                      onChange={handleCustomRegulationChange}
+                    />
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Section
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaUsers className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                      value={selectedSection}
+                      onChange={(e) => setSelectedSection(e.target.value)}
+                    >
+                      <option value="">Select Section</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Subject
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                  >
+                    <option value="">Select Subject</option>
+                    {subjectOptions.length > 0 ? (
+                      subjectOptions.map((subject) => (
+                        <option key={subject.id} value={subject._id}>
+                          {subject.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No subjects available
+                      </option>
+                    )}
+                  </select>
+                </div>
               </div>
 
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex justify-center">
                 <button
+                  type="submit"
                   className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                  onClick={handleSubmit}
                 >
-                  <FaSave className="mr-2" />
-                  Save Changes
+                  <FaSearch className="mr-2" />
+                  Search Students
                 </button>
               </div>
-            </div>
+            </form>
+
+            {submitted && students.length > 0 && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    Feedback Attainment Data
+                  </h2>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            S.No
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Roll No
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CO1
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CO2
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CO3
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CO4
+                          </th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CO5
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {students.map((student, index) => (
+                          <tr
+                            key={student._id}
+                            className="hover:bg-gray-50 transition-colors duration-200"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                              {index + 1}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {student.rollNo}
+                            </td>
+                            {["CO1", "CO2", "CO3", "CO4", "CO5"].map(
+                              (coKey) => (
+                                <td
+                                  className="px-6 py-4 whitespace-nowrap text-center"
+                                  key={coKey}
+                                >
+                                  <input
+                                    type="number"
+                                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-center"
+                                    value={student[coKey]}
+                                    onChange={(e) =>
+                                      handleCOChange(
+                                        index,
+                                        coKey,
+                                        e.target.value
+                                      )
+                                    }
+                                    max={3}
+                                    min={0}
+                                  />
+                                </td>
+                              )
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      onClick={handleSubmit}
+                    >
+                      <FaSave className="mr-2" />
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {loading && (

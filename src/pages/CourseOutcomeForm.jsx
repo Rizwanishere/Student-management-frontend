@@ -770,8 +770,8 @@ const CourseOutcome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
         <button
           onClick={() => navigate("/home")}
           className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
@@ -779,405 +779,421 @@ const CourseOutcome = () => {
           <FaArrowLeft className="mr-2" />
           Back to Dashboard
         </button>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">
+                Course Outcome and CO-PO Matrix
+              </h1>
+              <div className="text-sm text-gray-500">
+                {selectedBranch && `Branch: ${selectedBranch}`}
+              </div>
+            </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Course Outcome and CO-PO Matrix
-          </h1>
-          <div className="text-sm text-gray-500">
-            {selectedBranch && `Branch: ${selectedBranch}`}
-          </div>
-        </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Year
+                </label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  <option value="">Select Year</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Year
-            </label>
-            <select
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
-              <option value="">Select Year</option>
-              <option value="1">1st Year</option>
-              <option value="2">2nd Year</option>
-              <option value="3">3rd Year</option>
-              <option value="4">4th Year</option>
-            </select>
-          </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Semester
+                </label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                >
+                  <option value="">Select Semester</option>
+                  <option value="1">1st Semester</option>
+                  <option value="2">2nd Semester</option>
+                </select>
+              </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Semester
-            </label>
-            <select
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-            >
-              <option value="">Select Semester</option>
-              <option value="1">1st Semester</option>
-              <option value="2">2nd Semester</option>
-            </select>
-          </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Regulation
+                </label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedRegulation}
+                  onChange={handleRegulationChange}
+                >
+                  <option value="">Select Regulation</option>
+                  {regulations.map((reg) => (
+                    <option key={reg} value={reg}>
+                      {reg}
+                    </option>
+                  ))}
+                </select>
+                {showCustomRegulation && (
+                  <input
+                    type="text"
+                    className="w-full mt-2 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                    placeholder="Enter Regulation Code"
+                    value={customRegulation}
+                    onChange={handleCustomRegulationChange}
+                    pattern="[A-Z0-9]*"
+                  />
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Regulation
-            </label>
-            <select
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-              value={selectedRegulation}
-              onChange={handleRegulationChange}
-            >
-              <option value="">Select Regulation</option>
-              {regulations.map((reg) => (
-                <option key={reg} value={reg}>
-                  {reg}
-                </option>
-              ))}
-            </select>
-            {showCustomRegulation && (
-              <input
-                type="text"
-                className="w-full mt-2 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-                placeholder="Enter Regulation Code"
-                value={customRegulation}
-                onChange={handleCustomRegulationChange}
-                pattern="[A-Z0-9]*"
-              />
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Course
+                </label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
+                  value={selectedSubject}
+                  onChange={handleSubjectSelect}
+                  disabled={!selectedYear || !selectedSemester}
+                >
+                  <option value="">Select Course</option>
+                  {subjectOptions.map((subject) => (
+                    <option key={subject._id} value={subject._id}>
+                      {subject.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {selectedSubject && !showTables && (
+              <div className="text-center py-8">
+                <button
+                  onClick={() => setShowTables(true)}
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  <FaTable className="mr-2" />
+                  Generate Table
+                </button>
+              </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Course
-            </label>
-            <select
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 bg-gray-50"
-              value={selectedSubject}
-              onChange={handleSubjectSelect}
-              disabled={!selectedYear || !selectedSemester}
-            >
-              <option value="">Select Course</option>
-              {subjectOptions.map((subject) => (
-                <option key={subject._id} value={subject._id}>
-                  {subject.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+            {showTables && selectedSubject && (
+              <div className="space-y-8">
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        Course Outcome Table
+                      </h2>
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={addNewCourseOutcome}
+                          disabled={saveCount >= 2}
+                          className={`inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
+                            saveCount >= 2
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-green-500 hover:bg-green-600 text-white hover:shadow"
+                          }`}
+                        >
+                          <FaPlus className="mr-2" />
+                          Add New Outcome
+                        </button>
 
-        {selectedSubject && !showTables && (
-          <div className="text-center py-8">
-            <button
-              onClick={() => setShowTables(true)}
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-            >
-              <FaTable className="mr-2" />
-              Generate Table
-            </button>
-          </div>
-        )}
+                        <button
+                          onClick={removeLastCourseOutcome}
+                          disabled={saveCount >= 1}
+                          className={`inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
+                            saveCount >= 1
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-red-500 hover:bg-red-600 text-white hover:shadow"
+                          }`}
+                        >
+                          <FaMinus className="mr-2" />
+                          Remove Last Outcome
+                        </button>
+                      </div>
+                    </div>
 
-        {showTables && selectedSubject && (
-          <div className="space-y-8">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Course Outcome Table
-                  </h2>
-                  <div className="flex space-x-4">
-                    <button
-                      onClick={addNewCourseOutcome}
-                      disabled={saveCount >= 2}
-                      className={`inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
-                        saveCount >= 2
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-green-500 hover:bg-green-600 text-white hover:shadow"
-                      }`}
-                    >
-                      <FaPlus className="mr-2" />
-                      Add New Outcome
-                    </button>
-
-                    <button
-                      onClick={removeLastCourseOutcome}
-                      disabled={saveCount >= 1}
-                      className={`inline-flex items-center px-4 py-2 rounded-lg shadow-sm transition-all duration-200 ${
-                        saveCount >= 1
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-red-500 hover:bg-red-600 text-white hover:shadow"
-                      }`}
-                    >
-                      <FaMinus className="mr-2" />
-                      Remove Last Outcome
-                    </button>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Course
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              CO No.
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Course Outcomes (CO)
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Knowledge Level
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {courseOutcomes.map((outcome, idx) => (
+                            <tr
+                              key={idx}
+                              className="hover:bg-gray-50 transition-colors duration-200"
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {
+                                  subjectOptions.find(
+                                    (s) => s._id === selectedSubject
+                                  )?.name
+                                }
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="text"
+                                  value={outcome.coNo}
+                                  onChange={(e) =>
+                                    handleCourseOutcomeChange(
+                                      idx,
+                                      "coNo",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="CO1"
+                                />
+                              </td>
+                              <td className="px-6 py-4">
+                                <input
+                                  type="text"
+                                  value={outcome.courseOutcome}
+                                  onChange={(e) =>
+                                    handleCourseOutcomeChange(
+                                      idx,
+                                      "courseOutcome",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="Enter course outcome"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <select
+                                  value={outcome.knowledgeLevel}
+                                  onChange={(e) =>
+                                    handleCourseOutcomeChange(
+                                      idx,
+                                      "knowledgeLevel",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                >
+                                  <option value="BTL-1">BTL-1</option>
+                                  <option value="BTL-2">BTL-2</option>
+                                  <option value="BTL-3">BTL-3</option>
+                                  <option value="BTL-4">BTL-4</option>
+                                  <option value="BTL-5">BTL-5</option>
+                                  <option value="BTL-6">BTL-6</option>
+                                </select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Course
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          CO No.
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Course Outcomes (CO)
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Knowledge Level
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {courseOutcomes.map((outcome, idx) => (
-                        <tr
-                          key={idx}
-                          className="hover:bg-gray-50 transition-colors duration-200"
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {
-                              subjectOptions.find(
-                                (s) => s._id === selectedSubject
-                              )?.name
-                            }
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <input
-                              type="text"
-                              value={outcome.coNo}
-                              onChange={(e) =>
-                                handleCourseOutcomeChange(
-                                  idx,
-                                  "coNo",
-                                  e.target.value
-                                )
-                              }
-                              className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                              placeholder="CO1"
-                            />
-                          </td>
-                          <td className="px-6 py-4">
-                            <input
-                              type="text"
-                              value={outcome.courseOutcome}
-                              onChange={(e) =>
-                                handleCourseOutcomeChange(
-                                  idx,
-                                  "courseOutcome",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                              placeholder="Enter course outcome"
-                            />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <select
-                              value={outcome.knowledgeLevel}
-                              onChange={(e) =>
-                                handleCourseOutcomeChange(
-                                  idx,
-                                  "knowledgeLevel",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                            >
-                              <option value="BTL-1">BTL-1</option>
-                              <option value="BTL-2">BTL-2</option>
-                              <option value="BTL-3">BTL-3</option>
-                              <option value="BTL-4">BTL-4</option>
-                              <option value="BTL-5">BTL-5</option>
-                              <option value="BTL-6">BTL-6</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  CO-PO Matrix
-                </h2>
-                <div>
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                          Course Outcomes (COs)
-                        </th>
-                        {[...Array(12)].map((_, i) => (
-                          <th
-                            key={i}
-                            className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
-                          >
-                            PO{i + 1}
-                          </th>
-                        ))}
-                        <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                          PSO1
-                        </th>
-                        <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                          PSO2
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {coPOMatrix.map((matrix, idx) => (
-                        <tr
-                          key={idx}
-                          className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                        >
-                          <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-xs">
-                            {matrix.courseOutcome
-                              ? typeof matrix.courseOutcome === "object" &&
-                                matrix.courseOutcome !== null
-                                ? matrix.courseOutcome.courseOutcome
-                                : courseOutcomes.find(
-                                    (co) =>
-                                      co && co._id === matrix.courseOutcome
-                                  )?.courseOutcome
-                              : "N/A"}
-                          </td>
-                          {[...Array(12)].map((_, i) => (
-                            <td key={i} className="px-1 py-2 text-center">
-                              <input
-                                type="number"
-                                min="0"
-                                max="3"
-                                value={matrix[`po${i + 1}`] || ""}
-                                onChange={(e) => {
-                                  const coId = matrix.courseOutcome
-                                    ? typeof matrix.courseOutcome ===
-                                        "object" &&
-                                      matrix.courseOutcome !== null
-                                      ? matrix.courseOutcome._id
-                                      : matrix.courseOutcome
-                                    : null;
-                                  if (coId)
-                                    handlePOChange(
-                                      coId,
-                                      `po${i + 1}`,
-                                      e.target.value
-                                    );
-                                }}
-                                className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                                placeholder="0"
-                                disabled={!matrix.courseOutcome}
-                              />
-                            </td>
-                          ))}
-                          <td className="px-1 py-2 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              max="3"
-                              value={matrix.pso1 || ""}
-                              onChange={(e) => {
-                                const coId = matrix.courseOutcome
-                                  ? typeof matrix.courseOutcome === "object" &&
-                                    matrix.courseOutcome !== null
-                                    ? matrix.courseOutcome._id
-                                    : matrix.courseOutcome
-                                  : null;
-                                if (coId)
-                                  handlePOChange(coId, "pso1", e.target.value);
-                              }}
-                              className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                              placeholder="0"
-                              disabled={!matrix.courseOutcome}
-                            />
-                          </td>
-                          <td className="px-1 py-2 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              max="3"
-                              value={matrix.pso2 || ""}
-                              onChange={(e) => {
-                                const coId = matrix.courseOutcome
-                                  ? typeof matrix.courseOutcome === "object" &&
-                                    matrix.courseOutcome !== null
-                                    ? matrix.courseOutcome._id
-                                    : matrix.courseOutcome
-                                  : null;
-                                if (coId)
-                                  handlePOChange(coId, "pso2", e.target.value);
-                              }}
-                              className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
-                              placeholder="0"
-                              disabled={!matrix.courseOutcome}
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                      <tr className="bg-gray-100 font-medium">
-                        <td className="px-3 py-2 text-sm font-bold text-gray-900">
-                          AVERAGE
-                        </td>
-                        {Object.entries(calculateAverages()).map(
-                          ([key, avg], idx) => (
-                            <td
+                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      CO-PO Matrix
+                    </h2>
+                    <div>
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                              Course Outcomes (COs)
+                            </th>
+                            {[...Array(12)].map((_, i) => (
+                              <th
+                                key={i}
+                                className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
+                              >
+                                PO{i + 1}
+                              </th>
+                            ))}
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                              PSO1
+                            </th>
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                              PSO2
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {coPOMatrix.map((matrix, idx) => (
+                            <tr
                               key={idx}
-                              className="px-1 py-2 text-sm text-gray-900 text-center font-semibold"
+                              className={
+                                idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              }
                             >
-                              {avg}
+                              <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-xs">
+                                {matrix.courseOutcome
+                                  ? typeof matrix.courseOutcome === "object" &&
+                                    matrix.courseOutcome !== null
+                                    ? matrix.courseOutcome.courseOutcome
+                                    : courseOutcomes.find(
+                                        (co) =>
+                                          co && co._id === matrix.courseOutcome
+                                      )?.courseOutcome
+                                  : "N/A"}
+                              </td>
+                              {[...Array(12)].map((_, i) => (
+                                <td key={i} className="px-1 py-2 text-center">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="3"
+                                    value={matrix[`po${i + 1}`] || ""}
+                                    onChange={(e) => {
+                                      const coId = matrix.courseOutcome
+                                        ? typeof matrix.courseOutcome ===
+                                            "object" &&
+                                          matrix.courseOutcome !== null
+                                          ? matrix.courseOutcome._id
+                                          : matrix.courseOutcome
+                                        : null;
+                                      if (coId)
+                                        handlePOChange(
+                                          coId,
+                                          `po${i + 1}`,
+                                          e.target.value
+                                        );
+                                    }}
+                                    className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                    placeholder="0"
+                                    disabled={!matrix.courseOutcome}
+                                  />
+                                </td>
+                              ))}
+                              <td className="px-1 py-2 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="3"
+                                  value={matrix.pso1 || ""}
+                                  onChange={(e) => {
+                                    const coId = matrix.courseOutcome
+                                      ? typeof matrix.courseOutcome ===
+                                          "object" &&
+                                        matrix.courseOutcome !== null
+                                        ? matrix.courseOutcome._id
+                                        : matrix.courseOutcome
+                                      : null;
+                                    if (coId)
+                                      handlePOChange(
+                                        coId,
+                                        "pso1",
+                                        e.target.value
+                                      );
+                                  }}
+                                  className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="0"
+                                  disabled={!matrix.courseOutcome}
+                                />
+                              </td>
+                              <td className="px-1 py-2 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="3"
+                                  value={matrix.pso2 || ""}
+                                  onChange={(e) => {
+                                    const coId = matrix.courseOutcome
+                                      ? typeof matrix.courseOutcome ===
+                                          "object" &&
+                                        matrix.courseOutcome !== null
+                                        ? matrix.courseOutcome._id
+                                        : matrix.courseOutcome
+                                      : null;
+                                    if (coId)
+                                      handlePOChange(
+                                        coId,
+                                        "pso2",
+                                        e.target.value
+                                      );
+                                  }}
+                                  className="w-10 px-1 py-1 text-center border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200"
+                                  placeholder="0"
+                                  disabled={!matrix.courseOutcome}
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                          <tr className="bg-gray-100 font-medium">
+                            <td className="px-3 py-2 text-sm font-bold text-gray-900">
+                              AVERAGE
                             </td>
-                          )
-                        )}
-                      </tr>
-                    </tbody>
-                  </table>
+                            {Object.entries(calculateAverages()).map(
+                              ([key, avg], idx) => (
+                                <td
+                                  key={idx}
+                                  className="px-1 py-2 text-sm text-gray-900 text-center font-semibold"
+                                >
+                                  {avg}
+                                </td>
+                              )
+                            )}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center mt-8">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={exportToPDF}
+                      className="inline-flex items-center px-6 py-3 bg-green-500 text-white rounded-lg font-semibold shadow-md hover:bg-green-600 transition-all duration-200"
+                    >
+                      <FaDownload className="mr-2" />
+                      Export to PDF
+                    </button>
+
+                    <button
+                      onClick={handleResetTables}
+                      className="inline-flex items-center px-6 py-3 bg-red-500 text-white rounded-lg font-semibold shadow-md hover:bg-red-600 transition-all duration-200"
+                    >
+                      <FaTrash className="mr-2" />
+                      Reset Table
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleSave}
+                    disabled={saveDisabled}
+                    className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 ${
+                      saveDisabled
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-primary hover:bg-blue-600 text-white hover:shadow-lg"
+                    }`}
+                  >
+                    <FaSave className="mr-2" />
+                    {saveDisabled ? "Saved" : "Save"}
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <div className="flex justify-between items-center mt-8">
-              <div className="flex space-x-4">
-                <button
-                  onClick={exportToPDF}
-                  className="inline-flex items-center px-6 py-3 bg-green-500 text-white rounded-lg font-semibold shadow-md hover:bg-green-600 transition-all duration-200"
-                >
-                  <FaDownload className="mr-2" />
-                  Export to PDF
-                </button>
-                <button
-                  onClick={handleResetTables}
-                  className="inline-flex items-center px-6 py-3 bg-red-500 text-white rounded-lg font-semibold shadow-md hover:bg-red-600 transition-all duration-200"
-                >
-                  <FaTrash className="mr-2" />
-                  Reset Table
-                </button>
-              </div>
-              <button
-                onClick={handleSave}
-                disabled={saveDisabled}
-                className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 ${
-                  saveDisabled
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-primary hover:bg-blue-600 text-white hover:shadow-lg"
-                }`}
-              >
-                <FaSave className="mr-2" />
-                {saveDisabled ? "Saved" : "Save"}
-              </button>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
