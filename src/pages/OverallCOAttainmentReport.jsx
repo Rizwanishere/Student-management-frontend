@@ -442,7 +442,7 @@ const OverallCOAttainmentReport = () => {
 
         {showTable && (
           <>
-            <h1 className="text-2xl font-bold mb-2 text-center">
+            <h1 className="text-2xl font-bold mb-2 text-center mt-12">
               OVERALL CO ATTAINMENT
             </h1>
             <p className="text-lg font-semibold text-center mb-6">

@@ -543,7 +543,7 @@ const IndirectCOAttainmentReport = () => {
 
         {!loading && feedbackData.length > 0 && (
           <>
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+            <div className="bg-white shadow-lg rounded-lg p-6 mb-8 mt-8">
               <h2 className="text-xl font-bold mb-2 text-blue-800">
                 Course End Semester Feedback Student's Response sheet:
               </h2>

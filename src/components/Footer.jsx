@@ -24,7 +24,7 @@ const Footer = () => {
                 href="https://www.lords.ac.in/overview/" 
                 target="_blank" 
                 rel="noreferrer"
-                className="hover:text-tertiary transition-colors duration-300 hover:underline"
+                className="hover:text-primary transition-colors duration-300 hover:underline"
               >
                 Overview
               </a>
@@ -34,7 +34,7 @@ const Footer = () => {
                 href="https://www.lords.ac.in/campus-life/events/" 
                 target="_blank" 
                 rel="noreferrer"
-                className="hover:text-tertiary transition-colors duration-300 hover:underline"
+                className="hover:text-primary transition-colors duration-300 hover:underline"
               >
                 Events
               </a>
@@ -44,7 +44,7 @@ const Footer = () => {
                 href="https://www.lords.ac.in/infrastructure/world-class-facilities/" 
                 target="_blank" 
                 rel="noreferrer"
-                className="hover:text-tertiary transition-colors duration-300 hover:underline"
+                className="hover:text-primary transition-colors duration-300 hover:underline"
               >
                 Facilities
               </a>
@@ -59,7 +59,7 @@ const Footer = () => {
                 href="https://www.lords.ac.in/domestic/courses-offered/"  
                 target="_blank" 
                 rel="noreferrer"
-                className="hover:text-tertiary transition-colors duration-300 hover:underline"
+                className="hover:text-primary transition-colors duration-300 hover:underline"
               >
                 Courses Offered
               </a>
@@ -69,7 +69,7 @@ const Footer = () => {
                 href="https://www.lords.ac.in/nri/courses-offered/" 
                 target="_blank" 
                 rel="noreferrer"
-                className="hover:text-tertiary transition-colors duration-300 hover:underline"
+                className="hover:text-primary transition-colors duration-300 hover:underline"
               >
                 NRI Admissions
               </a>
@@ -79,7 +79,7 @@ const Footer = () => {
                 href="https://www.lords.ac.in/international/courses-offered/" 
                 target="_blank" 
                 rel="noreferrer"
-                className="hover:text-tertiary transition-colors duration-300 hover:underline"
+                className="hover:text-primary transition-colors duration-300 hover:underline"
               >
                 International Students
               </a>
@@ -92,7 +92,7 @@ const Footer = () => {
             +91-6309012442/43<br />
             <a 
               href="mailto:principal@lords.ac.in" 
-              className="hover:text-tertiary transition-colors duration-300 hover:underline"
+              className="hover:text-primary transition-colors duration-300 hover:underline"
             >
               principal@lords.ac.in
             </a>
@@ -102,7 +102,7 @@ const Footer = () => {
               href="https://www.facebook.com/lordsinstitute/" 
               target="_blank" 
               rel="noreferrer"
-              className="hover:text-tertiary transition-all duration-300 transform hover:scale-125"
+              className="hover:text-primary transition-all duration-300 transform hover:scale-125"
             >
               <FaFacebook size={24} />
             </a>
@@ -110,7 +110,7 @@ const Footer = () => {
               href="https://x.com/lords_institute/" 
               target="_blank" 
               rel="noreferrer"
-              className="hover:text-tertiary transition-all duration-300 transform hover:scale-125"
+              className="hover:text-primary transition-all duration-300 transform hover:scale-125"
             >
               <FaTwitter size={24} />
             </a>
@@ -118,7 +118,7 @@ const Footer = () => {
               href="https://www.linkedin.com/school/lords-institute-of-engineering-&-technology/" 
               target="_blank" 
               rel="noreferrer"
-              className="hover:text-tertiary transition-all duration-300 transform hover:scale-125"
+              className="hover:text-primary transition-all duration-300 transform hover:scale-125"
             >
               <FaLinkedin size={24} />
             </a>

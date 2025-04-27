@@ -391,7 +391,7 @@ const POAttainmentReport = () => {
           <>
             {/* Main content section */}
             <div id="main-content">
-              <h1 className="text-2xl font-bold mb-2 text-center">
+              <h1 className="text-2xl font-bold mb-2 text-center mt-12">
                 Programme Outcomes (POs) Attainment
               </h1>
               <p className="text-lg font-semibold text-center mb-6">
