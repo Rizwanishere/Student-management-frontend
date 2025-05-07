@@ -35,7 +35,7 @@ const Header = () => {
               <li className="relative group hidden sm:block">
                 <Link 
                   to="/about" 
-                  className="border-2 border-transparent hover:border-white px-4 py-1 rounded-lg hover:bg-white/10 transition-all duration-300"
+                  className="px-4 py-2 rounded-lg hover:bg-white hover:text-secondary transition-all duration-300"
                 >
                   About Us
                 </Link>
@@ -43,7 +43,7 @@ const Header = () => {
               <li className="relative group hidden sm:block">
                 <Link 
                   to="/contact" 
-                  className="border-2 border-transparent hover:border-white px-4 py-1 rounded-lg hover:bg-white/10 transition-all duration-300"
+                  className="px-4 py-2 rounded-lg hover:bg-white hover:text-secondary transition-all duration-300"
                 >
                   Contact Us
                 </Link>

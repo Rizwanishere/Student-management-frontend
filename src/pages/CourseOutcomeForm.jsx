@@ -1009,6 +1009,21 @@ const CourseOutcome = () => {
                   </div>
                 </div>
 
+                <div className="flex justify-center my-6">
+                  <button
+                    onClick={handleSave}
+                    disabled={saveDisabled}
+                    className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-200 ${
+                      saveDisabled
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-primary hover:bg-blue-600 text-white hover:shadow-lg"
+                    }`}
+                  >
+                    <FaSave className="mr-2" />
+                    Save Course Outcomes
+                  </button>
+                </div>
+
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className="p-6">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -1187,7 +1202,7 @@ const CourseOutcome = () => {
                     }`}
                   >
                     <FaSave className="mr-2" />
-                    {saveDisabled ? "Saved" : "Save"}
+                    {saveDisabled ? "Saved" : "Save CO-PO Matrix"}
                   </button>
                 </div>
               </div>
