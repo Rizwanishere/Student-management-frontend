@@ -39,7 +39,7 @@ const AdminDashboard = () => {
           <AiOutlinePlus className="text-xl absolute -right-1 -top-1 bg-white/20 rounded-full" />
         </div>
       ),
-      link: "/poststudent",
+      link: "/post-student",
       color: "from-primary to-secondary",
     },
   ];

@@ -473,7 +473,7 @@ function PostStudent() {
 
         {importStatus.message && (
           <div
-            className={`p-4 rounded-lg mb-4 ${
+            className={`p-4 rounded-lg mb-4 mt-6 ${
               importStatus.type === "success"
                 ? "bg-green-100 text-green-700"
                 : importStatus.type === "error"
