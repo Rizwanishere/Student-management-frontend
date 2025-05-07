@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch, FaSave, FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
+import { useUser } from "../utils/UserContext";
 
 const InternalMarks = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [submitted, setSubmitted] = useState(false);
   const [examType, setExamType] = useState("");
   const [maxMarks, setMaxMarks] = useState(0);
@@ -17,6 +19,7 @@ const InternalMarks = () => {
   const [selectedRegulation, setSelectedRegulation] = useState("");
   const [customRegulation, setCustomRegulation] = useState("");
   const [showCustomRegulation, setShowCustomRegulation] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const regulations = ["LR21", "LR22", "LR23", "Other"];
 
@@ -145,15 +148,27 @@ const InternalMarks = () => {
           );
 
           if (markEntryToUpdate) {
+            // Check for admin role only for PUT requests
+            const userRole = localStorage.getItem("userRole");
+            if (userRole !== "admin") {
+              setShowAuthModal(true);
+              return;
+            }
             // Update existing marks entry (PUT request)
             await axios.put(
               `${process.env.REACT_APP_BACKEND_URI}/api/internalmarks/${selectedSubject}/${examType}/${markEntryToUpdate._id}`,
               {
-                marks, // Now directly includes the updated marks
+                marks,
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${user?.token}`,
+                },
               }
             );
           } else {
-            // Create a new marks entry (POST request)
+            // Create a new marks entry (POST request), Allow POST requests for all users
             await axios.post(
               `${process.env.REACT_APP_BACKEND_URI}/api/internalmarks`,
               {
@@ -649,6 +664,21 @@ const InternalMarks = () => {
           </div>
         )}
       </div>
+
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Access Denied</h3>
+            <p className="text-gray-600 mb-6">You are not authorized as an admin to perform this action.</p>
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="w-full bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
