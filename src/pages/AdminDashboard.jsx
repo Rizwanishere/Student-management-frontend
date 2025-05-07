@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUserPlus, FaUsers } from "react-icons/fa";
 import { useUser } from "../utils/UserContext";
+import { FaGraduationCap } from "react-icons/fa";
+import { AiOutlinePlus } from "react-icons/ai";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +30,18 @@ const AdminDashboard = () => {
       link: "/manage-faculty",
       color: "from-secondary to-primary",
     },
+    {
+      title: "Add Students",
+      description: "Add new students to the system",
+      icon: (
+        <div className="relative">
+          <FaGraduationCap className="text-4xl" />
+          <AiOutlinePlus className="text-xl absolute -right-1 -top-1 bg-white/20 rounded-full" />
+        </div>
+      ),
+      link: "/poststudent",
+      color: "from-primary to-secondary",
+    },
   ];
 
   return (
@@ -37,7 +51,7 @@ const AdminDashboard = () => {
           Admin Dashboard
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card, index) => (
             <div
               key={index}

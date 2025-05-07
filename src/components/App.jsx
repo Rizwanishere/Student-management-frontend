@@ -59,6 +59,8 @@ const AppContent = () => {
         <Route path="/admin-dashboard" element={<AdminRoute element={<AdminDashboard />} />} />
         <Route path="/add-faculty" element={<AdminRoute element={<AddFaculty />} />} />
         <Route path="/manage-faculty" element={<AdminRoute element={<ManageFaculty />} />} />
+        <Route path="/post-student" element={<AdminRoute element={<PostStudent />} />} />
+        <Route path="/create-student" element={<AdminRoute element={<CreateStudent />} />} />
 
         {/* If no branch selected, show BranchSelection as the default route */}
         <Route path="/" element={selectedBranch ? <Navigate to="/login" /> : <BranchSelection />} />
@@ -81,10 +83,6 @@ const AppContent = () => {
         <Route path="/reports/attendance" element={<AttendanceReport />} />
 
         <Route path="/progressreport" element={<ProgressReport />} />
-
-        <Route path="/poststudent" element={<PostStudent />} />
-        {/* Route for single student  */}
-        <Route path="/createStudent" element={<CreateStudent />} />
 
         <Route path="/postsubjects" element={<PostSubjects />} />
         <Route path="/verify" element={<VerifyStudent />} />

@@ -423,11 +423,11 @@ function PostStudent() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate("/home")}
+          onClick={() => navigate("/admin-dashboard")}
           className="mb-6 inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-semibold shadow-md hover:from-blue-700 hover:to-blue-500 transition-all duration-300"
         >
           <FaArrowLeft className="mr-2" />
-          Back to Dashboard
+          Back to Admin Dashboard
         </button>
 
         <div className="text-center mb-8">
@@ -443,7 +443,7 @@ function PostStudent() {
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-1/2 ">
             <div className="p-6 sm:p-8">
               <div className="flex justify-center gap-x-24 items-center mb-4">
-                <Link to="/createStudent">
+                <Link to="/create-student">
                   <button
                     type="submit"
                     className="bg-primary text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary flex items-center space-x-2"

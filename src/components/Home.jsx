@@ -46,13 +46,6 @@ const Home = () => {
       icon: <FaChartLine className="text-4xl" />,
       link: "/attainment/entry",
       color: "from-secondary to-primary"
-    },
-    {
-      title: "Students Entry",
-      description: "Easily view, enter, and manage comprehensive student details within the system.",
-      icon:<RiUserAddFill className="text-4xl" />,
-      link: "/poststudent",
-      color: "from-primary to-secondary"
     }
   ];
 

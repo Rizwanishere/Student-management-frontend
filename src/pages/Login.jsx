@@ -64,7 +64,7 @@ const Login = () => {
           return;
         }
 
-        if (decodedToken.role === "faculty") {
+        if (decodedToken.role === "faculty" || decodedToken.role === "admin") {
           login(data.token, decodedToken);
           localStorage.setItem("isLoggedIn", "true");
           navigate("/home");
