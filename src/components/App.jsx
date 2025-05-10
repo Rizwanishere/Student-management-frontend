@@ -34,6 +34,7 @@ import OverallCOAttainmentReport from "../pages/OverallCOAttainmentReport";
 import POAttainmentReport from "../pages/POAttainmentReport";
 import AboutUs from "./AboutUs";
 import CreateStudent from "../pages/CreateStudent";
+import CreateSubject from "../pages/CreateSubject";
 
 const AdminRoute = ({ element }) => {
   const { user, isAdmin } = useUser();
@@ -84,7 +85,8 @@ const AppContent = () => {
 
         <Route path="/progressreport" element={<ProgressReport />} />
 
-        <Route path="/postsubjects" element={<PostSubjects />} />
+        <Route path="/post-subjects" element={<PostSubjects />} />
+        <Route path ="/create-subject" element = {<CreateSubject />} />
         <Route path="/verify" element={<VerifyStudent />} />
 
         <Route path="/internalmarks" element={<InternalMarks />} />
