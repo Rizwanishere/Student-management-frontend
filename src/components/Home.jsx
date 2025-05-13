@@ -27,13 +27,6 @@ const Home = () => {
       color: "from-primary to-secondary"
     },
     {
-      title: "Reports",
-      description: "View and generate reports for marks and attendance.",
-      icon: <FaChartBar className="text-4xl" />,
-      link: "/reports",
-      color: "from-secondary to-primary"
-    },
-    {
       title: "Course Outcome Entry",
       description: "Enter and manage course outcomes for subjects.",
       icon: <FaBook className="text-4xl" />,
@@ -46,7 +39,14 @@ const Home = () => {
       icon: <FaChartLine className="text-4xl" />,
       link: "/attainment/entry",
       color: "from-secondary to-primary"
-    }
+    },
+    {
+      title: "View Reports",
+      description: "View and generate reports for marks and attendance.",
+      icon: <FaChartBar className="text-4xl" />,
+      link: "/reports",
+      color: "from-secondary to-primary"
+    },
   ];
 
   return (

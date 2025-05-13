@@ -9,7 +9,7 @@ const Login = () => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, user } = useUser();
 
   const onInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -86,12 +86,19 @@ const Login = () => {
     navigate("/admin-login");
   };
 
+  // Check for branch selection and existing login
   useEffect(() => {
     const selectedBranch = localStorage.getItem("selectedBranch");
     if (!selectedBranch) {
       navigate("/");
+      return;
     }
-  }, [navigate]);
+    
+    // If already logged in, redirect to home
+    if (user || localStorage.getItem("isLoggedIn") === "true") {
+      navigate("/home");
+    }
+  }, [navigate, user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">

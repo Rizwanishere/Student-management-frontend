@@ -17,7 +17,7 @@ import ScrollToTop from "../utils/ScrollToTop";
 import Attendance from "../pages/Attendance";
 import Marks from "../pages/Marks";
 import PostStudent from "../pages/PostStudent";
-import PostSubjects from "../pages/PostSubjects";
+import CreateSubject from "../pages/CreateSubject";
 import ReportsPage from "../pages/ReportsPage";
 import MarksReport from "../pages/MarksReport"
 import AttendanceReport from "../pages/AttendanceReport";
@@ -35,6 +35,7 @@ import POAttainmentReport from "../pages/POAttainmentReport";
 import AboutUs from "./AboutUs";
 import CreateStudent from "../pages/CreateStudent";
 
+// Admin Route Protection
 const AdminRoute = ({ element }) => {
   const { user, isAdmin } = useUser();
   
@@ -44,16 +45,51 @@ const AdminRoute = ({ element }) => {
   return element;
 };
 
-const selectedBranch = localStorage.getItem('selectedBranch');
+// Protected Route for Faculty/Admin
+const ProtectedRoute = ({ element }) => {
+  const { user } = useUser();
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return element;
+};
 
 const AppContent = () => {
+  const { user } = useUser();
+  const isLoggedIn = Boolean(user) || localStorage.getItem('isLoggedIn') === 'true';
+  const selectedBranch = localStorage.getItem('selectedBranch');
+
+  // Root path handler component
+  const RootPathHandler = () => {
+    if (selectedBranch) {
+      // If branch is selected, redirect based on login status
+      return isLoggedIn ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />;
+    } else {
+      // If no branch selected, show branch selection
+      return <BranchSelection />;
+    }
+  };
+  
   return (
     <Router>
       <ScrollToTop />
       <Header />
       <Routes>
+        {/* Root path now uses the handler component */}
+        <Route path="/" element={<RootPathHandler />} />
+        
+        <Route path="/branch-selection" element={<BranchSelection />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<AboutUs />} />
+
+        {/* Initial route handling */}
+        <Route path="/index.html" element={<RootPathHandler />} />
+        
+        {/* Protected Routes */}
+        <Route path="/home" element={<ProtectedRoute element={<Home />} />} />
 
         {/* Admin Management Routes */}
         <Route path="/admin-dashboard" element={<AdminRoute element={<AdminDashboard />} />} />
@@ -61,50 +97,28 @@ const AppContent = () => {
         <Route path="/manage-faculty" element={<AdminRoute element={<ManageFaculty />} />} />
         <Route path="/post-student" element={<AdminRoute element={<PostStudent />} />} />
         <Route path="/create-student" element={<AdminRoute element={<CreateStudent />} />} />
-
-        {/* If no branch selected, show BranchSelection as the default route */}
-        <Route path="/" element={selectedBranch ? <Navigate to="/login" /> : <BranchSelection />} />
-
-        {/* Route to Login after branch selection */}
-        <Route path="/login" element={<Login />} />
-
-        {/* Route to home after login */}
-        <Route path="/home" element={<Home />} />
-
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/about" element={<AboutUs />} />
-
-        {/* Routes for Attendance and Marks are now accessible without login */}
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/marks" element={<Marks />} />
-        <Route path="/reports" element={<ReportsPage />} />
-
-        <Route path="/reports/marks" element={<MarksReport />} />
-        <Route path="/reports/attendance" element={<AttendanceReport />} />
-
-        <Route path="/progressreport" element={<ProgressReport />} />
-
-        <Route path="/postsubjects" element={<PostSubjects />} />
-        <Route path="/verify" element={<VerifyStudent />} />
-
-        <Route path="/internalmarks" element={<InternalMarks />} />
-
-        <Route path="/course-outcome" element={<CourseOutcomeForm />} />
-
-        <Route path="/attainment" element={<AttainmentReport />} />
-        <Route path="/attainment/see" element={<SEEAttainmentReport />} />
-
-        <Route path="/attainment/direct" element={<DirectCOAttainmentReport />} />
-        <Route path="/attainment/indirect" element={<IndirectCOAttainmentReport />} />
-        <Route path="/attainment/overall" element={<OverallCOAttainmentReport />} />
-        <Route path="/attainment/po" element={<POAttainmentReport />} />
-
-        <Route path="/attainment/entry" element={<IndirectAttainment />} />
+        <Route path="/create-subject" element={<AdminRoute element={<CreateSubject />} />} />
         
+        {/* Faculty Routes */}
+        <Route path="/attendance" element={<ProtectedRoute element={<Attendance />} />} />
+        <Route path="/marks" element={<ProtectedRoute element={<Marks />} />} />
+        <Route path="/reports" element={<ProtectedRoute element={<ReportsPage />} />} />
+        <Route path="/reports/marks" element={<ProtectedRoute element={<MarksReport />} />} />
+        <Route path="/reports/attendance" element={<ProtectedRoute element={<AttendanceReport />} />} />
+        <Route path="/progressreport" element={<ProtectedRoute element={<ProgressReport />} />} />
+        <Route path="/verify" element={<ProtectedRoute element={<VerifyStudent />} />} />
+        <Route path="/internalmarks" element={<ProtectedRoute element={<InternalMarks />} />} />
+        <Route path="/course-outcome" element={<ProtectedRoute element={<CourseOutcomeForm />} />} />
+        <Route path="/attainment" element={<ProtectedRoute element={<AttainmentReport />} />} />
+        <Route path="/attainment/see" element={<ProtectedRoute element={<SEEAttainmentReport />} />} />
+        <Route path="/attainment/direct" element={<ProtectedRoute element={<DirectCOAttainmentReport />} />} />
+        <Route path="/attainment/indirect" element={<ProtectedRoute element={<IndirectCOAttainmentReport />} />} />
+        <Route path="/attainment/overall" element={<ProtectedRoute element={<OverallCOAttainmentReport />} />} />
+        <Route path="/attainment/po" element={<ProtectedRoute element={<POAttainmentReport />} />} />
+        <Route path="/attainment/entry" element={<ProtectedRoute element={<IndirectAttainment />} />} />
 
-        {/* Redirect any unknown path to login */}
-
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Catch-all route - redirect to appropriate place based on auth status */}
+        <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/login" />} />
       </Routes>
       <Footer />
     </Router>

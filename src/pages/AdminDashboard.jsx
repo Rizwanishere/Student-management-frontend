@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUserPlus, FaUsers } from "react-icons/fa";
+import { MdLibraryAdd } from "react-icons/md";
 import { useUser } from "../utils/UserContext";
 import { FaGraduationCap } from "react-icons/fa";
 import { AiOutlinePlus } from "react-icons/ai";
@@ -42,6 +43,13 @@ const AdminDashboard = () => {
       link: "/post-student",
       color: "from-primary to-secondary",
     },
+    {
+      title: "Add Subjects",
+      description: "View and manage existing subjects",
+      icon: <MdLibraryAdd className="text-4xl" />,
+      link: "/create-subject",
+      color: "from-secondary to-primary",
+    },
   ];
 
   return (
@@ -59,7 +67,7 @@ const AdminDashboard = () => {
               className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-102 hover:shadow-xl"
             >
               <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-6">
-                <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center text-white mb-4">
+                <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center text-white mb-4">
                   {card.icon}
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">
