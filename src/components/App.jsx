@@ -18,6 +18,7 @@ import Attendance from "../pages/Attendance";
 import Marks from "../pages/Marks";
 import PostStudent from "../pages/PostStudent";
 import CreateSubject from "../pages/CreateSubject";
+import PostSubjects from "../pages/PostSubjects";
 import ReportsPage from "../pages/ReportsPage";
 import MarksReport from "../pages/MarksReport"
 import AttendanceReport from "../pages/AttendanceReport";
@@ -97,6 +98,7 @@ const AppContent = () => {
         <Route path="/manage-faculty" element={<AdminRoute element={<ManageFaculty />} />} />
         <Route path="/post-student" element={<AdminRoute element={<PostStudent />} />} />
         <Route path="/create-student" element={<AdminRoute element={<CreateStudent />} />} />
+        <Route path="/post-subject" element={<AdminRoute element={<PostSubjects />} />} />
         <Route path="/create-subject" element={<AdminRoute element={<CreateSubject />} />} />
         
         {/* Faculty Routes */}

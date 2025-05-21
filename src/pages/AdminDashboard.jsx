@@ -47,7 +47,7 @@ const AdminDashboard = () => {
       title: "Add Subjects",
       description: "View and manage existing subjects",
       icon: <MdLibraryAdd className="text-4xl" />,
-      link: "/create-subject",
+      link: "/post-subject",
       color: "from-secondary to-primary",
     },
   ];
